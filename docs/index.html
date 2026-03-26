@@ -1485,11 +1485,196 @@ async function loadAndRenderReview(path) {
 }
 
 function renderMessageView(rIdx, mIdx) {
-    $('#message-view').innerHTML = '<p>Message view — Task 5</p>';
+    const review = state.reviews[rIdx];
+    if (!review) { $('#message-view').innerHTML = '<p>Message not found. <a href="#/">Back</a></p>'; return; }
+    const cached = state.reviewCache[review.path];
+    if (!cached || !cached.diff) {
+        // Try to load it
+        loadReview(review.path).then(data => {
+            state.reviewCache[review.path] = data;
+            renderMessageView(rIdx, mIdx);
+        }).catch(() => {
+            $('#message-view').innerHTML = '<p>Could not load message. <a href="#/">Back</a></p>';
+        });
+        $('#message-view').innerHTML = '<p>Loading...</p>';
+        return;
+    }
+    const msgs = parseMbox(cached.diff);
+    const msg = msgs[mIdx];
+    if (!msg) { $('#message-view').innerHTML = '<p>Message not found. <a href="#/">Back</a></p>'; return; }
+
+    // Thread tree (mini, showing position in thread)
+    const threadHtml = msgs.map((m, i) => {
+        const isCurrent = i === mIdx;
+        const isReply = !/\[PATCH/i.test(m.subject) && i > 0;
+        const indent = isReply ? ' style="margin-left:16px"' : '';
+        const arrow = isReply ? '<span class="thread-arrow">↳</span>' : '';
+        const cls = isCurrent ? ' class="thread-current"' : '';
+        return `<li${indent}>${arrow}<a href="#/message/${rIdx}/${i}"${cls}>${esc(m.subject || '(no subject)')}</a></li>`;
+    }).join('');
+
+    $('#message-view').innerHTML = `
+        <p class="nav-back"><a href="#/review/${encodeURIComponent(review.path)}">← Back to review</a></p>
+        <h2>${esc(msg.subject || '(no subject)')}</h2>
+        <div class="kv"><span class="kv-label">From:</span> ${esc(msg.author || '')}</div>
+        <div class="kv"><span class="kv-label">Date:</span> ${esc(msg.date || '')}</div>
+        <h3>Thread</h3>
+        <ul class="thread-tree">${threadHtml}</ul>
+        <h3>Body</h3>
+        <div class="msg-body"><pre class="body">${escapeHtml(msg.body || '', true)}</pre></div>`;
 }
 
 function renderStatsView() {
-    $('#stats-view').innerHTML = '<p>Stats view — Task 6</p>';
+    const reviews = state.reviews;
+    if (!reviews || reviews.length === 0) {
+        $('#stats-view').innerHTML = '<p>No data available.</p>';
+        return;
+    }
+
+    // Compute summary stats
+    const totalReviews = reviews.length;
+    let totalFindings = 0;
+    const verdictCount = {};
+    const severityCount = { Critical: 0, Major: 0, Minor: 0, Nit: 0 };
+    const subsystemCount = {};
+    const dailyCount = {};
+
+    reviews.forEach(r => {
+        const findings = r.findings || [];
+        totalFindings += findings.length;
+
+        // Verdict
+        const v = r.verdict || 'Unknown';
+        verdictCount[v] = (verdictCount[v] || 0) + 1;
+
+        // Severity
+        findings.forEach(f => {
+            const sev = f.severity || 'Nit';
+            if (severityCount[sev] !== undefined) severityCount[sev]++;
+        });
+
+        // Subsystem
+        const sub = r.subsystem || 'Unknown';
+        subsystemCount[sub] = (subsystemCount[sub] || 0) + 1;
+
+        // Daily timeline
+        const day = r.date ? r.date.split(' ')[0] : 'Unknown';
+        dailyCount[day] = (dailyCount[day] || 0) + 1;
+    });
+
+    const avgFindings = totalFindings > 0 ? (totalFindings / totalReviews).toFixed(1) : '0';
+    const topSubsystem = Object.entries(subsystemCount).sort((a, b) => b[1] - a[1])[0];
+    const topSubName = topSubsystem ? topSubsystem[0] : 'N/A';
+
+    // Summary cards
+    const summaryHtml = `
+        <div class="stat-grid">
+            <div class="stat-card">
+                <div class="stat-label">Total Reviews</div>
+                <div class="stat-value">${totalReviews}</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Total Findings</div>
+                <div class="stat-value">${totalFindings}</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Avg Findings/Review</div>
+                <div class="stat-value">${avgFindings}</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Top Subsystem</div>
+                <div class="stat-value" style="font-size:1.2rem;">${esc(topSubName)}</div>
+            </div>
+        </div>
+    `;
+
+    // Chart containers
+    const chartsHtml = `
+        <div class="chart-row">
+            <div class="chart-container" id="chart-timeline"></div>
+            <div class="chart-container" id="chart-verdicts"></div>
+        </div>
+        <div class="chart-row">
+            <div class="chart-container" id="chart-severity"></div>
+            <div class="chart-container" id="chart-subsystems"></div>
+        </div>
+    `;
+
+    $('#stats-view').innerHTML = `<h2>Dashboard</h2>${summaryHtml}${chartsHtml}`;
+
+    // Render charts if ECharts is available
+    if (typeof echarts === 'undefined') {
+        $('#chart-timeline').innerHTML = '<p style="padding:20px;">ECharts not loaded.</p>';
+        return;
+    }
+
+    const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const theme = isDark ? 'dark' : null;
+
+    // 1. Timeline chart (daily review count)
+    const sortedDays = Object.keys(dailyCount).sort();
+    const timelineData = sortedDays.map(d => dailyCount[d]);
+    const chartTimeline = echarts.init(document.getElementById('chart-timeline'), theme);
+    chartTimeline.setOption({
+        title: { text: 'Review Timeline', left: 'center' },
+        tooltip: { trigger: 'axis' },
+        xAxis: { type: 'category', data: sortedDays, axisLabel: { rotate: 45 } },
+        yAxis: { type: 'value' },
+        series: [{ name: 'Reviews', type: 'line', data: timelineData, smooth: true }]
+    });
+
+    // 2. Verdicts pie chart
+    const verdictData = Object.entries(verdictCount).map(([name, value]) => ({ name, value }));
+    const chartVerdicts = echarts.init(document.getElementById('chart-verdicts'), theme);
+    chartVerdicts.setOption({
+        title: { text: 'Verdicts', left: 'center' },
+        tooltip: { trigger: 'item' },
+        legend: { bottom: 0 },
+        series: [{
+            name: 'Verdict',
+            type: 'pie',
+            radius: '50%',
+            data: verdictData,
+            emphasis: { itemStyle: { shadowBlur: 10, shadowOffsetX: 0, shadowColor: 'rgba(0,0,0,0.5)' } }
+        }]
+    });
+
+    // 3. Severity bar chart
+    const severityData = [
+        { name: 'Critical', value: severityCount.Critical, color: '#d32f2f' },
+        { name: 'Major', value: severityCount.Major, color: '#1565c0' },
+        { name: 'Minor', value: severityCount.Minor, color: '#f59e0b' },
+        { name: 'Nit', value: severityCount.Nit, color: '#94a3b8' }
+    ];
+    const chartSeverity = echarts.init(document.getElementById('chart-severity'), theme);
+    chartSeverity.setOption({
+        title: { text: 'Findings by Severity', left: 'center' },
+        tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
+        xAxis: { type: 'category', data: severityData.map(s => s.name) },
+        yAxis: { type: 'value' },
+        series: [{
+            name: 'Count',
+            type: 'bar',
+            data: severityData.map(s => ({ value: s.value, itemStyle: { color: s.color } }))
+        }]
+    });
+
+    // 4. Subsystems horizontal bar (top 10)
+    const topSubsystems = Object.entries(subsystemCount).sort((a, b) => b[1] - a[1]).slice(0, 10);
+    const chartSubsystems = echarts.init(document.getElementById('chart-subsystems'), theme);
+    chartSubsystems.setOption({
+        title: { text: 'Top 10 Subsystems', left: 'center' },
+        tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
+        xAxis: { type: 'value' },
+        yAxis: { type: 'category', data: topSubsystems.map(s => s[0]).reverse() },
+        series: [{ name: 'Reviews', type: 'bar', data: topSubsystems.map(s => s[1]).reverse() }]
+    });
+
+    // Responsive resize
+    const allCharts = [chartTimeline, chartVerdicts, chartSeverity, chartSubsystems];
+    window.addEventListener('resize', () => {
+        allCharts.forEach(c => c.resize());
+    });
 }
 
 /* ── Event Binding ─────────────────────────────────────────────────── */
