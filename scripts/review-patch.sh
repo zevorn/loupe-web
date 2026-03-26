@@ -1,8 +1,6 @@
 #!/usr/bin/env bash
-# Review a single patch using codex + loupe-review skill in QEMU tree.
-# Codex runs loupe-review which handles: worktree, git am, checkpatch,
-# five-stage review, and JSON output.
-# Script handles: Patchwork metadata, codex output extraction, JSON assembly.
+# Review a single patch: script handles all git/network ops,
+# codex only does code analysis on the resulting diff.
 # Usage: review-patch.sh <message-id> <output-file>
 set -uo pipefail
 
@@ -17,7 +15,7 @@ ENCODED_MSGID=$(python3 -c "import urllib.parse,sys; print(urllib.parse.quote(sy
 echo "=== Reviewing: ${BARE_MSGID} ==="
 
 # --- Step 1: Patchwork metadata ---
-echo "[1/5] Querying Patchwork..."
+echo "[1/7] Querying Patchwork..."
 PW_DATA=$(curl -sL -A "${UA}" "https://patchwork.ozlabs.org/api/patches/?project=qemu-devel&msgid=${ENCODED_MSGID}")
 PW_COUNT=$(echo "${PW_DATA}" | jq 'length' 2>/dev/null || echo 0)
 
@@ -33,7 +31,6 @@ if [ "${PW_COUNT}" -gt 0 ]; then
     PW_DATE=$(echo "${PW_DATA}" | jq -r '.[0].date // empty' | cut -dT -f1)
     PW_URL=$(echo "${PW_DATA}" | jq -r '.[0].web_url // empty')
     SERIES_ID=$(echo "${PW_DATA}" | jq -r '.[0].series[0].id // empty')
-
     if [ -n "${SERIES_ID}" ]; then
         SERIES_DATA=$(curl -sL -A "${UA}" "https://patchwork.ozlabs.org/api/series/${SERIES_ID}/")
         PATCH_COUNT=$(echo "${SERIES_DATA}" | jq '.patches | length' 2>/dev/null || echo 1)
@@ -44,7 +41,7 @@ fi
 
 # --- Step 2: Fallback to lore ---
 if [ -z "${TITLE}" ] || [ "${TITLE}" = "null" ]; then
-    echo "[2/5] Patchwork empty, fetching from lore..."
+    echo "[2/7] Fetching from lore..."
     LORE_HDR=$(curl -sL -A "${UA}" "https://lore.kernel.org/qemu-devel/${ENCODED_MSGID}/raw" | head -80)
     if echo "${LORE_HDR}" | grep -q '^Subject:'; then
         TITLE=$(echo "${LORE_HDR}" | grep -m1 '^Subject:' | sed 's/^Subject: *//')
@@ -55,70 +52,147 @@ if [ -z "${TITLE}" ] || [ "${TITLE}" = "null" ]; then
         PW_DATE=$(date -d "${PW_DATE}" +%Y-%m-%d 2>/dev/null || date +%Y-%m-%d)
     fi
 else
-    echo "[2/5] Metadata OK"
+    echo "[2/7] Metadata OK"
 fi
 
 [ -z "${TITLE}" ] && TITLE="Unknown: ${BARE_MSGID}"
 [ -z "${AUTHOR_NAME}" ] && AUTHOR_NAME="unknown"
 [ -z "${AUTHOR_EMAIL}" ] && AUTHOR_EMAIL=""
 [ -z "${PW_DATE}" ] && PW_DATE=$(date +%Y-%m-%d)
-
 VERSION=$(echo "${TITLE}" | grep -oiE 'v[0-9]+' | head -1 | tr -d 'vV')
 [ -z "${VERSION}" ] && VERSION=1
 SUBSYSTEM=$(echo "${TITLE}" | sed -n 's/.*\] *\([^:]*\):.*/\1/p' | head -1)
 [ -z "${SUBSYSTEM}" ] && SUBSYSTEM=$(echo "${TITLE}" | sed -n 's/^\([^:]*\):.*/\1/p' | head -1)
 [ -z "${SUBSYSTEM}" ] && SUBSYSTEM="riscv"
-
 LORE_URL="https://lore.kernel.org/qemu-devel/${ENCODED_MSGID}/"
-echo "  Title: ${TITLE}"
-echo "  Author: ${AUTHOR_NAME}, Subsystem: ${SUBSYSTEM}, Patches: ${PATCH_COUNT}"
 
-# --- Step 3: Run codex + loupe-review in QEMU source tree ---
-echo "[3/5] Running codex loupe-review in ${QEMU_DIR}..."
+echo "  Title: ${TITLE}"
+echo "  Author: ${AUTHOR_NAME}, Subsystem: ${SUBSYSTEM}"
+
+# --- Step 3: Download patches with b4 ---
+echo "[3/7] Downloading patches with b4..."
+B4_DIR=$(mktemp -d)
+COVER_TEXT=""
+DIFF_TEXT=""
+
+if command -v b4 &>/dev/null; then
+    (cd "${B4_DIR}" && b4 am "${BARE_MSGID}" 2>&1) || true
+    B4_MBX=$(ls "${B4_DIR}"/*.mbx 2>/dev/null | head -1)
+    B4_COVER=$(ls "${B4_DIR}"/*.cover 2>/dev/null | head -1)
+    [ -n "${B4_MBX}" ] && DIFF_TEXT=$(cat "${B4_MBX}")
+    [ -n "${B4_COVER}" ] && COVER_TEXT=$(cat "${B4_COVER}")
+    echo "  b4: mbx=$(wc -l <<< "${DIFF_TEXT}" 2>/dev/null) lines"
+fi
+
+if [ -z "${DIFF_TEXT}" ]; then
+    echo "  b4 failed, trying curl..."
+    DIFF_TEXT=$(curl -sL -A "${UA}" "https://lore.kernel.org/qemu-devel/${ENCODED_MSGID}/raw" 2>/dev/null)
+    if echo "${DIFF_TEXT}" | head -3 | grep -qi '<html'; then
+        DIFF_TEXT=""
+        echo "  WARNING: lore returned anti-bot page"
+    fi
+fi
+
+# --- Step 4: Apply patches in QEMU worktree + checkpatch ---
+echo "[4/7] Applying patches in QEMU worktree..."
+CHECKPATCH_RESULT="not_run"
+CHECKPATCH_ISSUES=""
+BUILD_STATUS="not_run"
+AM_STATUS="not_run"
+REVIEW_BRANCH="review-$(echo "${BARE_MSGID}" | sed 's/@/-/;s/[^a-zA-Z0-9-]/-/g;s/--*/-/g;s/-$//' | cut -c1-40)"
+WORKTREE_DIR="${QEMU_DIR}/../loupe-worktree-$$"
+
+if [ -d "${QEMU_DIR}" ] && [ -n "${DIFF_TEXT}" ]; then
+    # Create worktree (clean up stale branch first)
+    (cd "${QEMU_DIR}" && git branch -D "${REVIEW_BRANCH}" 2>/dev/null; git worktree remove --force "${WORKTREE_DIR}" 2>/dev/null; git worktree add -b "${REVIEW_BRANCH}" "${WORKTREE_DIR}" master 2>&1) || true
+
+    if [ -d "${WORKTREE_DIR}" ]; then
+        # Save mbox and apply
+        echo "${DIFF_TEXT}" > "${WORKTREE_DIR}/patch.mbox"
+        cd "${WORKTREE_DIR}"
+        if git am patch.mbox 2>&1; then
+            AM_STATUS="success"
+            echo "  git am: success"
+
+            # Run checkpatch
+            if [ -x scripts/checkpatch.pl ]; then
+                echo "  Running checkpatch..."
+                CHECKPATCH_OUT=$(perl scripts/checkpatch.pl patch.mbox 2>&1 || true)
+                if echo "${CHECKPATCH_OUT}" | grep -q "total: 0 errors, 0 warnings"; then
+                    CHECKPATCH_RESULT="clean"
+                else
+                    CHECKPATCH_RESULT="issues"
+                    CHECKPATCH_ISSUES=$(echo "${CHECKPATCH_OUT}" | grep -E "^(ERROR|WARNING|CHECK):" | head -10)
+                fi
+                echo "  checkpatch: ${CHECKPATCH_RESULT}"
+            fi
+
+            # Quick build test (configure only, full build too slow for CI)
+            echo "  Quick build check..."
+            if ./configure --target-list=riscv64-softmmu 2>&1 | tail -3; then
+                BUILD_STATUS="configure_ok"
+                echo "  configure: success"
+            else
+                BUILD_STATUS="configure_fail"
+                echo "  configure: failed"
+            fi
+        else
+            AM_STATUS="failed"
+            git am --abort 2>/dev/null || true
+            echo "  git am: FAILED"
+        fi
+        rm -f patch.mbox
+        cd - >/dev/null
+
+        # Cleanup worktree
+        (cd "${QEMU_DIR}" && git worktree remove --force "${WORKTREE_DIR}" 2>/dev/null && git branch -D "${REVIEW_BRANCH}" 2>/dev/null) || true
+    else
+        echo "  WARNING: Could not create worktree"
+    fi
+else
+    echo "  Skipping: no QEMU dir or no patch content"
+fi
+rm -rf "${B4_DIR}"
+
+echo "  AM: ${AM_STATUS}, Checkpatch: ${CHECKPATCH_RESULT}, Build: ${BUILD_STATUS}"
+
+# --- Step 5: Codex review (code analysis only, no network needed) ---
+echo "[5/7] Running codex code review..."
 REVIEW_OUT=$(mktemp)
 
-# codex exec runs in the QEMU directory so loupe-review skill can:
-# - create git worktree
-# - git am the patches
-# - run checkpatch.pl
-# - do five-stage code review
+# Prepare diff for codex (truncate for context limit)
+DIFF_FOR_REVIEW=$(echo "${DIFF_TEXT}" | head -500)
+
 PROMPT_FILE=$(mktemp)
-cat > "${PROMPT_FILE}" << PROMPTEOF
-Execute the loupe-review skill to review this patch:
-
-loupe-review ${BARE_MSGID} --ci
-
-After the review is complete, output ONLY a JSON object with these keys:
-  verdict (needs_revision / ready_to_merge / blocked)
-  summary (one sentence)
-  stages (object A,B,C,D,E each a string)
-  findings (array, empty if clean)
-  checkpatch_status (clean / issues)
-  checkpatch_issues (array of strings)
-  build_status (success / failure / not_run)
-
+cat > "${PROMPT_FILE}" << 'PROMPTEOF'
+You are a QEMU patch reviewer. Analyze this patch series.
+Output ONLY a single JSON object. No markdown, no explanation.
+Keys: verdict, summary, stages(A,B,C,D,E), findings(array)
 Each finding: id, severity, file, line, title, description,
-  patch_context (array of diff lines), suggestion, confidence,
-  confidence_reason
-
-Start response with { end with }. No markdown.
+  patch_context(diff lines array), suggestion, confidence, confidence_reason
+Start with { end with }
 PROMPTEOF
 
-# Run in QEMU directory
-(cd "${QEMU_DIR}" && codex exec --full-auto "$(cat "${PROMPT_FILE}")") \
-    > "${REVIEW_OUT}" 2>&1 || true
+if [ -n "${COVER_TEXT}" ]; then
+    echo -e "\nCOVER LETTER:\n${COVER_TEXT}" >> "${PROMPT_FILE}"
+fi
+
+echo -e "\nCHECKPATCH RESULT: ${CHECKPATCH_RESULT}" >> "${PROMPT_FILE}"
+[ -n "${CHECKPATCH_ISSUES}" ] && echo "${CHECKPATCH_ISSUES}" >> "${PROMPT_FILE}"
+echo -e "\nGIT AM STATUS: ${AM_STATUS}" >> "${PROMPT_FILE}"
+echo -e "\nBUILD STATUS: ${BUILD_STATUS}" >> "${PROMPT_FILE}"
+echo -e "\nPATCH:\n${DIFF_FOR_REVIEW}" >> "${PROMPT_FILE}"
+
+codex exec --full-auto "$(cat "${PROMPT_FILE}")" > "${REVIEW_OUT}" 2>&1 || true
 rm -f "${PROMPT_FILE}"
 
-# --- Step 4: Extract review JSON ---
-echo "[4/5] Extracting review..."
+# --- Step 6: Extract review JSON ---
+echo "[6/7] Extracting review..."
 REVIEW_FILE=$(mktemp)
 
 python3 - "${REVIEW_OUT}" "${REVIEW_FILE}" << 'PYEOF'
 import sys, json
-
 text = open(sys.argv[1]).read()
-out_path = sys.argv[2]
-
 blocks = []
 depth = 0
 start = -1
@@ -131,7 +205,6 @@ for i, c in enumerate(text):
         if depth == 0 and start >= 0:
             blocks.append(text[start:i+1])
             start = -1
-
 result = None
 for b in sorted(blocks, key=len, reverse=True):
     try:
@@ -141,13 +214,9 @@ for b in sorted(blocks, key=len, reverse=True):
             break
     except:
         continue
-
 if result is None:
-    result = {"verdict":"unknown","summary":"AI review failed to produce valid output",
-              "stages":{"A":"","B":"","C":"","D":"","E":""},"findings":[],
-              "checkpatch_status":"not_run","checkpatch_issues":[],"build_status":"not_run"}
-
-with open(out_path, 'w') as f:
+    result = {"verdict":"unknown","summary":"AI review failed","stages":{"A":"","B":"","C":"","D":"","E":""},"findings":[]}
+with open(sys.argv[2], 'w') as f:
     json.dump(result, f, ensure_ascii=False)
 PYEOF
 
@@ -155,9 +224,9 @@ rm -f "${REVIEW_OUT}"
 VERDICT=$(jq -r '.verdict' "${REVIEW_FILE}" 2>/dev/null || echo "unknown")
 echo "  Verdict: ${VERDICT}"
 
-# --- Step 5: Assemble final JSON ---
-echo "[5/5] Assembling JSON..."
-
+# --- Step 7: Assemble final JSON ---
+echo "[7/7] Assembling JSON..."
+mkdir -p "$(dirname "${OUTPUT}")"
 META_FILE=$(mktemp)
 cat > "${META_FILE}" << METAEOF
 {
@@ -172,25 +241,24 @@ cat > "${META_FILE}" << METAEOF
     "lore_url": "${LORE_URL}",
     "patchwork_url": "${PW_URL:-}",
     "patchwork_state": "${PW_STATE}",
+    "checkpatch_status": "${CHECKPATCH_RESULT}",
+    "build_status": "${BUILD_STATUS}",
+    "am_status": "${AM_STATUS}",
     "generated_at": "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 }
 METAEOF
 
 python3 - "${META_FILE}" "${REVIEW_FILE}" "${OUTPUT}" << 'PYEOF'
 import sys, json
-
 meta = json.load(open(sys.argv[1]))
 review = json.load(open(sys.argv[2]))
 out_path = sys.argv[3]
-
 slug = meta["message_id"].strip("<>").replace("@","-at-")
 for c in "/<>?*[]\\": slug = slug.replace(c, "-")
 slug = slug[:60]
 
-# Extract checkpatch from review if codex provided it
-cp_status = review.pop("checkpatch_status", "not_run")
+# Merge checkpatch issues from codex review if present
 cp_issues = review.pop("checkpatch_issues", [])
-build_status = review.pop("build_status", "not_run")
 
 output = {
     "schema_version": "1",
@@ -210,10 +278,8 @@ output = {
     "version_history": [],
     "ml_context": {
         "patchwork_state": meta["patchwork_state"],
-        "reviewed_by": [],
-        "acked_by": [],
-        "ci_status": "",
-        "prior_feedback": [],
+        "reviewed_by": [], "acked_by": [],
+        "ci_status": "", "prior_feedback": [],
         "maintainer_activity": ""
     },
     "review": {
@@ -222,15 +288,15 @@ output = {
         "mode": "ci-single",
         "stages": review.get("stages", {}),
         "findings": review.get("findings", []),
-        "checkpatch": {"status": cp_status, "issues": cp_issues},
-        "build_status": build_status
+        "checkpatch": {"status": meta["checkpatch_status"], "issues": cp_issues},
+        "build_status": meta["build_status"],
+        "am_status": meta["am_status"]
     },
     "patches": [],
     "generated_at": meta["generated_at"],
     "generator": "loupe-review v1.0",
     "disclaimer": "LLM-generated draft. Not an authoritative review."
 }
-
 with open(out_path, 'w') as f:
     json.dump(output, f, indent=2, ensure_ascii=False)
 PYEOF
@@ -239,7 +305,7 @@ rm -f "${META_FILE}" "${REVIEW_FILE}"
 
 if [ -f "${OUTPUT}" ] && jq empty "${OUTPUT}" 2>/dev/null; then
     echo "=== Done ==="
-    jq -r '"  \(.series.title) | \(.review.verdict) | \(.review.findings|length) findings | checkpatch: \(.review.checkpatch.status) | build: \(.review.build_status)"' "${OUTPUT}"
+    jq -r '"  \(.series.title)\n  Verdict: \(.review.verdict) | Findings: \(.review.findings|length)\n  Checkpatch: \(.review.checkpatch.status) | Build: \(.review.build_status) | AM: \(.review.am_status)"' "${OUTPUT}"
 else
     echo "ERROR: invalid JSON output"
     rm -f "${OUTPUT}"
