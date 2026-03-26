@@ -1,0 +1,66 @@
+{
+  "schema_version": "1",
+  "id": "20260325-20260325050011.66722-3-jay.chang-at-sifive.com",
+  "series": {
+    "title": "[v2,0/2] Bug fixes and IPSR.PMIP support",
+    "version": 2,
+    "patch_count": 2,
+    "author": {
+      "name": "Jay Chang",
+      "email": "jay.chang@sifive.com"
+    },
+    "date": "2026-03-25",
+    "subsystem": "riscv",
+    "message_id": "<20260325050011.66722-3-jay.chang@sifive.com>",
+    "lore_url": "https://lore.kernel.org/qemu-devel/20260325050011.66722-3-jay.chang%40sifive.com/",
+    "patchwork_url": "http://patchwork.ozlabs.org/project/qemu-devel/patch/20260325050011.66722-3-jay.chang@sifive.com/",
+    "base_branch": "master"
+  },
+  "version_history": [],
+  "ml_context": {
+    "patchwork_state": "new",
+    "reviewed_by": [],
+    "acked_by": [],
+    "ci_status": "",
+    "prior_feedback": [],
+    "maintainer_activity": ""
+  },
+  "review": {
+    "verdict": "accept",
+    "summary": "The series is small, coherent, and matches the stated intent. Patch 1 fixes a plausible stale-state bug in HPM timer reprogramming by resetting `irq_overflow_left` before recomputing the next expiration. Patch 2 adds the missing `IPSR.PMIP` bit definition and wires it into the existing IPSR RW1C update flow consistently with the other IPSR pending bits. I did not identify a functional regression from the posted diff.",
+    "mode": "ci-single",
+    "stages": {
+      "A": {
+        "status": "complete",
+        "summary": "Reviewed cover letter, patch scope, and claimed behavior against the posted diffs."
+      },
+      "B": {
+        "status": "complete",
+        "summary": "Checked patch 1 for state-transition correctness around timer reconfiguration and overflow carry handling."
+      },
+      "C": {
+        "status": "complete",
+        "summary": "Checked patch 2 for register-definition consistency and IPSR RW1C handling symmetry with existing pending bits."
+      },
+      "D": {
+        "status": "complete",
+        "summary": "Looked for obvious integration gaps or mismatched semantics in the touched code paths; none were evident from the diff."
+      },
+      "E": {
+        "status": "complete",
+        "summary": "No blocking issues found. Residual risk is limited to lack of explicit test coverage in the posted material."
+      }
+    },
+    "findings": [],
+    "checkpatch": {
+      "status": "clean",
+      "issues": []
+    },
+    "build_status": "configure_ok",
+    "am_status": "success"
+  },
+  "patches": [],
+  "generated_at": "2026-03-26T13:45:59Z",
+  "generator": "loupe-review v1.0",
+  "disclaimer": "LLM-generated draft. Not an authoritative review."
+}

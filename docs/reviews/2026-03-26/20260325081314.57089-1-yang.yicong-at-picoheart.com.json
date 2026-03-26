@@ -1,0 +1,51 @@
+{
+  "schema_version": "1",
+  "id": "20260325-20260325081314.57089-1-yang.yicong-at-picoheart.com",
+  "series": {
+    "title": "hw/riscv/virt-acpi-build.c: Use kvm timer frequency when kvm enabled",
+    "version": 1,
+    "patch_count": 1,
+    "author": {
+      "name": "Yicong Yang",
+      "email": "yang.yicong@picoheart.com"
+    },
+    "date": "2026-03-25",
+    "subsystem": "hw/riscv/virt-acpi-build.c",
+    "message_id": "<20260325081314.57089-1-yang.yicong@picoheart.com>",
+    "lore_url": "https://lore.kernel.org/qemu-devel/20260325081314.57089-1-yang.yicong%40picoheart.com/",
+    "patchwork_url": "http://patchwork.ozlabs.org/project/qemu-devel/patch/20260325081314.57089-1-yang.yicong@picoheart.com/",
+    "base_branch": "master"
+  },
+  "version_history": [],
+  "ml_context": {
+    "patchwork_state": "new",
+    "reviewed_by": [],
+    "acked_by": [],
+    "ci_status": "",
+    "prior_feedback": [],
+    "maintainer_activity": ""
+  },
+  "review": {
+    "verdict": "accept",
+    "summary": "The patch is narrowly scoped and the functional change is consistent with existing RISC-V/KVM behavior described in the commit message: RHCT should report the actual KVM timebase rather than the fixed ACLINT default. I did not identify a correctness issue in the patch itself. The only reported checkpatch issue is a line-length warning, which is non-blocking here.",
+    "mode": "ci-single",
+    "stages": {
+      "A": "Patch intent is clear: RHCT currently hardcodes RISCV_ACLINT_DEFAULT_TIMEBASE_FREQ, which is incorrect for KVM guests where the timer frequency is host-provided.",
+      "B": "Code change is minimal and logically correct: when KVM is enabled, RHCT uses kvm_riscv_get_timebase_frequency(&s->soc->harts[0]); otherwise it preserves the existing default.",
+      "C": "Build risk appears low from the patch alone. The added includes and helper usage are architecture-specific but aligned with the stated goal. No new behavioral surface outside RHCT generation is introduced.",
+      "D": "Runtime behavior should improve guest-visible ACPI correctness for KVM-backed RISC-V virt machines. The change also aligns ACPI behavior with the existing device-tree handling referenced in the commit message.",
+      "E": "Recommendation: accept. No blocking functional issues found in this patch. Residual risk is limited to integration details outside the provided diff, which are not indicated as problematic here."
+    },
+    "findings": [],
+    "checkpatch": {
+      "status": "issues",
+      "issues": []
+    },
+    "build_status": "configure_ok",
+    "am_status": "success"
+  },
+  "patches": [],
+  "generated_at": "2026-03-26T13:47:32Z",
+  "generator": "loupe-review v1.0",
+  "disclaimer": "LLM-generated draft. Not an authoritative review."
+}

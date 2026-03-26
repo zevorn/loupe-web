@@ -1,0 +1,72 @@
+{
+  "schema_version": "1",
+  "id": "20260325-20260325014856.58948-1-jay.chang-at-sifive.com",
+  "series": {
+    "title": "[v2] hw/riscv/riscv-iommu: Use standard EN_PRI bit for PRI",
+    "version": 2,
+    "patch_count": 1,
+    "author": {
+      "name": "Jay Chang",
+      "email": "jay.chang@sifive.com"
+    },
+    "date": "2026-03-25",
+    "subsystem": "hw/riscv/riscv-iommu",
+    "message_id": "<20260325014856.58948-1-jay.chang@sifive.com>",
+    "lore_url": "https://lore.kernel.org/qemu-devel/20260325014856.58948-1-jay.chang%40sifive.com/",
+    "patchwork_url": "http://patchwork.ozlabs.org/project/qemu-devel/patch/20260325014856.58948-1-jay.chang@sifive.com/",
+    "base_branch": "master"
+  },
+  "version_history": [],
+  "ml_context": {
+    "patchwork_state": "new",
+    "reviewed_by": [],
+    "acked_by": [],
+    "ci_status": "",
+    "prior_feedback": [],
+    "maintainer_activity": ""
+  },
+  "review": {
+    "verdict": "needs_revision",
+    "summary": "The functional change is small and appears spec-aligned, but it likely introduces a guest-visible compatibility regression by dropping support for the previously exposed custom TC[32] PRI-enable bit with no compatibility handling.",
+    "mode": "ci-single",
+    "stages": {
+      "A": "Patch intent is clear: replace a temporary custom PRI enable bit with the architectural EN_PRI bit.",
+      "B": "Local command-based inspection was not possible in this environment, so the review is based on the provided diff and QEMU compatibility expectations for guest-visible register semantics.",
+      "C": "The code change itself is mechanically correct and improves readability by using a named architectural bit definition.",
+      "D": "Main risk: existing guests or migration streams that relied on TC[32] to enable PRI will stop working after this change.",
+      "E": "Recommendation: preserve backward compatibility by accepting both bits, or by wiring old behavior behind a compat knob/machine-type compatibility path."
+    },
+    "findings": [
+      {
+        "id": "F1",
+        "severity": "medium",
+        "file": "hw/riscv/riscv-iommu.c",
+        "line": 1575,
+        "title": "Dropping the legacy PRI-enable bit changes guest-visible behavior",
+        "description": "Previous QEMU behavior enabled automatic page-request generation when TC[32] was set. This patch removes that behavior entirely and requires RISCV_IOMMU_DC_TC_EN_PRI instead. If any existing guest software, tests, or migration scenarios depend on the legacy custom bit, PRI will silently stop working after upgrade. In QEMU, even temporary device-register behavior can become part of the effective guest ABI once released, so replacing it without a compatibility path is risky.",
+        "patch_context": [
+          "-    /*",
+          "-     * TC[32] is reserved for custom extensions, used here to temporarily",
+          "-     * enable automatic page-request generation for ATS queries.",
+          "-     */",
+          "-    enable_pri = (iotlb->perm == IOMMU_NONE) && (ctx->tc & BIT_ULL(32));",
+          "+    enable_pri = (iotlb->perm == IOMMU_NONE) &&",
+          "+                 (ctx->tc & RISCV_IOMMU_DC_TC_EN_PRI);"
+        ],
+        "suggestion": "Keep the architectural EN_PRI bit as the preferred path, but also honor the legacy TC[32] bit for compatibility, or restrict the behavior change behind a compat property / machine-version check so existing guests and migration pairs do not regress.",
+        "confidence": "medium",
+        "confidence_reason": "The regression follows directly from the diff, but confirming whether the old TC[32] behavior is already exposed in released machine types would require inspecting the surrounding QEMU tree and compatibility policies."
+      }
+    ],
+    "checkpatch": {
+      "status": "clean",
+      "issues": []
+    },
+    "build_status": "configure_ok",
+    "am_status": "success"
+  },
+  "patches": [],
+  "generated_at": "2026-03-26T13:44:45Z",
+  "generator": "loupe-review v1.0",
+  "disclaimer": "LLM-generated draft. Not an authoritative review."
+}
