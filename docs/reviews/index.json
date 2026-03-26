@@ -1,41 +1,4 @@
 {
-  "updated_at": "2026-03-26T03:12:48Z",
-  "reviews": [
-    {
-      "id": "20260326-20260325081314.57089-1-yang.yicongpicoheart.com",
-      "path": "reviews/2026-03-26/20260325081314.57089-1-yang.yicong-at-picoheart.com.json",
-      "title": "<20260325081314.57089-1-yang.yicong@picoheart.com>",
-      "author": "unknown",
-      "date": "2026-03-26",
-      "subsystem": "riscv",
-      "version": 1,
-      "patch_count": 1,
-      "message_id": "<20260325081314.57089-1-yang.yicong@picoheart.com>",
-      "verdict": "ready_to_merge",
-      "findings": {
-        "critical": 0,
-        "major": 0,
-        "minor": 0,
-        "nit": 0
-      }
-    },
-    {
-      "id": "20260326-20260325050011.66722-3-jay.changsifive.com",
-      "path": "reviews/2026-03-26/20260325050011.66722-3-jay.chang-at-sifive.com.json",
-      "title": "<20260325050011.66722-3-jay.chang@sifive.com>",
-      "author": "unknown",
-      "date": "2026-03-26",
-      "subsystem": "riscv",
-      "version": 1,
-      "patch_count": 1,
-      "message_id": "<20260325050011.66722-3-jay.chang@sifive.com>",
-      "verdict": "needs_revision or ready_to_merge or blocked",
-      "findings": {
-        "critical": 0,
-        "major": 0,
-        "minor": 0,
-        "nit": 0
-      }
-    }
-  ]
+  "updated_at": "2026-03-26T03:24:46Z",
+  "reviews": []
 }

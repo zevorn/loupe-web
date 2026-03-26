@@ -1,123 +1,111 @@
 #!/usr/bin/env bash
-# Review a single patch series and produce a structured JSON file.
-# JSON structure is built by this script; codex fills in the content.
+# Review a single patch and produce a structured JSON file.
+# JSON structure is built by this script; codex fills in review content.
 # Usage: review-patch.sh <message-id> <output-file>
 set -uo pipefail
 
 MSGID="$1"
 OUTPUT="$2"
-MAILING_LIST="${MAILING_LIST:-qemu-devel}"
+
+# Strip angle brackets for API queries
+BARE_MSGID=$(echo "${MSGID}" | sed 's/^<//; s/>$//')
+ENCODED_MSGID=$(python3 -c "import urllib.parse; print(urllib.parse.quote('${BARE_MSGID}', safe=''))")
 
 echo "=== Reviewing: ${MSGID} ==="
+echo "Bare msgid: ${BARE_MSGID}"
 
-# Step 1: Fetch patch metadata from Patchwork
-echo "Fetching Patchwork metadata..."
-PW_DATA=$(curl -sL "https://patchwork.ozlabs.org/api/patches/?project=${MAILING_LIST}&msgid=$(python3 -c "import urllib.parse; print(urllib.parse.quote('${MSGID}', safe=''))")" 2>/dev/null)
-PW_SERIES_DATA=""
+# --- Step 1: Get metadata from Patchwork ---
+echo "Querying Patchwork..."
+PW_DATA=$(curl -sL "https://patchwork.ozlabs.org/api/patches/?project=qemu-devel&msgid=${ENCODED_MSGID}" 2>/dev/null)
+PW_COUNT=$(echo "${PW_DATA}" | jq 'length' 2>/dev/null || echo 0)
 
-if [ "$(echo "${PW_DATA}" | jq 'length')" -gt 0 ]; then
-    SERIES_ID=$(echo "${PW_DATA}" | jq -r '.[0].series[0].id // empty')
+TITLE="" AUTHOR_NAME="" AUTHOR_EMAIL="" PW_STATE="" PW_DATE="" PW_URL=""
+PATCH_COUNT=1 SERIES_ID="" VERSION=1
+
+if [ "${PW_COUNT}" -gt 0 ]; then
+    echo "Patchwork found ${PW_COUNT} result(s)."
     TITLE=$(echo "${PW_DATA}" | jq -r '.[0].name // empty')
     AUTHOR_NAME=$(echo "${PW_DATA}" | jq -r '.[0].submitter.name // empty')
     AUTHOR_EMAIL=$(echo "${PW_DATA}" | jq -r '.[0].submitter.email // empty')
     PW_STATE=$(echo "${PW_DATA}" | jq -r '.[0].state // "unknown"')
     PW_DATE=$(echo "${PW_DATA}" | jq -r '.[0].date // empty' | cut -dT -f1)
     PW_URL=$(echo "${PW_DATA}" | jq -r '.[0].web_url // empty')
+    SERIES_ID=$(echo "${PW_DATA}" | jq -r '.[0].series[0].id // empty')
 
     if [ -n "${SERIES_ID}" ]; then
-        PW_SERIES_DATA=$(curl -sL "https://patchwork.ozlabs.org/api/series/${SERIES_ID}/" 2>/dev/null)
-        PATCH_COUNT=$(echo "${PW_SERIES_DATA}" | jq '.patches | length' 2>/dev/null || echo 1)
-        COVER_TITLE=$(echo "${PW_SERIES_DATA}" | jq -r '.cover_letter.name // empty')
+        SERIES_DATA=$(curl -sL "https://patchwork.ozlabs.org/api/series/${SERIES_ID}/" 2>/dev/null)
+        PATCH_COUNT=$(echo "${SERIES_DATA}" | jq '.patches | length' 2>/dev/null || echo 1)
+        COVER_TITLE=$(echo "${SERIES_DATA}" | jq -r '.cover_letter.name // empty')
         [ -n "${COVER_TITLE}" ] && TITLE="${COVER_TITLE}"
-    else
-        PATCH_COUNT=1
     fi
 else
-    echo "Patchwork returned no results, using msgid as fallback."
-    TITLE="${MSGID}"
-    AUTHOR_NAME="unknown"
-    AUTHOR_EMAIL=""
-    PW_STATE="unknown"
-    PW_DATE=$(date +%Y-%m-%d)
-    PW_URL=""
-    PATCH_COUNT=1
-    SERIES_ID=""
+    echo "Patchwork returned nothing."
 fi
 
-# Derive subsystem from title
+# --- Step 2: Fallback to lore for metadata ---
+if [ -z "${TITLE}" ] || [ "${TITLE}" = "null" ]; then
+    echo "Getting metadata from lore raw..."
+    LORE_RAW=$(curl -sL "https://lore.kernel.org/qemu-devel/${ENCODED_MSGID}/raw" 2>/dev/null | head -100)
+
+    if [ -n "${LORE_RAW}" ]; then
+        TITLE=$(echo "${LORE_RAW}" | grep -m1 '^Subject:' | sed 's/^Subject: *//')
+        FROM_LINE=$(echo "${LORE_RAW}" | grep -m1 '^From:' | sed 's/^From: *//')
+        AUTHOR_NAME=$(echo "${FROM_LINE}" | sed 's/ *<.*>//')
+        AUTHOR_EMAIL=$(echo "${FROM_LINE}" | grep -oE '<[^>]+>' | tr -d '<>')
+        PW_DATE=$(echo "${LORE_RAW}" | grep -m1 '^Date:' | sed 's/^Date: *//' | cut -d' ' -f1-4)
+        PW_DATE=$(date -d "${PW_DATE}" +%Y-%m-%d 2>/dev/null || date +%Y-%m-%d)
+    fi
+fi
+
+[ -z "${TITLE}" ] && TITLE="Unknown patch: ${BARE_MSGID}"
+[ -z "${AUTHOR_NAME}" ] && AUTHOR_NAME="unknown"
+[ -z "${PW_DATE}" ] && PW_DATE=$(date +%Y-%m-%d)
+[ -z "${PW_STATE}" ] && PW_STATE="unknown"
+
+VERSION=$(echo "${TITLE}" | grep -oiE 'v[0-9]+' | head -1 | tr -d 'vV')
+[ -z "${VERSION}" ] && VERSION=1
+
 SUBSYSTEM=$(echo "${TITLE}" | sed -n 's/.*\] *\([^:]*\):.*/\1/p' | head -1)
 [ -z "${SUBSYSTEM}" ] && SUBSYSTEM=$(echo "${TITLE}" | sed -n 's/^\([^:]*\):.*/\1/p' | head -1)
 [ -z "${SUBSYSTEM}" ] && SUBSYSTEM="riscv"
 
-# Version from title
-VERSION=$(echo "${TITLE}" | grep -oiE 'v[0-9]+' | head -1 | tr -d 'vV')
-[ -z "${VERSION}" ] && VERSION=1
-
-LORE_URL="https://lore.kernel.org/${MAILING_LIST}/$(python3 -c "import urllib.parse; print(urllib.parse.quote('${MSGID}', safe=''))")/"
+LORE_URL="https://lore.kernel.org/qemu-devel/${ENCODED_MSGID}/"
 
 echo "Title: ${TITLE}"
-echo "Author: ${AUTHOR_NAME}"
-echo "Patches: ${PATCH_COUNT}, Version: v${VERSION}"
-echo "Subsystem: ${SUBSYSTEM}"
+echo "Author: ${AUTHOR_NAME} <${AUTHOR_EMAIL}>"
+echo "Patches: ${PATCH_COUNT}, Version: v${VERSION}, Subsystem: ${SUBSYSTEM}"
 
-# Step 2: Fetch patch diff via b4 or curl
-echo "Downloading patch..."
-PATCH_DIR=$(mktemp -d)
-PATCH_DIFF=""
+# --- Step 3: Download patch diff ---
+echo "Downloading patch diff..."
+PATCH_DIFF=$(curl -sL "https://lore.kernel.org/qemu-devel/${ENCODED_MSGID}/raw" 2>/dev/null)
 
-if command -v b4 &>/dev/null; then
-    cd "${PATCH_DIR}" && b4 am "${MSGID}" 2>/dev/null && cd - >/dev/null
-    PATCH_FILE=$(ls "${PATCH_DIR}"/*.mbx 2>/dev/null | head -1)
-    [ -n "${PATCH_FILE}" ] && PATCH_DIFF=$(cat "${PATCH_FILE}")
-fi
+[ -z "${PATCH_DIFF}" ] && PATCH_DIFF="(patch content unavailable)"
 
-if [ -z "${PATCH_DIFF}" ]; then
-    ENCODED_MSGID=$(python3 -c "import urllib.parse; print(urllib.parse.quote('${MSGID}', safe=''))")
-    PATCH_DIFF=$(curl -sL "https://lore.kernel.org/${MAILING_LIST}/${ENCODED_MSGID}/raw" 2>/dev/null)
-fi
+DIFF_FOR_REVIEW=$(echo "${PATCH_DIFF}" | head -300)
 
-# Step 3: Ask codex for review analysis (short focused prompt)
-echo "Running AI review analysis..."
+# --- Step 4: Ask codex for review ---
+echo "Running codex review..."
 REVIEW_OUT=$(mktemp)
 
-codex exec --full-auto "You are reviewing a QEMU patch. Analyze the patch below and output ONLY a JSON object with these exact fields (nothing else):
+codex exec --full-auto \
+    "Analyze this QEMU patch and output ONLY a JSON object. No markdown fences, no explanation. Start with { end with }.
 
-{
-  \"verdict\": \"needs_revision or ready_to_merge or blocked\",
-  \"summary\": \"one-line summary of the review\",
-  \"stages\": {
-    \"A\": \"conceptual verification summary\",
-    \"B\": \"correctness analysis summary\",
-    \"C\": \"resource management summary\",
-    \"D\": \"security review summary\",
-    \"E\": \"dedup and final summary\"
-  },
-  \"findings\": [
-    {
-      \"id\": 1,
-      \"severity\": \"critical or major or minor or nit\",
-      \"stage\": \"A or B or C or D\",
-      \"file\": \"path/to/file.c\",
-      \"line\": \"line range\",
-      \"patch_context\": [\"relevant diff lines\"],
-      \"title\": \"short title\",
-      \"description\": \"detailed explanation\",
-      \"suggestion\": \"fix suggestion or null\",
-      \"confidence\": \"high or medium or low\",
-      \"confidence_reason\": \"why this confidence\"
-    }
-  ]
-}
+Required fields:
+- verdict: needs_revision or ready_to_merge or blocked
+- summary: one sentence
+- stages: {A:concept, B:correctness, C:resources, D:security, E:final}
+- findings: array (empty if no issues), each with: id, severity, file, line, title, description, patch_context(diff lines array), suggestion, confidence, confidence_reason
 
-Start with { and end with }. No markdown, no explanation.
+PATCH SUBJECT: ${TITLE}
+PATCH CONTENT:
+${DIFF_FOR_REVIEW}" > "${REVIEW_OUT}" 2>&1 || true
 
-PATCH:
-${PATCH_DIFF}" > "${REVIEW_OUT}" 2>&1 || true
+# --- Step 5: Extract review JSON ---
+echo "Extracting review..."
+REVIEW_JSON=$(python3 - "${REVIEW_OUT}" << 'PYEOF'
+import sys, json
 
-# Extract JSON from codex output
-REVIEW_JSON=$(python3 -c "
-import sys
-text = open('${REVIEW_OUT}').read()
+text = open(sys.argv[1]).read()
 blocks = []
 depth = 0
 start = -1
@@ -130,74 +118,80 @@ for i, c in enumerate(text):
         if depth == 0 and start >= 0:
             blocks.append(text[start:i+1])
             start = -1
-if blocks:
-    print(max(blocks, key=len))
-" 2>/dev/null)
 
-# Validate review JSON
-if ! echo "${REVIEW_JSON}" | jq empty 2>/dev/null; then
-    echo "WARNING: AI review output invalid, using empty review."
-    REVIEW_JSON='{"verdict":"unknown","summary":"AI review failed to produce valid output","stages":{"A":"","B":"","C":"","D":"","E":""},"findings":[]}'
-fi
+for b in sorted(blocks, key=len, reverse=True):
+    try:
+        obj = json.loads(b)
+        if 'verdict' in obj:
+            print(json.dumps(obj))
+            sys.exit(0)
+    except:
+        continue
 
-# Step 4: Assemble final JSON using jq (script controls structure)
-echo "Assembling review JSON..."
+print('{"verdict":"unknown","summary":"AI review could not produce valid output","stages":{"A":"","B":"","C":"","D":"","E":""},"findings":[]}')
+PYEOF
+)
+
+rm -f "${REVIEW_OUT}"
+echo "Review verdict: $(echo "${REVIEW_JSON}" | jq -r '.verdict' 2>/dev/null)"
+
+# --- Step 6: Build final JSON ---
+echo "Assembling JSON..."
 GENERATED_AT=$(date -u +%Y-%m-%dT%H:%M:%SZ)
 
-jq -n \
-    --arg schema "1" \
-    --arg id "$(date +%Y%m%d)-$(echo "${MSGID}" | sed 's/[<>@]//g; s/[^a-zA-Z0-9.-]/-/g' | cut -c1-60)" \
-    --arg title "${TITLE}" \
-    --argjson version "${VERSION}" \
-    --argjson patch_count "${PATCH_COUNT}" \
-    --arg author_name "${AUTHOR_NAME}" \
-    --arg author_email "${AUTHOR_EMAIL}" \
-    --arg date "${PW_DATE}" \
-    --arg subsystem "${SUBSYSTEM}" \
-    --arg msgid "${MSGID}" \
-    --arg lore_url "${LORE_URL}" \
-    --arg pw_url "${PW_URL}" \
-    --arg pw_state "${PW_STATE}" \
-    --arg generated_at "${GENERATED_AT}" \
-    --argjson review "${REVIEW_JSON}" \
-    '{
-        schema_version: $schema,
-        id: $id,
-        series: {
-            title: $title,
-            version: $version,
-            patch_count: $patch_count,
-            author: { name: $author_name, email: $author_email },
-            date: $date,
-            subsystem: $subsystem,
-            message_id: $msgid,
-            lore_url: $lore_url,
-            patchwork_url: $pw_url,
-            base_branch: "master"
-        },
-        version_history: [],
-        ml_context: {
-            patchwork_state: $pw_state,
-            reviewed_by: [],
-            acked_by: [],
-            ci_status: "",
-            prior_feedback: [],
-            maintainer_activity: ""
-        },
-        review: ($review + { mode: "ci-single", checkpatch: { status: "not_run", issues: [] } }),
-        patches: [],
-        generated_at: $generated_at,
-        generator: "loupe-review v1.0",
-        disclaimer: "LLM-generated draft. Not an authoritative review."
-    }' > "${OUTPUT}"
+# Use python to build JSON (more reliable than jq for complex merges)
+python3 - "${OUTPUT}" << PYEOF
+import json, sys
 
-rm -rf "${PATCH_DIR}" "${REVIEW_OUT}"
+review_data = json.loads('''${REVIEW_JSON}''')
 
-if jq empty "${OUTPUT}" 2>/dev/null; then
-    echo "Review saved: ${OUTPUT}"
-    jq -r '.series.title' "${OUTPUT}"
+output = {
+    "schema_version": "1",
+    "id": "$(date +%Y%m%d)-$(echo "${BARE_MSGID}" | sed 's/@/-at-/; s/[^a-zA-Z0-9._-]/-/g' | cut -c1-60)",
+    "series": {
+        "title": $(python3 -c "import json; print(json.dumps('${TITLE}'))"),
+        "version": ${VERSION},
+        "patch_count": ${PATCH_COUNT},
+        "author": {"name": $(python3 -c "import json; print(json.dumps('${AUTHOR_NAME}'))"), "email": $(python3 -c "import json; print(json.dumps('${AUTHOR_EMAIL:-}'))")},
+        "date": "${PW_DATE}",
+        "subsystem": "${SUBSYSTEM}",
+        "message_id": $(python3 -c "import json; print(json.dumps('${MSGID}'))"),
+        "lore_url": "${LORE_URL}",
+        "patchwork_url": "${PW_URL:-}",
+        "base_branch": "master"
+    },
+    "version_history": [],
+    "ml_context": {
+        "patchwork_state": "${PW_STATE}",
+        "reviewed_by": [],
+        "acked_by": [],
+        "ci_status": "",
+        "prior_feedback": [],
+        "maintainer_activity": ""
+    },
+    "review": {
+        "verdict": review_data.get("verdict", "unknown"),
+        "summary": review_data.get("summary", ""),
+        "mode": "ci-single",
+        "stages": review_data.get("stages", {}),
+        "findings": review_data.get("findings", []),
+        "checkpatch": {"status": "not_run", "issues": []}
+    },
+    "patches": [],
+    "generated_at": "${GENERATED_AT}",
+    "generator": "loupe-review v1.0",
+    "disclaimer": "LLM-generated draft. Not an authoritative review."
+}
+
+with open(sys.argv[1], 'w') as f:
+    json.dump(output, f, indent=2, ensure_ascii=False)
+PYEOF
+
+if [ -f "${OUTPUT}" ] && jq empty "${OUTPUT}" 2>/dev/null; then
+    echo "=== Review complete ==="
+    jq -r '"  Title: \(.series.title)\n  Verdict: \(.review.verdict)\n  Findings: \(.review.findings | length)"' "${OUTPUT}"
 else
-    echo "ERROR: Failed to produce valid JSON for ${MSGID}"
+    echo "ERROR: Failed to produce valid JSON"
     rm -f "${OUTPUT}"
     exit 1
 fi
