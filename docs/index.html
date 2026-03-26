@@ -4,15 +4,20 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>loupe — LLM-assisted patch review</title>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.5.1/dist/echarts.min.js"></script>
 <style>
+/* ── CSS Variables ─────────────────────────────────────────────────── */
 :root {
     --bg: #f5f5f5;
     --bg-card: #ffffff;
     --bg-code: #f6f8fa;
+    --bg-hover: #e8e8e8;
+    --bg-selected: #d0e8ff;
+    --bg-th: #fafafa;
     --text: #24292f;
     --text-muted: #666666;
     --text-dim: #999999;
-    --border: #d0d7de;
+    --border: #ccc;
     --border-light: #eee;
     --link: #007bff;
     --sev-critical: #d32f2f;
@@ -25,77 +30,311 @@
     --confidence-medium: #d67f05;
     --confidence-low: #d73a49;
     --ai-border: #283593;
+    --badge-ok-bg: #e6ffed;
+    --badge-ok-fg: #22863a;
+    --badge-ok-border: #a6f3a6;
+    --badge-revision-bg: #fff8e1;
+    --badge-revision-fg: #d67f05;
+    --badge-revision-border: #ffe082;
+    --badge-blocked-bg: #ffeef0;
+    --badge-blocked-fg: #d73a49;
+    --badge-blocked-border: #f9a8a8;
+    --badge-stage-bg: #e0f7fa;
+    --badge-stage-fg: #006064;
+    --badge-stage-border: #b2ebf2;
+    --badge-source-bg: #f3e8fd;
+    --badge-source-fg: #6f42c1;
+    --badge-source-border: #d8b9fc;
 }
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --bg: #0d1117;
+        --bg-card: #161b22;
+        --bg-code: #1c2128;
+        --bg-hover: #1c2128;
+        --bg-selected: #1a3a5c;
+        --bg-th: #1c2128;
+        --text: #c9d1d9;
+        --text-muted: #8b949e;
+        --text-dim: #6e7681;
+        --border: #30363d;
+        --border-light: #21262d;
+        --link: #58a6ff;
+        --diff-add: rgba(46, 160, 67, 0.2);
+        --diff-del: rgba(248, 81, 73, 0.2);
+        --confidence-high: #3fb950;
+        --confidence-medium: #d29922;
+        --confidence-low: #f85149;
+        --ai-border: #5c6bc0;
+        --badge-ok-bg: #0d2818;
+        --badge-ok-fg: #3fb950;
+        --badge-ok-border: #238636;
+        --badge-revision-bg: #2d1f00;
+        --badge-revision-fg: #d29922;
+        --badge-revision-border: #9e6a03;
+        --badge-blocked-bg: #2d0a0a;
+        --badge-blocked-fg: #f85149;
+        --badge-blocked-border: #da3633;
+        --badge-stage-bg: #0a2a2e;
+        --badge-stage-fg: #56d4e0;
+        --badge-stage-border: #1e6e76;
+        --badge-source-bg: #1e0a30;
+        --badge-source-fg: #bc8cff;
+        --badge-source-border: #6e40c9;
+    }
+}
+
+/* ── Reset & Base ──────────────────────────────────────────────────── */
 * { margin: 0; padding: 0; box-sizing: border-box; }
 body {
     font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
-    font-size: 13px; line-height: 1.4; color: var(--text);
-    background: var(--bg); padding: 12px; max-width: 1200px; margin: 0 auto;
+    font-size: 13px;
+    line-height: 1.4;
+    color: var(--text);
+    background: var(--bg);
+    padding: 12px;
+    max-width: 1200px;
+    margin: 0 auto;
 }
 h1 { font-size: 1.6em; font-weight: 600; margin-bottom: 4px; }
 h2 { font-size: 1.1em; font-weight: 600; margin: 16px 0 8px; }
 h3 { font-size: 1.0em; font-weight: 600; margin: 12px 0 6px; }
 a { color: var(--link); text-decoration: none; }
 a:hover { text-decoration: underline; }
-.subtitle { color: var(--text-muted); margin-bottom: 16px; }
 .hidden { display: none !important; }
 
-/* Badges */
-.badge { display: inline-block; padding: 1px 6px; border-radius: 3px; font-size: 11px; font-weight: 600; }
-.badge-ok { background: #e6ffed; color: #22863a; border: 1px solid #a6f3a6; }
-.badge-revision { background: #fff8e1; color: #d67f05; border: 1px solid #ffe082; }
-.badge-blocked { background: #ffeef0; color: #d73a49; border: 1px solid #f9a8a8; }
-.badge-stage { background: #e0f7fa; color: #006064; border: 1px solid #b2ebf2; }
-.badge-source { background: #f3e8fd; color: #6f42c1; border: 1px solid #d8b9fc; }
+/* ── Header & Nav ──────────────────────────────────────────────────── */
+header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 4px;
+}
+header h1 { margin-bottom: 0; }
+header nav {
+    display: flex;
+    gap: 4px;
+    margin-left: auto;
+}
+.nav-toggle {
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 4px 12px;
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    background: var(--bg-card);
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+}
+.nav-toggle:hover {
+    color: var(--text);
+    background: var(--bg-hover);
+}
+.nav-toggle.active {
+    background: var(--link);
+    color: #fff;
+    border-color: var(--link);
+}
+.nav-back {
+    font-family: inherit;
+    font-size: 12px;
+    padding: 4px 10px;
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    background: var(--bg-card);
+    color: var(--text-muted);
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-block;
+    margin-bottom: 12px;
+}
+.nav-back:hover {
+    color: var(--text);
+    text-decoration: none;
+    background: var(--bg-hover);
+}
 
-/* Disclaimer */
+/* ── Disclaimer ────────────────────────────────────────────────────── */
 .disclaimer {
-    background: var(--bg-card); border: 1px solid var(--ai-border); border-left: 3px solid var(--ai-border);
-    border-radius: 4px; padding: 8px 12px; margin: 12px 0; font-size: 12px; color: var(--text-muted);
+    background: var(--bg-card);
+    border: 1px solid var(--ai-border);
+    border-left: 3px solid var(--ai-border);
+    border-radius: 4px;
+    padding: 8px 12px;
+    margin: 12px 0;
+    font-size: 12px;
+    color: var(--text-muted);
 }
 
-/* Stats */
-.stats-row { display: flex; gap: 12px; margin: 12px 0; }
-.stat-box { background: var(--bg-card); border: 1px solid var(--border); border-radius: 4px; padding: 8px 16px; text-align: center; flex: 1; }
-.stat-num { font-size: 20px; font-weight: 600; }
-.stat-label { color: var(--text-muted); font-size: 11px; text-transform: uppercase; }
+/* ── Stats Row ─────────────────────────────────────────────────────── */
+.stats-row {
+    display: flex;
+    gap: 12px;
+    margin: 12px 0;
+}
+.stat-box {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 8px 16px;
+    text-align: center;
+    flex: 1;
+}
+.stat-num {
+    font-size: 20px;
+    font-weight: 600;
+}
+.stat-label {
+    color: var(--text-muted);
+    font-size: 11px;
+    text-transform: uppercase;
+}
 
-/* Filter bar */
+/* ── Filter Bar ────────────────────────────────────────────────────── */
 .filter-bar {
-    background: var(--bg-card); border: 1px solid var(--border); border-radius: 4px;
-    padding: 8px 12px; margin: 12px 0; display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 8px 12px;
+    margin: 12px 0;
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    flex-wrap: wrap;
 }
-.filter-bar label { font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+.filter-bar label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+.filter-group {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.filter-count {
+    font-size: 11px;
+    color: var(--text-dim);
+    margin-left: auto;
+}
 .search-input {
-    font-family: inherit; font-size: 13px; padding: 4px 8px; border: 1px solid var(--border);
-    border-radius: 3px; background: var(--bg); color: var(--text); width: 260px; outline: none;
+    font-family: inherit;
+    font-size: 13px;
+    padding: 4px 8px;
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    background: var(--bg);
+    color: var(--text);
+    width: 260px;
+    outline: none;
 }
-.search-input:focus { border-color: var(--link); box-shadow: 0 0 0 2px rgba(0,123,255,0.15); }
+.search-input:focus {
+    border-color: var(--link);
+    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.15);
+}
 .search-input::placeholder { color: var(--text-dim); }
 .filter-select {
-    font-family: inherit; font-size: 13px; padding: 4px 8px; border: 1px solid var(--border);
-    border-radius: 3px; background: var(--bg-card); color: var(--text); cursor: pointer; outline: none;
+    font-family: inherit;
+    font-size: 13px;
+    padding: 4px 8px;
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    background: var(--bg-card);
+    color: var(--text);
+    cursor: pointer;
+    outline: none;
 }
-.filter-group { display: flex; align-items: center; gap: 6px; }
-.filter-count { font-size: 11px; color: var(--text-dim); margin-left: auto; }
 
-/* Table */
-.review-table { width: 100%; border-collapse: collapse; background: var(--bg-card); border: 1px solid var(--border); border-radius: 4px; overflow: hidden; }
-.review-table th {
-    background: #fafafa; text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--border);
-    font-weight: 600; font-size: 12px; color: var(--text-muted); text-transform: uppercase;
-    letter-spacing: 0.5px; cursor: pointer; user-select: none;
+/* ── Data Table ────────────────────────────────────────────────────── */
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    overflow: hidden;
 }
-.review-table th:hover { color: var(--text); }
-.review-table td { padding: 6px 8px; border-bottom: 1px solid var(--border-light); }
-.review-table tr:hover td { background: #e8e8e8; cursor: pointer; }
-.review-table tr.selected td { background: #d0e8ff; }
+.data-table th {
+    background: var(--bg-th);
+    text-align: left;
+    padding: 6px 8px;
+    border-bottom: 1px solid var(--border);
+    font-weight: 600;
+    font-size: 12px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    user-select: none;
+}
+.data-table th:hover { color: var(--text); }
+.data-table td {
+    padding: 6px 8px;
+    border-bottom: 1px solid var(--border-light);
+}
+.data-table tr:hover td {
+    background: var(--bg-hover);
+    cursor: pointer;
+}
+.data-table tr.selected td {
+    background: var(--bg-selected);
+}
 
-/* Finding dots */
-.findings-dots { display: inline-flex; gap: 4px; align-items: center; }
+/* ── Badges ────────────────────────────────────────────────────────── */
+.badge {
+    display: inline-block;
+    padding: 1px 6px;
+    border-radius: 3px;
+    font-size: 11px;
+    font-weight: 600;
+}
+.badge-ok {
+    background: var(--badge-ok-bg);
+    color: var(--badge-ok-fg);
+    border: 1px solid var(--badge-ok-border);
+}
+.badge-revision {
+    background: var(--badge-revision-bg);
+    color: var(--badge-revision-fg);
+    border: 1px solid var(--badge-revision-border);
+}
+.badge-blocked {
+    background: var(--badge-blocked-bg);
+    color: var(--badge-blocked-fg);
+    border: 1px solid var(--badge-blocked-border);
+}
+.badge-stage {
+    background: var(--badge-stage-bg);
+    color: var(--badge-stage-fg);
+    border: 1px solid var(--badge-stage-border);
+}
+.badge-source {
+    background: var(--badge-source-bg);
+    color: var(--badge-source-fg);
+    border: 1px solid var(--badge-source-border);
+}
+
+/* ── Finding Dots ──────────────────────────────────────────────────── */
+.findings-dots {
+    display: inline-flex;
+    gap: 4px;
+    align-items: center;
+}
 .finding-dot {
-    display: inline-flex; align-items: center; justify-content: center;
-    width: 20px; height: 20px; border-radius: 50%; font-size: 11px; font-weight: 700; color: #fff;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    font-size: 11px;
+    font-weight: 700;
+    color: #fff;
 }
 .dot-critical { background: var(--sev-critical); }
 .dot-major { background: var(--sev-major); }
@@ -103,98 +342,382 @@ a:hover { text-decoration: underline; }
 .dot-nit { background: var(--sev-nit); }
 .dot-zero { opacity: 0.25; }
 
-/* Legend */
-.legend { display: flex; gap: 16px; align-items: center; margin-top: 12px; font-size: 11px; color: var(--text-dim); }
-.legend-item { display: flex; align-items: center; gap: 4px; }
-.legend-dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; }
-
-/* Detail page */
-.nav { margin-bottom: 12px; font-size: 12px; }
-.meta-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin: 4px 0 12px; font-size: 12px; color: var(--text-muted); }
-.meta-sep { color: var(--border); }
-.stages { background: var(--bg-card); border: 1px solid var(--border); border-radius: 4px; margin: 8px 0; }
-.stage-row { display: flex; padding: 4px 12px; border-bottom: 1px solid var(--border-light); font-size: 12px; }
+/* ── Stages ────────────────────────────────────────────────────────── */
+.stages {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    margin: 8px 0;
+}
+.stage-row {
+    display: flex;
+    padding: 4px 12px;
+    border-bottom: 1px solid var(--border-light);
+    font-size: 12px;
+}
 .stage-row:last-child { border-bottom: none; }
-.stage-label { width: 80px; flex-shrink: 0; font-weight: 600; color: #006064; }
+.stage-label {
+    width: 80px;
+    flex-shrink: 0;
+    font-weight: 600;
+    color: var(--badge-stage-fg);
+}
 .stage-text { color: var(--text-muted); }
-.version-table { width: 100%; border-collapse: collapse; background: var(--bg-card); border: 1px solid var(--border); border-radius: 4px; overflow: hidden; margin: 8px 0; }
-.version-table th { background: #fafafa; text-align: left; padding: 4px 8px; border-bottom: 1px solid var(--border); font-weight: 600; font-size: 11px; color: var(--text-muted); text-transform: uppercase; }
-.version-table td { padding: 4px 8px; border-bottom: 1px solid var(--border-light); font-size: 12px; }
-.findings-summary { background: var(--bg-card); border: 1px solid var(--border); border-radius: 4px; padding: 8px 12px; margin: 8px 0; display: flex; gap: 16px; align-items: center; font-size: 12px; }
 
-/* Thread tree (sashiko-style) */
-.thread-tree { list-style: none; padding: 0; margin: 8px 0; }
-.thread-tree li { padding: 2px 0; font-size: 12px; }
+/* ── Thread Tree ───────────────────────────────────────────────────── */
+.thread-tree {
+    list-style: none;
+    padding: 0;
+    margin: 8px 0;
+}
+.thread-tree li {
+    padding: 2px 0;
+    font-size: 12px;
+}
 .thread-tree li li { margin-left: 16px; }
 .thread-tree .thread-entry { display: inline; }
 .thread-tree .thread-date { color: var(--text-dim); margin-right: 6px; }
 .thread-tree .thread-author { color: var(--text-muted); margin-right: 6px; }
 .thread-tree .thread-subject a { color: var(--link); text-decoration: none; }
 .thread-tree .thread-subject a:hover { text-decoration: underline; }
-.thread-tree .thread-arrow { color: var(--text-dim); margin-right: 4px; }
-.thread-tree .thread-current { font-weight: 600; background: #eef; padding: 1px 4px; border-radius: 2px; }
-.thread-tree .thread-tag { display: inline-block; font-size: 10px; padding: 0 4px; border-radius: 2px; margin-left: 4px; }
-.thread-tree .thread-tag-rb { background: #e6ffed; color: #22863a; }
-.thread-tree .thread-tag-reply { background: #f0f0f5; color: #6f42c1; }
+.thread-arrow { color: var(--text-dim); margin-right: 4px; }
+.thread-tag-rb {
+    display: inline-block;
+    font-size: 10px;
+    padding: 0 4px;
+    border-radius: 2px;
+    margin-left: 4px;
+    background: var(--badge-ok-bg);
+    color: var(--badge-ok-fg);
+}
+.thread-tag-reply {
+    display: inline-block;
+    font-size: 10px;
+    padding: 0 4px;
+    border-radius: 2px;
+    margin-left: 4px;
+    background: var(--badge-source-bg);
+    color: var(--badge-source-fg);
+}
+.thread-current {
+    font-weight: 600;
+    background: var(--bg-selected);
+    padding: 1px 4px;
+    border-radius: 2px;
+}
 
-/* Message body view (when clicking a thread entry) */
-.msg-body { background: var(--bg-card); border: 1px solid var(--border); border-radius: 4px; margin: 8px 0; overflow: hidden; }
-.msg-body-header { padding: 8px 12px; border-bottom: 1px solid var(--border-light); background: #fafafa; font-size: 12px; }
-.msg-body-content { padding: 0; font-size: 12px; line-height: 1.5; overflow-x: auto; }
-.msg-body-content .diff-line { padding: 1px 12px; white-space: pre; }
-.msg-body-content pre { padding: 8px 12px; margin: 0; white-space: pre-wrap; word-break: break-word; }
+/* ── Message Body ──────────────────────────────────────────────────── */
+.msg-body {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    margin: 8px 0;
+    overflow: hidden;
+}
+.msg-body-header {
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--border-light);
+    background: var(--bg-th);
+    font-size: 12px;
+}
+.msg-body-content {
+    padding: 0;
+    font-size: 12px;
+    line-height: 1.5;
+    overflow-x: auto;
+}
+.msg-body-content pre {
+    padding: 8px 12px;
+    margin: 0;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
 
-/* Finding card */
-.finding { background: var(--bg-card); border: 1px solid var(--border); border-radius: 4px; margin: 12px 0; overflow: hidden; }
-.finding-header { display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-bottom: 1px solid var(--border-light); background: #fafafa; font-size: 12px; }
+/* ── Finding Card ──────────────────────────────────────────────────── */
+.finding {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    margin: 12px 0;
+    overflow: hidden;
+}
+.finding-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--border-light);
+    background: var(--bg-th);
+    font-size: 12px;
+}
 .finding-header .file { color: var(--link); font-weight: 600; }
 .finding-header .line { color: var(--text-muted); }
-.patch-context { background: var(--bg-code); border-bottom: 1px solid var(--border-light); padding: 0; font-size: 12px; line-height: 1.5; overflow-x: auto; }
-.patch-context .diff-line { padding: 1px 12px; white-space: pre; }
+.finding-body {
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--border-light);
+}
+.finding-title { font-weight: 600; margin-bottom: 4px; }
+.finding-desc { color: var(--text); margin-bottom: 6px; }
+.finding-suggestion {
+    background: var(--bg-code);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 4px 8px;
+    font-size: 12px;
+    display: inline-block;
+}
+.finding-footer {
+    padding: 6px 12px;
+    font-size: 11px;
+    color: var(--text-dim);
+    display: flex;
+    gap: 16px;
+    align-items: center;
+}
+
+/* ── Patch Context / Diff ──────────────────────────────────────────── */
+.patch-context {
+    background: var(--bg-code);
+    border-bottom: 1px solid var(--border-light);
+    padding: 0;
+    font-size: 12px;
+    line-height: 1.5;
+    overflow-x: auto;
+}
+.diff-line { padding: 1px 12px; white-space: pre; }
 .diff-add { background: var(--diff-add); }
 .diff-del { background: var(--diff-del); }
 .diff-hdr { color: #005cc5; font-weight: 600; }
 .diff-ctx { color: var(--text-muted); }
-.finding-body { padding: 10px 12px; border-bottom: 1px solid var(--border-light); }
-.finding-title { font-weight: 600; margin-bottom: 4px; }
-.finding-desc { color: var(--text); margin-bottom: 6px; }
-.finding-suggestion { background: var(--bg-code); border: 1px solid var(--border); border-radius: 3px; padding: 4px 8px; font-size: 12px; display: inline-block; }
-.finding-footer { padding: 6px 12px; font-size: 11px; color: var(--text-dim); display: flex; gap: 16px; align-items: center; }
+
+/* ── Key-Value Pairs ───────────────────────────────────────────────── */
+.kv {
+    display: flex;
+    gap: 8px;
+    font-size: 12px;
+    margin: 2px 0;
+}
+.kv .kv-key {
+    color: var(--text-muted);
+    min-width: 100px;
+    flex-shrink: 0;
+    font-weight: 600;
+}
+.kv .kv-val { color: var(--text); }
+
+/* ── Pagination ────────────────────────────────────────────────────── */
+.pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin: 12px 0;
+    font-size: 12px;
+    color: var(--text-muted);
+}
+.pagination button {
+    font-family: inherit;
+    font-size: 12px;
+    padding: 4px 12px;
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    background: var(--bg-card);
+    color: var(--text);
+    cursor: pointer;
+}
+.pagination button:hover { background: var(--bg-hover); }
+.pagination button:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+/* ── Chart Container ───────────────────────────────────────────────── */
+.chart-container {
+    height: 400px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    margin: 12px 0;
+}
+
+/* ── Stat Grid ─────────────────────────────────────────────────────── */
+.stat-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 12px;
+    margin: 12px 0;
+}
+
+/* ── Legend ─────────────────────────────────────────────────────────── */
+.legend {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    margin-top: 12px;
+    font-size: 11px;
+    color: var(--text-dim);
+}
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+.legend-dot {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+}
+
+/* ── Confidence Badges ─────────────────────────────────────────────── */
+.confidence { font-weight: 600; }
 .conf-high { color: var(--confidence-high); font-weight: 600; }
 .conf-medium { color: var(--confidence-medium); font-weight: 600; }
 .conf-low { color: var(--confidence-low); font-weight: 600; }
 
-/* Error */
-.error-box { background: var(--bg-card); border: 1px solid var(--sev-critical); border-radius: 4px; padding: 16px; margin: 24px 0; text-align: center; color: var(--text-muted); }
+/* ── Meta Row ──────────────────────────────────────────────────────── */
+.meta-row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    align-items: center;
+    margin: 4px 0 12px;
+    font-size: 12px;
+    color: var(--text-muted);
+}
+.meta-sep { color: var(--border); }
 
-kbd { background: var(--bg); border: 1px solid var(--border); border-radius: 3px; padding: 1px 4px; font-size: 11px; color: var(--text-muted); }
+/* ── Findings Summary ──────────────────────────────────────────────── */
+.findings-summary {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 8px 12px;
+    margin: 8px 0;
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    font-size: 12px;
+}
+
+/* ── Keyboard Hint ─────────────────────────────────────────────────── */
+kbd {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 1px 4px;
+    font-size: 11px;
+    color: var(--text-muted);
+}
+
+/* ── Loading Indicator ─────────────────────────────────────────────── */
+.loading-bar {
+    font-size: 11px;
+    color: var(--text-dim);
+    padding: 8px;
+    text-align: center;
+}
+
+/* ── Error ──────────────────────────────────────────────────────────── */
+.error-box {
+    background: var(--bg-card);
+    border: 1px solid var(--sev-critical);
+    border-radius: 4px;
+    padding: 16px;
+    margin: 24px 0;
+    text-align: center;
+    color: var(--text-muted);
+}
+
+/* ── Responsive ────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+    .stats-row { flex-wrap: wrap; }
+    .stat-box { min-width: 120px; }
+    .filter-bar { flex-direction: column; align-items: stretch; }
+    .search-input { width: 100%; }
+    header { flex-wrap: wrap; }
+}
 </style>
 </head>
 <body>
+<div id="app">
 
-<!-- Landing View -->
-<div id="landing-view">
+<!-- ── Header ──────────────────────────────────────────────────────── -->
+<header>
     <h1>loupe</h1>
-    <p class="subtitle">LLM-assisted patch review for QEMU &mdash; <kbd>/</kbd> search &middot; <kbd>j</kbd>/<kbd>k</kbd> navigate</p>
-    <div class="disclaimer">This site contains LLM-generated review drafts. These are NOT authoritative reviews. Human reviewers should verify all findings before acting on them.</div>
+    <nav>
+        <button class="nav-toggle active" data-mode="patchsets">Patchsets</button>
+        <button class="nav-toggle" data-mode="messages">Messages</button>
+        <button class="nav-toggle" data-mode="stats">Stats</button>
+    </nav>
+</header>
+<div class="disclaimer">
+    This site contains LLM-generated review drafts. These are NOT authoritative reviews.
+    Human reviewers should verify all findings before acting on them.
+    <span style="float:right;"><kbd>/</kbd> search &middot; <kbd>j</kbd>/<kbd>k</kbd> navigate &middot; <kbd>Enter</kbd> open &middot; <kbd>q</kbd> back</span>
+</div>
+
+<!-- ── List View ───────────────────────────────────────────────────── -->
+<div id="list-view">
     <div class="stats-row">
         <div class="stat-box"><div class="stat-num" id="stat-total">0</div><div class="stat-label">Reviews</div></div>
         <div class="stat-box"><div class="stat-num" id="stat-week">0</div><div class="stat-label">This week</div></div>
         <div class="stat-box"><div class="stat-num" id="stat-critical" style="color:var(--sev-critical);">0</div><div class="stat-label">Critical</div></div>
-        <div class="stat-box"><div class="stat-num" id="stat-ready" style="color:#22863a;">0</div><div class="stat-label">Ready to merge</div></div>
+        <div class="stat-box"><div class="stat-num" id="stat-ready" style="color:var(--confidence-high);">0</div><div class="stat-label">Ready to merge</div></div>
     </div>
     <div class="filter-bar">
-        <div class="filter-group"><label>Search</label><input class="search-input" id="filter-search" type="text" placeholder="subject, author, message-id..."></div>
-        <div class="filter-group"><label>Subsystem</label><select class="filter-select" id="filter-subsystem"><option value="">All subsystems</option></select></div>
-        <div class="filter-group"><label>Verdict</label><select class="filter-select" id="filter-verdict"><option value="">All</option><option value="needs_revision">needs revision</option><option value="ready_to_merge">ready to merge</option><option value="blocked">blocked</option></select></div>
-        <div class="filter-group"><label>Severity</label><select class="filter-select" id="filter-severity"><option value="">All</option><option value="critical">has critical</option><option value="major">has major</option><option value="clean">clean</option></select></div>
-        <div class="filter-group"><label>Date</label><select class="filter-select" id="filter-date"><option value="">All time</option><option value="today">Today</option><option value="week">This week</option><option value="month">This month</option></select></div>
+        <div class="filter-group">
+            <label>Search</label>
+            <input class="search-input" id="filter-search" type="text" placeholder="subject, author, message-id...">
+        </div>
+        <div class="filter-group">
+            <label>Subsystem</label>
+            <select class="filter-select" id="filter-subsystem"><option value="">All subsystems</option></select>
+        </div>
+        <div class="filter-group">
+            <label>Verdict</label>
+            <select class="filter-select" id="filter-verdict">
+                <option value="">All</option>
+                <option value="accept">accept</option>
+                <option value="needs_revision">needs revision</option>
+                <option value="blocked">blocked</option>
+            </select>
+        </div>
+        <div class="filter-group">
+            <label>Severity</label>
+            <select class="filter-select" id="filter-severity">
+                <option value="">All</option>
+                <option value="critical">has critical</option>
+                <option value="major">has major</option>
+                <option value="clean">clean</option>
+            </select>
+        </div>
+        <div class="filter-group">
+            <label>Date</label>
+            <select class="filter-select" id="filter-date">
+                <option value="">All time</option>
+                <option value="today">Today</option>
+                <option value="week">This week</option>
+                <option value="month">This month</option>
+            </select>
+        </div>
         <span class="filter-count" id="filter-count"></span>
     </div>
-    <table class="review-table"><thead><tr>
-        <th>Date</th><th>Subsystem</th><th>Series</th><th>Author</th><th>#</th><th>Verdict</th><th>Findings</th>
-    </tr></thead><tbody id="table-body"></tbody></table>
-    <div class="legend">
+    <table class="data-table" id="patchsets-table">
+        <thead><tr>
+            <th>Date</th><th>Subsystem</th><th>Series</th><th>Author</th><th>#</th><th>Verdict</th><th>Findings</th>
+        </tr></thead>
+        <tbody id="patchsets-body"></tbody>
+    </table>
+    <table class="data-table hidden" id="messages-table">
+        <thead><tr>
+            <th>Date</th><th>Author</th><th>Subject</th>
+        </tr></thead>
+        <tbody id="messages-body"></tbody>
+    </table>
+    <div id="loading-indicator" class="loading-bar hidden"></div>
+    <div class="pagination" id="pagination"></div>
+    <div class="legend" id="list-legend">
         <span style="font-weight:600;">Findings:</span>
         <span class="legend-item"><span class="legend-dot" style="background:var(--sev-critical);"></span> Critical</span>
         <span class="legend-item"><span class="legend-dot" style="background:var(--sev-major);"></span> Major</span>
@@ -204,85 +727,263 @@ kbd { background: var(--bg); border: 1px solid var(--border); border-radius: 3px
     </div>
 </div>
 
-<!-- Detail View -->
-<div id="detail-view" class="hidden">
-    <div class="nav"><a href="#" id="back-link">&larr; Back to reviews</a></div>
-    <div id="detail-error" class="error-box hidden">Review not found or failed to load.</div>
-    <div id="detail-content">
-        <h1 id="detail-title"></h1>
-        <div class="meta-row" id="detail-meta"></div>
-        <h2 id="detail-verdict-line"></h2>
-        <p style="color:var(--text-muted);font-size:12px;margin:4px 0 12px;" id="detail-summary"></p>
-        <div id="detail-version-history"></div>
-        <h3>Mailing list context</h3>
-        <div id="detail-ml-context" class="stages"></div>
-        <h3>Review stages</h3>
-        <div id="detail-stages" class="stages"></div>
-        <h2 id="thread-header" class="hidden"># Thread (Original Patches)</h2>
-        <div id="detail-thread"></div>
-        <h2># Findings</h2>
-        <div id="detail-findings-summary" class="findings-summary"></div>
-        <div id="detail-findings"></div>
-        <div class="disclaimer" style="margin-top:24px;" id="detail-footer"></div>
-    </div>
-</div>
+<!-- ── Review View ─────────────────────────────────────────────────── -->
+<div id="review-view" class="hidden"></div>
+
+<!-- ── Message View ────────────────────────────────────────────────── -->
+<div id="message-view" class="hidden"></div>
+
+<!-- ── Stats View ──────────────────────────────────────────────────── -->
+<div id="stats-view" class="hidden"></div>
+
+</div><!-- /app -->
 
 <script>
-const state = { reviews: [], current: null, selectedRow: -1 };
+/* ── State ─────────────────────────────────────────────────────────── */
+const state = {
+    view: 'list',
+    listMode: 'patchsets',
+    reviews: [],
+    reviewCache: {},
+    messages: [],
+    current: null,
+    currentMsg: null,
+    filters: { search: '', subsystem: '', verdict: '', severity: '', date: '' },
+    selectedRow: -1,
+    currentPage: 1,
+    pageSize: 50,
+    loading: { messages: false, count: 0, total: 0 }
+};
 
+/* ── Utilities ─────────────────────────────────────────────────────── */
 function $(sel) { return document.querySelector(sel); }
 function $$(sel) { return document.querySelectorAll(sel); }
 
-// Data loading
+function esc(s) {
+    const d = document.createElement('div');
+    d.textContent = s;
+    return d.innerHTML;
+}
+
+function escapeHtml(text, highlightDiff) {
+    const escaped = esc(text || '');
+    if (!highlightDiff) return escaped;
+    return escaped.split('\n').map(line => {
+        if (line.startsWith('+')) return '<span class="diff-add">' + line + '</span>';
+        if (line.startsWith('-')) return '<span class="diff-del">' + line + '</span>';
+        if (line.startsWith('@@')) return '<span class="diff-hdr">' + line + '</span>';
+        if (line.startsWith('diff --git')) return '<span class="diff-hdr">' + line + '</span>';
+        return line;
+    }).join('\n');
+}
+
+/* ── Routing ───────────────────────────────────────────────────────── */
+function parseHash() {
+    const hash = location.hash || '#/';
+    if (hash === '#/' || hash === '#' || hash === '') {
+        return { view: 'list' };
+    }
+    if (hash === '#/stats') {
+        return { view: 'stats' };
+    }
+    if (hash.startsWith('#/review/')) {
+        const path = decodeURIComponent(hash.slice(9));
+        return { view: 'review', path: path };
+    }
+    if (hash.startsWith('#/message/')) {
+        const parts = hash.slice(10).split('/');
+        return { view: 'message', rIdx: parseInt(parts[0], 10), mIdx: parseInt(parts[1], 10) };
+    }
+    return { view: 'list' };
+}
+
+function router() {
+    const route = parseHash();
+    const views = ['list-view', 'review-view', 'message-view', 'stats-view'];
+    views.forEach(v => $('#' + v).classList.add('hidden'));
+
+    state.selectedRow = -1;
+
+    if (route.view === 'list') {
+        state.view = 'list';
+        $('#list-view').classList.remove('hidden');
+        renderListView();
+        updateNavToggles();
+    } else if (route.view === 'stats') {
+        state.view = 'stats';
+        state.listMode = 'stats';
+        $('#stats-view').classList.remove('hidden');
+        renderStatsView();
+        updateNavToggles();
+    } else if (route.view === 'review') {
+        state.view = 'review';
+        $('#review-view').classList.remove('hidden');
+        loadAndRenderReview(route.path);
+        updateNavToggles();
+    } else if (route.view === 'message') {
+        state.view = 'message';
+        $('#message-view').classList.remove('hidden');
+        renderMessageView(route.rIdx, route.mIdx);
+        updateNavToggles();
+    }
+}
+
+function navigate(hash) {
+    location.hash = hash;
+}
+
+function updateNavToggles() {
+    $$('.nav-toggle').forEach(btn => {
+        btn.classList.remove('active');
+        const mode = btn.dataset.mode;
+        if (state.view === 'list' && state.listMode === mode) btn.classList.add('active');
+        if (state.view === 'stats' && mode === 'stats') btn.classList.add('active');
+    });
+}
+
+/* ── Data Loading ──────────────────────────────────────────────────── */
 async function loadIndex() {
     try {
         const r = await fetch('reviews/index.json');
         const d = await r.json();
         state.reviews = d.reviews || [];
-        renderLanding();
+        buildSubsystemDropdown();
+        router();
+        preloadAllReviews();
     } catch (e) {
-        $('#table-body').innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--text-dim);padding:24px;">No review data available.</td></tr>';
+        $('#patchsets-body').innerHTML =
+            '<tr><td colspan="7" style="text-align:center;color:var(--text-dim);padding:24px;">No review data available.</td></tr>';
     }
 }
 
 async function loadReview(path) {
-    try {
-        const r = await fetch(path);
-        if (!r.ok) throw new Error('HTTP ' + r.status);
-        state.current = await r.json();
-        $('#detail-error').classList.add('hidden');
-        $('#detail-content').classList.remove('hidden');
-        renderDetail();
-        showDetail();
-    } catch (e) {
-        $('#detail-error').classList.remove('hidden');
-        $('#detail-content').classList.add('hidden');
-        showDetail();
+    if (state.reviewCache[path]) {
+        return state.reviewCache[path];
+    }
+    const r = await fetch(path);
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const data = await r.json();
+    state.reviewCache[path] = data;
+    return data;
+}
+
+async function preloadAllReviews() {
+    const reviews = state.reviews;
+    state.loading.messages = true;
+    state.loading.total = reviews.length;
+    state.loading.count = 0;
+
+    for (let i = 0; i < reviews.length; i++) {
+        try {
+            const review = await loadReview(reviews[i].path);
+            const diff = review.diff || '';
+            if (diff.length > 10) {
+                const msgs = parseMbox(diff);
+                msgs.forEach((m, mIdx) => {
+                    state.messages.push({
+                        reviewIndex: i,
+                        reviewId: reviews[i].id,
+                        reviewPath: reviews[i].path,
+                        subject: m.subject,
+                        author: m.author,
+                        date: m.date,
+                        body: m.body
+                    });
+                });
+            }
+        } catch (e) {
+            /* skip failed fetches */
+        }
+        state.loading.count = i + 1;
+
+        if (state.view === 'list' && state.listMode === 'messages') {
+            renderMessagesList();
+        }
+
+        /* Yield to browser between fetches */
+        if (i % 3 === 2) {
+            await new Promise(resolve => setTimeout(resolve, 0));
+        }
+    }
+
+    state.loading.messages = false;
+    if (state.view === 'list' && state.listMode === 'messages') {
+        renderMessagesList();
     }
 }
 
-function showLanding() { $('#landing-view').classList.remove('hidden'); $('#detail-view').classList.add('hidden'); state.selectedRow = -1; }
-function showDetail() { $('#landing-view').classList.add('hidden'); $('#detail-view').classList.remove('hidden'); }
+function parseMbox(mbox) {
+    const msgs = [];
+    const parts = mbox.split(/^From /m);
+    for (const part of parts) {
+        if (!part.trim()) continue;
+        const lines = part.split('\n');
+        let subject = '', author = '', date = '', body = '';
+        let inHeader = true;
+        let continuationField = '';
+        for (let li = 0; li < lines.length; li++) {
+            const line = lines[li];
+            if (inHeader) {
+                if (line.match(/^Subject:\s*/i)) {
+                    subject = line.replace(/^Subject:\s*/i, '');
+                    continuationField = 'subject';
+                } else if (line.match(/^From:\s*/i)) {
+                    author = line.replace(/^From:\s*/i, '').replace(/<.*>/, '').trim();
+                    continuationField = '';
+                } else if (line.match(/^Date:\s*/i)) {
+                    const d = line.replace(/^Date:\s*/i, '');
+                    const m = d.match(/\d{1,2}\s+\w+\s+\d{4}/);
+                    date = m ? m[0] : d.slice(0, 16);
+                    continuationField = '';
+                } else if (line.match(/^\s+/) && continuationField === 'subject') {
+                    subject += ' ' + line.trim();
+                } else if (line === '' || line === '\r') {
+                    inHeader = false;
+                    continuationField = '';
+                } else {
+                    continuationField = '';
+                }
+            } else {
+                body += line + '\n';
+            }
+        }
+        if (subject || body) msgs.push({ subject, author, date, body });
+    }
+    return msgs;
+}
 
-// Filters
+function buildSubsystemDropdown() {
+    const subs = [...new Set(state.reviews.map(r => r.subsystem).filter(Boolean))].sort();
+    const sel = $('#filter-subsystem');
+    sel.innerHTML = '<option value="">All subsystems</option>';
+    subs.forEach(s => {
+        const o = document.createElement('option');
+        o.value = s;
+        o.textContent = s;
+        sel.appendChild(o);
+    });
+}
+
+/* ── Filter Logic ──────────────────────────────────────────────────── */
 function getFilters() {
     return {
-        search: $('#filter-search').value.toLowerCase().trim(),
+        search: ($('#filter-search').value || '').toLowerCase().trim(),
         subsystem: $('#filter-subsystem').value,
         verdict: $('#filter-verdict').value,
         severity: $('#filter-severity').value,
-        date: $('#filter-date').value,
+        date: $('#filter-date').value
     };
 }
 
 function applyFilters(reviews) {
     const f = getFilters();
     const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
     return reviews.filter(r => {
         if (f.search) {
-            const s = f.search;
             const hay = (r.title + ' ' + r.author + ' ' + (r.id || '') + ' ' + (r.message_id || '')).toLowerCase();
-            if (!hay.includes(s)) return false;
+            if (!hay.includes(f.search)) return false;
         }
         if (f.subsystem && r.subsystem !== f.subsystem) return false;
         if (f.verdict && r.verdict !== f.verdict) return false;
@@ -294,357 +995,373 @@ function applyFilters(reviews) {
         }
         if (f.date) {
             const rd = new Date(r.date + 'T00:00:00');
-            const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-            if (f.date === 'today' && rd.toDateString() !== today.toDateString()) return false;
+            if (f.date === 'today') {
+                if (rd.toDateString() !== today.toDateString()) return false;
+            }
             if (f.date === 'week') {
                 const day = today.getDay() || 7;
                 const weekStart = new Date(today);
                 weekStart.setDate(today.getDate() - day + 1);
                 if (rd < weekStart) return false;
             }
-            if (f.date === 'month' && (rd.getFullYear() !== now.getFullYear() || rd.getMonth() !== now.getMonth())) return false;
+            if (f.date === 'month') {
+                if (rd.getFullYear() !== now.getFullYear() || rd.getMonth() !== now.getMonth()) return false;
+            }
         }
         return true;
     });
 }
 
-// Render landing
-function renderLanding() {
+function paginate(items) {
+    const start = (state.currentPage - 1) * state.pageSize;
+    return items.slice(start, start + state.pageSize);
+}
+
+/* ── List View Rendering ───────────────────────────────────────────── */
+function renderListView() {
     renderStats();
-    renderSubsystems();
-    const filtered = applyFilters(state.reviews);
-    renderTable(filtered);
-    $('#filter-count').textContent = `Showing ${filtered.length} of ${state.reviews.length} reviews`;
+    if (state.listMode === 'patchsets') {
+        $('#patchsets-table').classList.remove('hidden');
+        $('#messages-table').classList.add('hidden');
+        $('#list-legend').classList.remove('hidden');
+        renderPatchsetsList();
+    } else if (state.listMode === 'messages') {
+        $('#patchsets-table').classList.add('hidden');
+        $('#messages-table').classList.remove('hidden');
+        $('#list-legend').classList.add('hidden');
+        renderMessagesList();
+    }
 }
 
 function renderStats() {
     const rs = state.reviews;
     const now = new Date();
-    $('#stat-total').textContent = rs.length;
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     const day = today.getDay() || 7;
     const weekStart = new Date(today);
     weekStart.setDate(today.getDate() - day + 1);
+
+    $('#stat-total').textContent = rs.length;
     $('#stat-week').textContent = rs.filter(r => new Date(r.date + 'T00:00:00') >= weekStart).length;
     $('#stat-critical').textContent = rs.filter(r => (r.findings || {}).critical > 0).length;
-    $('#stat-ready').textContent = rs.filter(r => r.verdict === 'ready_to_merge').length;
+    $('#stat-ready').textContent = rs.filter(r => r.verdict === 'accept').length;
 }
 
-let subsystemsBuilt = false;
-function renderSubsystems() {
-    if (subsystemsBuilt) return;
-    const subs = [...new Set(state.reviews.map(r => r.subsystem).filter(Boolean))].sort();
-    const sel = $('#filter-subsystem');
-    sel.innerHTML = '<option value="">All subsystems</option>';
-    subs.forEach(s => { const o = document.createElement('option'); o.value = s; o.textContent = s; sel.appendChild(o); });
-    subsystemsBuilt = true;
-}
+function renderPatchsetsList() {
+    const filtered = applyFilters(state.reviews);
+    const totalPages = Math.max(1, Math.ceil(filtered.length / state.pageSize));
+    if (state.currentPage > totalPages) state.currentPage = totalPages;
+    const page = paginate(filtered);
 
-function renderTable(reviews) {
-    const tb = $('#table-body');
-    if (!reviews.length) {
+    $('#filter-count').textContent = 'Showing ' + filtered.length + ' of ' + state.reviews.length + ' reviews';
+
+    const tb = $('#patchsets-body');
+    if (!page.length) {
         tb.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--text-dim);padding:24px;">No reviews match filters.</td></tr>';
+        $('#pagination').innerHTML = '';
         return;
     }
-    tb.innerHTML = reviews.map((r, i) => `
-        <tr data-path="${esc(r.path)}" data-idx="${i}">
-            <td>${esc((r.date || '').slice(5))}</td>
-            <td style="color:var(--text-muted);">${esc(r.subsystem || '')}</td>
-            <td><a href="#/review/${encodeURIComponent(r.path)}">${esc(r.title || '')}</a></td>
-            <td>${esc(r.author || '')}</td>
-            <td>${r.patch_count || 0}</td>
-            <td>${verdictBadge(r.verdict)}</td>
-            <td>${findingDots(r.findings)}</td>
-        </tr>
-    `).join('');
-}
-function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
 
+    const globalOffset = (state.currentPage - 1) * state.pageSize;
+    tb.innerHTML = page.map((r, i) => {
+        const idx = globalOffset + i;
+        const sel = idx === state.selectedRow ? ' class="selected"' : '';
+        return '<tr data-path="' + esc(r.path) + '" data-idx="' + idx + '"' + sel + '>' +
+            '<td>' + esc((r.date || '').slice(5)) + '</td>' +
+            '<td style="color:var(--text-muted);">' + esc(r.subsystem || '') + '</td>' +
+            '<td><a href="#/review/' + encodeURIComponent(r.path) + '">' + esc(r.title || '') + '</a></td>' +
+            '<td>' + esc(r.author || '') + '</td>' +
+            '<td>' + (r.patch_count || 0) + '</td>' +
+            '<td>' + verdictBadge(r.verdict) + '</td>' +
+            '<td>' + findingDots(r.findings) + '</td>' +
+            '</tr>';
+    }).join('');
+
+    renderPagination(totalPages);
+}
+
+function renderMessagesList() {
+    const f = getFilters();
+    let msgs = state.messages;
+
+    if (f.search) {
+        const s = f.search;
+        msgs = msgs.filter(m => {
+            const hay = (m.subject + ' ' + m.author + ' ' + (m.reviewId || '')).toLowerCase();
+            return hay.includes(s);
+        });
+    }
+
+    const totalPages = Math.max(1, Math.ceil(msgs.length / state.pageSize));
+    if (state.currentPage > totalPages) state.currentPage = totalPages;
+    const page = paginate(msgs);
+
+    const countText = 'Showing ' + msgs.length + ' messages';
+    const loadText = state.loading.messages
+        ? ' (loading ' + state.loading.count + '/' + state.loading.total + '...)'
+        : '';
+    $('#filter-count').textContent = countText + loadText;
+
+    const indicator = $('#loading-indicator');
+    if (state.loading.messages) {
+        indicator.classList.remove('hidden');
+        indicator.textContent = 'Loading messages: ' + state.loading.count + ' / ' + state.loading.total + ' reviews processed...';
+    } else {
+        indicator.classList.add('hidden');
+    }
+
+    const tb = $('#messages-body');
+    if (!page.length && !state.loading.messages) {
+        tb.innerHTML = '<tr><td colspan="3" style="text-align:center;color:var(--text-dim);padding:24px;">No messages available.</td></tr>';
+        $('#pagination').innerHTML = '';
+        return;
+    }
+    if (!page.length && state.loading.messages) {
+        tb.innerHTML = '<tr><td colspan="3" style="text-align:center;color:var(--text-dim);padding:24px;">Loading messages...</td></tr>';
+        $('#pagination').innerHTML = '';
+        return;
+    }
+
+    const globalOffset = (state.currentPage - 1) * state.pageSize;
+    tb.innerHTML = page.map((m, i) => {
+        const idx = globalOffset + i;
+        const sel = idx === state.selectedRow ? ' class="selected"' : '';
+        const rIdx = m.reviewIndex;
+        const mIdx = state.messages.indexOf(m);
+        return '<tr data-ridx="' + rIdx + '" data-midx="' + mIdx + '" data-idx="' + idx + '"' + sel + '>' +
+            '<td>' + esc(m.date || '') + '</td>' +
+            '<td>' + esc(m.author || '') + '</td>' +
+            '<td><a href="#/message/' + rIdx + '/' + mIdx + '">' + esc(m.subject || '(no subject)') + '</a></td>' +
+            '</tr>';
+    }).join('');
+
+    renderPagination(totalPages);
+}
+
+/* ── Badge / Dot Helpers ───────────────────────────────────────────── */
 function verdictBadge(v) {
-    const map = { needs_revision: ['needs revision', 'badge-revision'], ready_to_merge: ['ready to merge', 'badge-ok'], blocked: ['blocked', 'badge-blocked'] };
-    const [label, cls] = map[v] || [v || 'unknown', ''];
-    return `<span class="badge ${cls}">${label}</span>`;
+    const map = {
+        accept: ['accept', 'badge-ok'],
+        needs_revision: ['needs revision', 'badge-revision'],
+        blocked: ['blocked', 'badge-blocked']
+    };
+    const entry = map[v] || [v || 'unknown', ''];
+    return '<span class="badge ' + entry[1] + '">' + entry[0] + '</span>';
 }
 
 function findingDots(f) {
     if (!f) return '<span style="color:var(--text-dim);">-</span>';
-    const d = (n, cls) => `<span class="finding-dot ${cls}${n === 0 ? ' dot-zero' : ''}">${n}</span>`;
-    return `<div class="findings-dots">${d(f.critical||0,'dot-critical')}${d(f.major||0,'dot-major')}${d(f.minor||0,'dot-minor')}${d(f.nit||0,'dot-nit')}</div>`;
+    const d = function(n, cls) {
+        return '<span class="finding-dot ' + cls + (n === 0 ? ' dot-zero' : '') + '">' + n + '</span>';
+    };
+    return '<div class="findings-dots">' +
+        d(f.critical || 0, 'dot-critical') +
+        d(f.major || 0, 'dot-major') +
+        d(f.minor || 0, 'dot-minor') +
+        d(f.nit || 0, 'dot-nit') +
+        '</div>';
 }
 
-// Render detail
-function renderDetail() {
-    const r = state.current;
-    if (!r) return;
-    const s = r.series || {};
-    $('#detail-title').textContent = s.title || 'Unknown';
-    $('#detail-meta').innerHTML = `
-        <span>${esc(s.author?.name || '')} &lt;${esc(s.author?.email || '')}&gt;</span>
-        <span class="meta-sep">|</span><span>${esc(s.date || '')}</span>
-        <span class="meta-sep">|</span><span>${s.patch_count || 0} patches</span>
-        <span class="meta-sep">|</span><span>base: ${esc(s.base_branch || 'master')}</span>
-        ${s.lore_url ? `<span class="meta-sep">|</span><a href="${esc(s.lore_url)}">lore</a>` : ''}
-        ${s.patchwork_url ? `<span class="meta-sep">|</span><a href="${esc(s.patchwork_url)}">patchwork</a>` : ''}
-    `;
-    const rv = r.review || {};
-    $('#detail-verdict-line').innerHTML = `# Verdict: ${verdictBadge(rv.verdict)}`;
-    $('#detail-summary').textContent = rv.summary || '';
-
-    // Version history
-    const vh = r.version_history || [];
-    if (vh.length) {
-        let h = '<h3>Version history</h3><table class="version-table"><thead><tr><th>Ver</th><th>Date</th><th>Key change</th></tr></thead><tbody>';
-        vh.forEach(v => {
-            const cur = v.version === s.version;
-            h += `<tr${cur ? ' style="background:#fffde7;"' : ''}><td>${cur ? '<b>' : ''}v${v.version}${cur ? '</b>' : ''}</td><td>${esc(v.date || '')}</td><td>${esc(v.key_change || '')}</td></tr>`;
-        });
-        h += '</tbody></table>';
-        $('#detail-version-history').innerHTML = h;
-    } else {
-        $('#detail-version-history').innerHTML = '';
-    }
-
-    // ML context
-    const ml = r.ml_context || {};
-    const mlRows = [
-        ['State', ml.patchwork_state || 'unknown'],
-        ['R-b tags', (ml.reviewed_by || []).join(', ') || 'none yet'],
-        ['CI', ml.ci_status || 'unknown'],
-        ...((ml.prior_feedback || []).map((f, i) => [`Prior${i > 0 ? ' ' + (i+1) : ''}`, f])),
-        ['Maintainer', ml.maintainer_activity || 'unknown'],
-    ];
-    $('#detail-ml-context').innerHTML = mlRows.map(([l, v]) =>
-        `<div class="stage-row"><span class="stage-label">${esc(l)}</span><span class="stage-text">${esc(v)}</span></div>`
-    ).join('');
-
-    // Stages
-    const stages = rv.stages || {};
-    $('#detail-stages').innerHTML = Object.entries(stages).map(([k, v]) => {
-        // Handle both string and {status, summary} formats
-        const text = typeof v === 'string' ? v : (v && v.summary ? v.summary : JSON.stringify(v));
-        const status = (v && v.status) || '';
-        const statusBadge = status ? `<span class="badge" style="margin-right:4px;${
-            status === 'ok' ? 'background:#22863a;color:#fff' :
-            status === 'warning' ? 'background:#f59e0b;color:#24292f' :
-            status === 'fail' ? 'background:#d32f2f;color:#fff' : ''
-        }">${esc(status)}</span>` : '';
-        return `<div class="stage-row"><span class="stage-label">Stage ${esc(k)}</span><span class="stage-text">${statusBadge}${esc(text)}</span></div>`;
-    }).join('');
-
-    // Thread (original patches / cover letter / diff) — before findings
-    renderThread(r.patches || [], r.cover_letter || '', r.diff || '');
-
-    // Findings summary
-    const findings = rv.findings || [];
-    const counts = { critical: 0, major: 0, minor: 0, nit: 0 };
-    findings.forEach(f => { if (counts[f.severity] !== undefined) counts[f.severity]++; });
-    const cp = rv.checkpatch || {};
-    $('#detail-findings-summary').innerHTML = `
-        <span>Total: <b>${findings.length}</b></span>
-        ${Object.entries(counts).filter(([,v]) => v > 0).map(([k, v]) =>
-            `<span><span class="badge" style="background:var(--sev-${k});color:${k === 'minor' ? '#24292f' : '#fff'};">${v} ${k}</span></span>`
-        ).join('')}
-        <span style="margin-left:auto;color:var(--text-dim);">checkpatch: <span style="color:${cp.status === 'clean' ? 'var(--confidence-high)' : 'var(--confidence-low)'};">${cp.status || 'unknown'}</span></span>
-    `;
-
-    // Finding cards
-    $('#detail-findings').innerHTML = findings.map(f => renderFinding(f)).join('');
-
-    // Footer
-    $('#detail-footer').textContent = `Generated by ${r.generator || 'loupe'} at ${r.generated_at || 'unknown'}. ${r.disclaimer || ''}`;
-}
-
-function renderThread(patches, coverLetter, fullDiff) {
-    const header = $('#thread-header');
-    const container = $('#detail-thread');
-    const r = state.current;
-    const hasDiff = fullDiff && fullDiff.length > 10;
-    const hasCover = coverLetter && coverLetter.length > 10;
-
-    if (!hasDiff && !hasCover) {
-        header.classList.add('hidden');
-        container.innerHTML = '';
+/* ── Pagination ────────────────────────────────────────────────────── */
+function renderPagination(totalPages) {
+    const el = $('#pagination');
+    if (totalPages <= 1) {
+        el.innerHTML = '';
         return;
     }
-    header.classList.remove('hidden');
+    el.innerHTML =
+        '<button id="page-prev"' + (state.currentPage <= 1 ? ' disabled' : '') + '>&larr; Prev</button>' +
+        '<span>Page ' + state.currentPage + ' of ' + totalPages + '</span>' +
+        '<button id="page-next"' + (state.currentPage >= totalPages ? ' disabled' : '') + '>Next &rarr;</button>';
 
-    // Parse mbox diff into individual messages for tree display
-    const messages = parseMbox(fullDiff || '');
-    const s = r.series || {};
-
-    let html = '';
-
-    // Thread tree (sashiko-style)
-    if (messages.length > 0) {
-        html += '<ul class="thread-tree">';
-        messages.forEach((m, i) => {
-            const isReply = !m.subject.match(/\[PATCH/i) && i > 0;
-            const hasRb = m.body && /Reviewed-by:|Acked-by:|Tested-by:/i.test(m.body);
-            const tags = [];
-            if (hasRb) tags.push('<span class="thread-tag thread-tag-rb">R-b</span>');
-            if (isReply) tags.push('<span class="thread-tag thread-tag-reply">reply</span>');
-
-            const indent = isReply ? '<li style="margin-left:16px;">' : '<li>';
-            const arrow = isReply ? '<span class="thread-arrow">↳</span>' : '';
-            html += `${indent}${arrow}<span class="thread-date">[${esc(m.date)}]</span>` +
-                `<span class="thread-author">${esc(m.author)}</span>` +
-                `<span class="thread-subject"><a href="#" onclick="showMessage(${i});return false">${esc(m.subject)}</a></span>` +
-                `${tags.join('')}</li>`;
-        });
-        html += '</ul>';
-    }
-
-    // Cover letter (always show if present)
-    if (hasCover) {
-        html += `<div class="msg-body"><div class="msg-body-header"><b>Cover Letter</b></div>` +
-            `<div class="msg-body-content"><pre>${esc(coverLetter)}</pre></div></div>`;
-    }
-
-    // Message body container (shown when clicking a thread entry)
-    html += '<div id="thread-msg-body"></div>';
-
-    // Store messages for click handler
-    window._threadMessages = messages;
-
-    container.innerHTML = html;
-}
-
-function parseMbox(mbox) {
-    // Split mbox into individual messages and extract headers
-    const msgs = [];
-    const parts = mbox.split(/^From /m);
-    for (const part of parts) {
-        if (!part.trim()) continue;
-        const lines = part.split('\n');
-        let subject = '', author = '', date = '', body = '';
-        let inHeader = true;
-        for (const line of lines) {
-            if (inHeader) {
-                if (line.match(/^Subject:\s*/i)) subject = line.replace(/^Subject:\s*/i, '');
-                else if (line.match(/^From:\s*/i)) author = line.replace(/^From:\s*/i, '').replace(/<.*>/, '').trim();
-                else if (line.match(/^Date:\s*/i)) {
-                    const d = line.replace(/^Date:\s*/i, '');
-                    const m = d.match(/\d{1,2}\s+\w+\s+\d{4}/);
-                    date = m ? m[0] : d.slice(0, 16);
-                }
-                else if (line === '' || line === '\r') inHeader = false;
-            } else {
-                body += line + '\n';
-            }
+    $('#page-prev').addEventListener('click', () => {
+        if (state.currentPage > 1) {
+            state.currentPage--;
+            state.selectedRow = -1;
+            renderListView();
         }
-        if (subject || body) msgs.push({ subject, author, date, body });
-    }
-    return msgs;
+    });
+    $('#page-next').addEventListener('click', () => {
+        if (state.currentPage < totalPages) {
+            state.currentPage++;
+            state.selectedRow = -1;
+            renderListView();
+        }
+    });
 }
 
-function showMessage(idx) {
-    const msgs = window._threadMessages || [];
-    const m = msgs[idx];
-    if (!m) return;
-    const container = $('#thread-msg-body');
-    const bodyHtml = renderDiffLines(m.body || '');
-    container.innerHTML = `<div class="msg-body">` +
-        `<div class="msg-body-header"><b>${esc(m.subject)}</b><br>` +
-        `<span style="color:var(--text-muted);">${esc(m.author)} &middot; ${esc(m.date)}</span></div>` +
-        `<div class="msg-body-content">${bodyHtml}</div></div>`;
-    container.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-}
+/* ── Keyboard Selection ────────────────────────────────────────────── */
+function moveSelection(delta) {
+    const selector = state.listMode === 'patchsets'
+        ? '#patchsets-body tr[data-idx]'
+        : '#messages-body tr[data-idx]';
+    const rows = $$(selector);
+    if (!rows.length) return;
 
-function renderDiffLines(text) {
-    return (text || '').split('\n').map(line => {
-        let cls = 'diff-ctx';
-        if (line.startsWith('+')) cls = 'diff-add';
-        else if (line.startsWith('-')) cls = 'diff-del';
-        else if (line.startsWith('@@')) cls = 'diff-hdr';
-        else if (line.startsWith('diff --git')) cls = 'diff-hdr';
-        return `<div class="diff-line ${cls}">${esc(line)}</div>`;
-    }).join('');
-}
-
-function renderFinding(f) {
-    const sevColors = { critical: 'var(--sev-critical)', major: 'var(--sev-major)', minor: 'var(--sev-minor)', nit: 'var(--sev-nit)' };
-    const sevTextColor = f.severity === 'minor' ? '#24292f' : '#fff';
-    const ctx = (f.patch_context || []).map(line => {
-        let cls = 'diff-ctx';
-        if (line.startsWith('+')) cls = 'diff-add';
-        else if (line.startsWith('-')) cls = 'diff-del';
-        else if (line.startsWith('@@')) cls = 'diff-hdr';
-        return `<div class="diff-line ${cls}">${esc(line)}</div>`;
-    }).join('');
-
-    return `
-    <div class="finding">
-        <div class="finding-header">
-            <span class="badge" style="background:${sevColors[f.severity] || '#999'};color:${sevTextColor};">${(f.severity || '').toUpperCase()}</span>
-            <span class="badge badge-stage">Stage ${esc(f.stage || '?')}</span>
-            <span class="badge badge-source">${esc(f.source || '')}</span>
-            <span class="file">${esc(f.file || '')}</span>
-            <span class="line">:${esc(f.line || '')}</span>
-            <span style="margin-left:auto;" class="badge">Patch ${esc(f.patch_index || '')}</span>
-        </div>
-        ${ctx ? `<div class="patch-context">${ctx}</div>` : ''}
-        <div class="finding-body">
-            <div class="finding-title">${esc(f.title || '')}</div>
-            <div class="finding-desc">${esc(f.description || '')}</div>
-            ${f.suggestion ? `<div class="finding-suggestion">${esc(f.suggestion)}</div>` : ''}
-        </div>
-        <div class="finding-footer">
-            <span>confidence: <b class="conf-${f.confidence || 'medium'}">${f.confidence || 'medium'}</b>${f.confidence_reason ? ' &mdash; ' + esc(f.confidence_reason) : ''}</span>
-        </div>
-    </div>`;
-}
-
-// Routing
-function handleRoute() {
-    const hash = window.location.hash;
-    if (hash.startsWith('#/review/')) {
-        const path = decodeURIComponent(hash.slice(9));
-        loadReview(path);
+    const maxIdx = rows.length - 1;
+    if (state.selectedRow < 0) {
+        state.selectedRow = delta > 0 ? 0 : maxIdx;
     } else {
-        showLanding();
+        state.selectedRow = Math.max(0, Math.min(state.selectedRow + delta, maxIdx));
+    }
+
+    rows.forEach((r, i) => r.classList.toggle('selected', i === state.selectedRow));
+    if (rows[state.selectedRow]) {
+        rows[state.selectedRow].scrollIntoView({ block: 'nearest' });
     }
 }
 
-// Events
-$('#filter-search').addEventListener('input', renderLanding);
-$$('.filter-select').forEach(el => el.addEventListener('change', renderLanding));
-$('#back-link').addEventListener('click', (e) => { e.preventDefault(); window.location.hash = ''; });
+function openSelected() {
+    const selector = state.listMode === 'patchsets'
+        ? '#patchsets-body tr[data-idx]'
+        : '#messages-body tr[data-idx]';
+    const rows = $$(selector);
+    if (state.selectedRow < 0 || !rows[state.selectedRow]) return;
 
-// Row click navigation (event delegation on tbody)
-$('#table-body').addEventListener('click', (e) => {
-    const row = e.target.closest('tr[data-path]');
-    if (row) {
-        window.location.hash = '#/review/' + encodeURIComponent(row.dataset.path);
+    const row = rows[state.selectedRow];
+    if (state.listMode === 'patchsets') {
+        const path = row.dataset.path;
+        if (path) navigate('#/review/' + encodeURIComponent(path));
+    } else {
+        const rIdx = row.dataset.ridx;
+        const mIdx = row.dataset.midx;
+        if (rIdx !== undefined && mIdx !== undefined) navigate('#/message/' + rIdx + '/' + mIdx);
     }
-});
-
-// Keyboard
-let focusedRow = -1;
-document.addEventListener('keydown', (e) => {
-    if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') {
-        if (e.key === 'Escape') { e.target.blur(); e.preventDefault(); }
-        return;
-    }
-    const rows = $$('#table-body tr[data-path]');
-    if (e.key === '/') { e.preventDefault(); $('#filter-search').focus(); }
-    else if (e.key === 'j') { focusedRow = Math.min(focusedRow + 1, rows.length - 1); highlightRow(rows); }
-    else if (e.key === 'k') { focusedRow = Math.max(focusedRow - 1, 0); highlightRow(rows); }
-    else if (e.key === 'Enter' && focusedRow >= 0 && rows[focusedRow]) {
-        const path = rows[focusedRow].dataset.path;
-        window.location.hash = '#/review/' + encodeURIComponent(path);
-    }
-    else if (e.key === 'Escape') { window.location.hash = ''; }
-});
-
-function highlightRow(rows) {
-    rows.forEach((r, i) => r.classList.toggle('selected', i === focusedRow));
-    if (rows[focusedRow]) rows[focusedRow].scrollIntoView({ block: 'nearest' });
 }
 
-// Init
-window.addEventListener('DOMContentLoaded', () => {
-    loadIndex().then(() => handleRoute());
-    window.addEventListener('hashchange', handleRoute);
+function navigateReview(delta) {
+    if (state.view !== 'review') return;
+    const filtered = applyFilters(state.reviews);
+    const currentPath = parseHash().path;
+    const idx = filtered.findIndex(r => r.path === currentPath);
+    if (idx < 0) return;
+    const newIdx = idx + delta;
+    if (newIdx < 0 || newIdx >= filtered.length) return;
+    navigate('#/review/' + encodeURIComponent(filtered[newIdx].path));
+}
+
+/* ── Stub Functions (to be implemented in later tasks) ─────────────── */
+function renderReviewView() {
+    $('#review-view').innerHTML = '<p>Review view — Task 4</p>';
+}
+
+async function loadAndRenderReview(path) {
+    try {
+        state.current = await loadReview(path);
+        renderReviewView();
+    } catch (e) {
+        $('#review-view').innerHTML = '<div class="disclaimer">Not found.</div><p><a href="#/">&#8592; Back</a></p>';
+    }
+}
+
+function renderMessageView(rIdx, mIdx) {
+    $('#message-view').innerHTML = '<p>Message view — Task 5</p>';
+}
+
+function renderStatsView() {
+    $('#stats-view').innerHTML = '<p>Stats view — Task 6</p>';
+}
+
+/* ── Event Binding ─────────────────────────────────────────────────── */
+document.addEventListener('DOMContentLoaded', function() {
+    loadIndex();
+    window.addEventListener('hashchange', router);
+
+    /* Filter listeners */
+    $('#filter-search').addEventListener('input', function() {
+        state.currentPage = 1;
+        state.selectedRow = -1;
+        renderListView();
+    });
+    $$('.filter-select').forEach(function(el) {
+        el.addEventListener('change', function() {
+            state.currentPage = 1;
+            state.selectedRow = -1;
+            renderListView();
+        });
+    });
+
+    /* Nav toggle click handlers */
+    $$('.nav-toggle').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            const mode = btn.dataset.mode;
+            if (mode === 'stats') {
+                state.listMode = 'stats';
+                navigate('#/stats');
+            } else {
+                state.listMode = mode;
+                state.currentPage = 1;
+                state.selectedRow = -1;
+                navigate('#/');
+            }
+        });
+    });
+
+    /* Row click delegation — patchsets */
+    $('#patchsets-body').addEventListener('click', function(e) {
+        const row = e.target.closest('tr[data-path]');
+        if (row) {
+            navigate('#/review/' + encodeURIComponent(row.dataset.path));
+        }
+    });
+
+    /* Row click delegation — messages */
+    $('#messages-body').addEventListener('click', function(e) {
+        const row = e.target.closest('tr[data-ridx]');
+        if (row) {
+            navigate('#/message/' + row.dataset.ridx + '/' + row.dataset.midx);
+        }
+    });
+
+    /* Keyboard navigation */
+    document.addEventListener('keydown', function(e) {
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') {
+            if (e.key === 'Escape') {
+                e.target.blur();
+                e.preventDefault();
+            }
+            return;
+        }
+
+        switch (e.key) {
+            case '/':
+                e.preventDefault();
+                $('#filter-search').focus();
+                break;
+            case 'j':
+                e.preventDefault();
+                if (state.view === 'list') moveSelection(1);
+                break;
+            case 'k':
+                e.preventDefault();
+                if (state.view === 'list') moveSelection(-1);
+                break;
+            case 'Enter':
+                e.preventDefault();
+                if (state.view === 'list') openSelected();
+                break;
+            case 'q':
+                e.preventDefault();
+                if (state.view === 'review' || state.view === 'message') {
+                    navigate('#/');
+                }
+                break;
+            case 'h':
+                e.preventDefault();
+                if (state.view === 'review') navigateReview(-1);
+                break;
+            case 'l':
+                e.preventDefault();
+                if (state.view === 'review') navigateReview(1);
+                break;
+            case 'Escape':
+                e.preventDefault();
+                if (state.view === 'review' || state.view === 'message' || state.view === 'stats') {
+                    navigate('#/');
+                }
+                break;
+        }
+    });
 });
 </script>
 </body>
