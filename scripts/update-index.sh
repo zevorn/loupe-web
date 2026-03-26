@@ -30,10 +30,10 @@ entries=$(echo "${review_files}" | while IFS= read -r f; do
         message_id: .series.message_id,
         verdict: .review.verdict,
         findings: {
-            critical: ([.review.findings[] | select(.severity == "critical")] | length),
-            major: ([.review.findings[] | select(.severity == "major")] | length),
-            minor: ([.review.findings[] | select(.severity == "minor")] | length),
-            nit: ([.review.findings[] | select(.severity == "nit")] | length)
+            critical: ([.review.findings[] | select(.severity == "critical" or .severity == "error")] | length),
+            major: ([.review.findings[] | select(.severity == "major" or .severity == "high")] | length),
+            minor: ([.review.findings[] | select(.severity == "minor" or .severity == "medium")] | length),
+            nit: ([.review.findings[] | select(.severity == "nit" or .severity == "low")] | length)
         }
     }' "${f}"
 done | jq -s 'sort_by(.date) | reverse')

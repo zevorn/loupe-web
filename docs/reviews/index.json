@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-03-26T16:33:00Z",
+  "updated_at": "2026-03-26T16:49:55Z",
   "reviews": [
     {
       "id": "20260325-20260325081314.57089-1-yang.yicong-at-picoheart.com",
@@ -51,7 +51,7 @@
       "findings": {
         "critical": 0,
         "major": 0,
-        "minor": 0,
+        "minor": 1,
         "nit": 0
       }
     },
@@ -68,8 +68,8 @@
       "verdict": "changes_requested",
       "findings": {
         "critical": 0,
-        "major": 0,
-        "minor": 0,
+        "major": 2,
+        "minor": 1,
         "nit": 0
       }
     }

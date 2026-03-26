@@ -645,16 +645,10 @@ kbd {
 <!-- ── Header ──────────────────────────────────────────────────────── -->
 <header>
     <h1>loupe</h1>
-    <nav>
-        <button class="nav-toggle active" data-mode="patchsets">Patchsets</button>
-        <button class="nav-toggle" data-mode="messages">Messages</button>
-        <button class="nav-toggle" data-mode="stats">Stats</button>
-    </nav>
 </header>
 <div class="disclaimer">
     This site contains LLM-generated review drafts. These are NOT authoritative reviews.
     Human reviewers should verify all findings before acting on them.
-    <span style="float:right;"><kbd>/</kbd> search &middot; <kbd>j</kbd>/<kbd>k</kbd> navigate &middot; <kbd>Enter</kbd> open &middot; <kbd>q</kbd> back</span>
 </div>
 
 <!-- ── List View ───────────────────────────────────────────────────── -->
@@ -709,12 +703,6 @@ kbd {
         </tr></thead>
         <tbody id="patchsets-body"></tbody>
     </table>
-    <table class="data-table hidden" id="messages-table">
-        <thead><tr>
-            <th>Date</th><th>Author</th><th>Subject</th>
-        </tr></thead>
-        <tbody id="messages-body"></tbody>
-    </table>
     <div id="loading-indicator" class="loading-bar hidden"></div>
     <div class="pagination" id="pagination"></div>
     <div class="legend" id="list-legend">
@@ -724,6 +712,9 @@ kbd {
         <span class="legend-item"><span class="legend-dot" style="background:var(--sev-minor);"></span> Minor</span>
         <span class="legend-item"><span class="legend-dot" style="background:var(--sev-nit);"></span> Nit</span>
         <span style="margin-left:8px;">Click any row to view full review.</span>
+    </div>
+    <div style="text-align:center;color:var(--text-dim);font-size:11px;margin-top:12px;">
+        <kbd>/</kbd> search &middot; <kbd>j</kbd>/<kbd>k</kbd> navigate &middot; <kbd>Enter</kbd> open &middot; <kbd>q</kbd> back
     </div>
 </div>
 
@@ -1020,17 +1011,9 @@ function paginate(items) {
 /* ── List View Rendering ───────────────────────────────────────────── */
 function renderListView() {
     renderStats();
-    if (state.listMode === 'patchsets') {
-        $('#patchsets-table').classList.remove('hidden');
-        $('#messages-table').classList.add('hidden');
-        $('#list-legend').classList.remove('hidden');
-        renderPatchsetsList();
-    } else if (state.listMode === 'messages') {
-        $('#patchsets-table').classList.add('hidden');
-        $('#messages-table').classList.remove('hidden');
-        $('#list-legend').classList.add('hidden');
-        renderMessagesList();
-    }
+    $('#patchsets-table').classList.remove('hidden');
+    $('#list-legend').classList.remove('hidden');
+    renderPatchsetsList();
 }
 
 function renderStats() {
