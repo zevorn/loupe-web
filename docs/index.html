@@ -1240,17 +1240,247 @@ function navigateReview(delta) {
     navigate('#/review/' + encodeURIComponent(filtered[newIdx].path));
 }
 
-/* ── Stub Functions (to be implemented in later tasks) ─────────────── */
+/* ── Severity Helpers ──────────────────────────────────────────────── */
+function normSev(s) {
+    if (!s) return 'nit';
+    const m = { critical: 'critical', error: 'critical', major: 'major', high: 'major', minor: 'minor', medium: 'minor', nit: 'nit', low: 'nit' };
+    return m[s.toLowerCase()] || 'nit';
+}
+
+function sevBadge(sev) {
+    const n = normSev(sev);
+    const cls = { critical: 'badge-blocked', major: 'badge-stage', minor: 'badge-revision', nit: '' };
+    const style = n === 'nit' ? ' style="background:var(--sev-nit);color:#fff;border:1px solid var(--sev-nit);"' : '';
+    return '<span class="badge ' + (cls[n] || '') + '"' + style + '>' + esc(sev || 'nit') + '</span>';
+}
+
+function stageStatusBadge(status) {
+    const m = { ok: 'badge-ok', warning: 'badge-revision', fail: 'badge-blocked' };
+    return '<span class="badge ' + (m[status] || '') + '">' + esc(status) + '</span>';
+}
+
+function confClass(c) {
+    if (!c) return 'conf-low';
+    const m = { high: 'conf-high', medium: 'conf-medium', low: 'conf-low' };
+    return m[c.toLowerCase()] || 'conf-low';
+}
+
+function statusBadge(label, val) {
+    if (!val) return '';
+    const v = String(val).toLowerCase();
+    var cls = '';
+    if (v === 'pass' || v === 'ok' || v === 'clean' || v === 'success') cls = 'badge-ok';
+    else if (v === 'warning' || v === 'warn') cls = 'badge-revision';
+    else if (v === 'fail' || v === 'error') cls = 'badge-blocked';
+    else cls = 'badge-stage';
+    return '<span style="margin-right:4px;font-size:11px;color:var(--text-muted);">' + esc(label) + ':</span><span class="badge ' + cls + '">' + esc(val) + '</span>';
+}
+
+/* ── Review Detail View ───────────────────────────────────────────── */
 function renderReviewView() {
-    $('#review-view').innerHTML = '<p>Review view — Task 4</p>';
+    var r = state.current;
+    if (!r) { $('#review-view').innerHTML = ''; return; }
+    var s = r.series || {};
+    var rev = r.review || {};
+    var html = '';
+
+    /* 1. Header */
+    html += '<a class="nav-back" href="#/">&larr; Back to reviews</a>';
+    html += '<h1>' + esc(s.title || '(untitled)') + '</h1>';
+    html += '<div class="meta-row">';
+    if (s.author) html += '<span>' + esc(s.author.name || '') + ' &lt;' + esc(s.author.email || '') + '&gt;</span><span class="meta-sep">|</span>';
+    if (s.date) html += '<span>' + esc(s.date) + '</span><span class="meta-sep">|</span>';
+    html += '<span>' + (s.patch_count || 0) + ' patch(es)</span>';
+    if (s.base_branch) html += '<span class="meta-sep">|</span><span>base: ' + esc(s.base_branch) + '</span>';
+    if (s.lore_url) html += '<span class="meta-sep">|</span><a href="' + esc(s.lore_url) + '" target="_blank">lore</a>';
+    if (s.patchwork_url) html += '<span class="meta-sep">|</span><a href="' + esc(s.patchwork_url) + '" target="_blank">patchwork</a>';
+    html += '</div>';
+    html += '<div style="margin:8px 0;">' + verdictBadge(rev.verdict) + '</div>';
+    if (rev.summary) html += '<p style="margin:4px 0 12px;color:var(--text-muted);font-size:12px;">' + esc(rev.summary) + '</p>';
+
+    /* 2. Version History Table */
+    var vh = r.version_history;
+    if (vh && vh.length) {
+        html += '<h2>Version History</h2>';
+        html += '<table class="data-table"><thead><tr><th>Version</th><th>Date</th><th>Key Change</th></tr></thead><tbody>';
+        vh.forEach(function(v) {
+            var isCurrent = s.version && String(v.version) === String(s.version);
+            html += '<tr' + (isCurrent ? ' style="background:#fff8e1;"' : '') + '>';
+            html += '<td>' + esc(String(v.version || '')) + (isCurrent ? ' (current)' : '') + '</td>';
+            html += '<td>' + esc(v.date || '') + '</td>';
+            html += '<td>' + esc(v.key_change || '') + '</td>';
+            html += '</tr>';
+        });
+        html += '</tbody></table>';
+    }
+
+    /* 3. ML Context */
+    var ml = r.ml_context;
+    if (ml) {
+        html += '<h2>ML Context</h2>';
+        html += '<div class="stages">';
+        var mlRows = [
+            ['patchwork_state', ml.patchwork_state],
+            ['reviewed_by', Array.isArray(ml.reviewed_by) ? ml.reviewed_by.join(', ') : ml.reviewed_by],
+            ['acked_by', Array.isArray(ml.acked_by) ? ml.acked_by.join(', ') : ml.acked_by],
+            ['ci_status', ml.ci_status],
+            ['prior_feedback', Array.isArray(ml.prior_feedback) ? ml.prior_feedback.join('; ') : ml.prior_feedback],
+            ['maintainer_activity', ml.maintainer_activity]
+        ];
+        mlRows.forEach(function(pair) {
+            if (pair[1] !== undefined && pair[1] !== null && pair[1] !== '') {
+                html += '<div class="stage-row"><span class="stage-label">' + esc(pair[0]) + '</span><span class="stage-text">' + esc(String(pair[1])) + '</span></div>';
+            }
+        });
+        html += '</div>';
+    }
+
+    /* 4. Review Stages A-E */
+    var stages = rev.stages;
+    if (stages && typeof stages === 'object') {
+        html += '<h2>Review Stages</h2>';
+        html += '<div class="stages">';
+        ['A', 'B', 'C', 'D', 'E'].forEach(function(key) {
+            var st = stages[key];
+            if (!st) return;
+            html += '<div class="stage-row"><span class="stage-label">Stage ' + key + '</span><span class="stage-text">';
+            if (typeof st === 'string') {
+                html += esc(st);
+            } else if (typeof st === 'object') {
+                html += stageStatusBadge(st.status || '') + ' ' + esc(st.summary || '');
+            }
+            html += '</span></div>';
+        });
+        html += '</div>';
+    }
+
+    /* 5. Thread Tree */
+    var reviewIdx = state.reviews.findIndex(function(ri) { return ri.path === parseHash().path; });
+
+    if (r.cover_letter) {
+        html += '<h2>Cover Letter</h2>';
+        html += '<div class="msg-body"><div class="msg-body-content"><pre>' + escapeHtml(r.cover_letter) + '</pre></div></div>';
+    }
+
+    if (r.diff) {
+        var msgs = parseMbox(r.diff);
+        if (msgs.length) {
+            html += '<h2>Thread</h2>';
+            html += '<ul class="thread-tree">';
+            msgs.forEach(function(m, mIdx) {
+                var subj = m.subject || '(no subject)';
+                var isPatch = /^\[.*PATCH/.test(subj) || mIdx === 0;
+                var isReply = !isPatch && mIdx > 0;
+                var hasRb = /Reviewed-by:|Acked-by:/i.test(m.body || '');
+                var tags = '';
+                if (hasRb) tags += ' <span class="thread-tag-rb">R-b</span>';
+                if (isReply) tags += ' <span class="thread-tag-reply">reply</span>';
+
+                var link = '#/message/' + reviewIdx + '/' + mIdx;
+                var arrow = isReply ? '<span class="thread-arrow">&crarr;</span>' : '';
+                var indent = isReply ? ' style="margin-left:16px;"' : '';
+
+                html += '<li' + indent + '>';
+                html += '<span class="thread-entry">';
+                if (m.date) html += '<span class="thread-date">' + esc(m.date) + '</span>';
+                if (m.author) html += '<span class="thread-author">' + esc(m.author) + '</span>';
+                html += arrow + '<span class="thread-subject"><a href="' + link + '">' + esc(subj) + '</a></span>';
+                html += tags;
+                html += '</span>';
+                html += '</li>';
+            });
+            html += '</ul>';
+        }
+    }
+
+    /* 6. Findings Summary Bar */
+    var findings = rev.findings || [];
+    var sevCount = { critical: 0, major: 0, minor: 0, nit: 0 };
+    findings.forEach(function(f) { sevCount[normSev(f.severity)]++; });
+    html += '<h2>Findings</h2>';
+    html += '<div class="findings-summary">';
+    html += '<span style="font-weight:600;">' + findings.length + ' finding(s)</span>';
+    html += '<span class="finding-dot dot-critical">' + sevCount.critical + '</span>';
+    html += '<span class="finding-dot dot-major">' + sevCount.major + '</span>';
+    html += '<span class="finding-dot dot-minor">' + sevCount.minor + '</span>';
+    html += '<span class="finding-dot dot-nit">' + sevCount.nit + '</span>';
+    var cp = rev.checkpatch;
+    if (cp && cp.status) html += statusBadge('checkpatch', cp.status);
+    if (rev.build_status) html += statusBadge('build', rev.build_status);
+    if (rev.am_status) html += statusBadge('am', rev.am_status);
+    html += '</div>';
+
+    /* 7. Finding Cards */
+    findings.forEach(function(f) {
+        html += '<div class="finding">';
+
+        /* Header */
+        html += '<div class="finding-header">';
+        html += sevBadge(f.severity);
+        if (f.stage) html += '<span class="badge badge-stage">' + esc(f.stage) + '</span>';
+        if (f.source) html += '<span class="badge badge-source">' + esc(f.source) + '</span>';
+        var loc = '';
+        if (f.file) {
+            loc = f.file;
+            if (f.line) loc += ':' + f.line;
+        } else if (f.location) {
+            loc = f.location;
+        }
+        if (loc) html += '<span class="file">' + esc(loc) + '</span>';
+        if (f.patch_index !== undefined && f.patch_index !== null) html += '<span class="line">patch #' + esc(String(f.patch_index)) + '</span>';
+        html += '</div>';
+
+        /* Patch context */
+        var ctx = f.patch_context;
+        if (ctx && ctx.length) {
+            html += '<div class="patch-context">';
+            ctx.forEach(function(line) {
+                var cls = 'diff-line';
+                if (typeof line === 'string') {
+                    if (line.startsWith('+')) cls += ' diff-add';
+                    else if (line.startsWith('-')) cls += ' diff-del';
+                    else if (line.startsWith('@@') || line.startsWith('diff --git')) cls += ' diff-hdr';
+                    else cls += ' diff-ctx';
+                    html += '<div class="' + cls + '">' + esc(line) + '</div>';
+                }
+            });
+            html += '</div>';
+        }
+
+        /* Body */
+        html += '<div class="finding-body">';
+        if (f.title) html += '<div class="finding-title">' + esc(f.title) + '</div>';
+        var desc = f.description || f.detail || '';
+        if (desc) html += '<div class="finding-desc">' + esc(desc) + '</div>';
+        if (f.suggestion) html += '<pre class="finding-suggestion">' + esc(f.suggestion) + '</pre>';
+        html += '</div>';
+
+        /* Footer */
+        html += '<div class="finding-footer">';
+        if (f.confidence) html += '<span class="confidence ' + confClass(f.confidence) + '">' + esc(f.confidence) + '</span>';
+        if (f.confidence_reason) html += '<span style="color:var(--text-dim);">' + esc(f.confidence_reason) + '</span>';
+        html += '</div>';
+
+        html += '</div>';
+    });
+
+    /* 8. Footer */
+    html += '<div style="margin:24px 0 8px;font-size:11px;color:var(--text-dim);text-align:center;">';
+    if (r.generator) html += 'Generated by ' + esc(r.generator);
+    if (r.generated_at) html += ' at ' + esc(r.generated_at);
+    html += '</div>';
+    if (r.disclaimer) html += '<div class="disclaimer">' + esc(r.disclaimer) + '</div>';
+
+    $('#review-view').innerHTML = html;
 }
 
 async function loadAndRenderReview(path) {
     try {
         state.current = await loadReview(path);
         renderReviewView();
+        window.scrollTo(0, 0);
     } catch (e) {
-        $('#review-view').innerHTML = '<div class="disclaimer">Not found.</div><p><a href="#/">&#8592; Back</a></p>';
+        $('#review-view').innerHTML = '<div class="disclaimer">Review not found.</div><p><a href="#/">&larr; Back</a></p>';
     }
 }
 
