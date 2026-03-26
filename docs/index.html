@@ -122,30 +122,27 @@ a:hover { text-decoration: underline; }
 .version-table td { padding: 4px 8px; border-bottom: 1px solid var(--border-light); font-size: 12px; }
 .findings-summary { background: var(--bg-card); border: 1px solid var(--border); border-radius: 4px; padding: 8px 12px; margin: 8px 0; display: flex; gap: 16px; align-items: center; font-size: 12px; }
 
-/* Thread / original patch view */
-.patch-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 4px; margin: 12px 0; overflow: hidden; }
-.patch-card-header {
-    display: flex; align-items: center; gap: 8px; padding: 8px 12px;
-    border-bottom: 1px solid var(--border-light); background: #fafafa;
-    font-size: 12px; cursor: pointer; user-select: none;
-}
-.patch-card-header:hover { background: #f0f0f0; }
-.patch-card-header .toggle { color: var(--text-dim); font-size: 10px; transition: transform 0.2s; }
-.patch-card-header .toggle.open { transform: rotate(90deg); }
-.patch-card-header .patch-subject { font-weight: 600; flex: 1; }
-.patch-card-header .patch-meta { color: var(--text-muted); font-size: 11px; }
-.patch-card-body { display: none; }
-.patch-card-body.open { display: block; }
-.patch-card-body .commit-msg {
-    padding: 8px 12px; border-bottom: 1px solid var(--border-light);
-    font-size: 12px; color: var(--text-muted); white-space: pre-wrap;
-}
-.patch-card-body .diff-view {
-    background: var(--bg-code); font-size: 12px; line-height: 1.5;
-    overflow-x: auto; padding: 0;
-}
-.patch-card-body .diff-view .diff-line { padding: 1px 12px; white-space: pre; }
-.patch-card-body .lore-link { padding: 6px 12px; font-size: 11px; border-top: 1px solid var(--border-light); }
+/* Thread tree (sashiko-style) */
+.thread-tree { list-style: none; padding: 0; margin: 8px 0; }
+.thread-tree li { padding: 2px 0; font-size: 12px; }
+.thread-tree li li { margin-left: 16px; }
+.thread-tree .thread-entry { display: inline; }
+.thread-tree .thread-date { color: var(--text-dim); margin-right: 6px; }
+.thread-tree .thread-author { color: var(--text-muted); margin-right: 6px; }
+.thread-tree .thread-subject a { color: var(--link); text-decoration: none; }
+.thread-tree .thread-subject a:hover { text-decoration: underline; }
+.thread-tree .thread-arrow { color: var(--text-dim); margin-right: 4px; }
+.thread-tree .thread-current { font-weight: 600; background: #eef; padding: 1px 4px; border-radius: 2px; }
+.thread-tree .thread-tag { display: inline-block; font-size: 10px; padding: 0 4px; border-radius: 2px; margin-left: 4px; }
+.thread-tree .thread-tag-rb { background: #e6ffed; color: #22863a; }
+.thread-tree .thread-tag-reply { background: #f0f0f5; color: #6f42c1; }
+
+/* Message body view (when clicking a thread entry) */
+.msg-body { background: var(--bg-card); border: 1px solid var(--border); border-radius: 4px; margin: 8px 0; overflow: hidden; }
+.msg-body-header { padding: 8px 12px; border-bottom: 1px solid var(--border-light); background: #fafafa; font-size: 12px; }
+.msg-body-content { padding: 0; font-size: 12px; line-height: 1.5; overflow-x: auto; }
+.msg-body-content .diff-line { padding: 1px 12px; white-space: pre; }
+.msg-body-content pre { padding: 8px 12px; margin: 0; white-space: pre-wrap; word-break: break-word; }
 
 /* Finding card */
 .finding { background: var(--bg-card); border: 1px solid var(--border); border-radius: 4px; margin: 12px 0; overflow: hidden; }
@@ -460,70 +457,97 @@ function renderDetail() {
 function renderThread(patches, coverLetter, fullDiff) {
     const header = $('#thread-header');
     const container = $('#detail-thread');
-    const hasCover = coverLetter && coverLetter.length > 10;
+    const r = state.current;
     const hasDiff = fullDiff && fullDiff.length > 10;
-    const hasPatches = patches && patches.length > 0;
+    const hasCover = coverLetter && coverLetter.length > 10;
 
-    if (!hasCover && !hasDiff && !hasPatches) {
+    if (!hasDiff && !hasCover) {
         header.classList.add('hidden');
         container.innerHTML = '';
         return;
     }
     header.classList.remove('hidden');
 
+    // Parse mbox diff into individual messages for tree display
+    const messages = parseMbox(fullDiff || '');
+    const s = r.series || {};
+
     let html = '';
 
-    // Cover letter card
+    // Thread tree (sashiko-style)
+    if (messages.length > 0) {
+        html += '<ul class="thread-tree">';
+        messages.forEach((m, i) => {
+            const isReply = !m.subject.match(/\[PATCH/i) && i > 0;
+            const hasRb = m.body && /Reviewed-by:|Acked-by:|Tested-by:/i.test(m.body);
+            const tags = [];
+            if (hasRb) tags.push('<span class="thread-tag thread-tag-rb">R-b</span>');
+            if (isReply) tags.push('<span class="thread-tag thread-tag-reply">reply</span>');
+
+            const indent = isReply ? '<li style="margin-left:16px;">' : '<li>';
+            const arrow = isReply ? '<span class="thread-arrow">↳</span>' : '';
+            html += `${indent}${arrow}<span class="thread-date">[${esc(m.date)}]</span>` +
+                `<span class="thread-author">${esc(m.author)}</span>` +
+                `<span class="thread-subject"><a href="#" onclick="showMessage(${i});return false">${esc(m.subject)}</a></span>` +
+                `${tags.join('')}</li>`;
+        });
+        html += '</ul>';
+    }
+
+    // Cover letter (always show if present)
     if (hasCover) {
-        html += `
-        <div class="patch-card">
-            <div class="patch-card-header" onclick="togglePatch(this)">
-                <span class="toggle open">&#9654;</span>
-                <span class="patch-subject">Cover Letter</span>
-            </div>
-            <div class="patch-card-body open">
-                <div class="commit-msg">${esc(coverLetter)}</div>
-            </div>
-        </div>`;
+        html += `<div class="msg-body"><div class="msg-body-header"><b>Cover Letter</b></div>` +
+            `<div class="msg-body-content"><pre>${esc(coverLetter)}</pre></div></div>`;
     }
 
-    // Individual patches (if structured)
-    if (hasPatches) {
-        html += patches.map((p, i) => {
-            const diffHtml = renderDiffLines(p.diff || '');
-            const loreLink = p.lore_url ? `<div class="lore-link"><a href="${esc(p.lore_url)}" target="_blank">View on lore.kernel.org</a></div>` : '';
-            const commitMsg = p.commit_message ? `<div class="commit-msg">${esc(p.commit_message)}</div>` : '';
-            return `
-            <div class="patch-card">
-                <div class="patch-card-header" onclick="togglePatch(this)">
-                    <span class="toggle">&#9654;</span>
-                    <span class="patch-subject">${esc(p.subject || 'Patch ' + (i+1))}</span>
-                    <span class="patch-meta">${esc(p.author || '')} &middot; ${esc(p.date || '')}</span>
-                </div>
-                <div class="patch-card-body">
-                    ${commitMsg}
-                    <div class="diff-view">${diffHtml}</div>
-                    ${loreLink}
-                </div>
-            </div>`;
-        }).join('');
-    }
+    // Message body container (shown when clicking a thread entry)
+    html += '<div id="thread-msg-body"></div>';
 
-    // Full diff (mbox content from b4)
-    if (hasDiff && !hasPatches) {
-        html += `
-        <div class="patch-card">
-            <div class="patch-card-header" onclick="togglePatch(this)">
-                <span class="toggle">&#9654;</span>
-                <span class="patch-subject">Full Patch Series</span>
-            </div>
-            <div class="patch-card-body">
-                <div class="diff-view">${renderDiffLines(fullDiff)}</div>
-            </div>
-        </div>`;
-    }
+    // Store messages for click handler
+    window._threadMessages = messages;
 
     container.innerHTML = html;
+}
+
+function parseMbox(mbox) {
+    // Split mbox into individual messages and extract headers
+    const msgs = [];
+    const parts = mbox.split(/^From /m);
+    for (const part of parts) {
+        if (!part.trim()) continue;
+        const lines = part.split('\n');
+        let subject = '', author = '', date = '', body = '';
+        let inHeader = true;
+        for (const line of lines) {
+            if (inHeader) {
+                if (line.match(/^Subject:\s*/i)) subject = line.replace(/^Subject:\s*/i, '');
+                else if (line.match(/^From:\s*/i)) author = line.replace(/^From:\s*/i, '').replace(/<.*>/, '').trim();
+                else if (line.match(/^Date:\s*/i)) {
+                    const d = line.replace(/^Date:\s*/i, '');
+                    const m = d.match(/\d{1,2}\s+\w+\s+\d{4}/);
+                    date = m ? m[0] : d.slice(0, 16);
+                }
+                else if (line === '' || line === '\r') inHeader = false;
+            } else {
+                body += line + '\n';
+            }
+        }
+        if (subject || body) msgs.push({ subject, author, date, body });
+    }
+    return msgs;
+}
+
+function showMessage(idx) {
+    const msgs = window._threadMessages || [];
+    const m = msgs[idx];
+    if (!m) return;
+    const container = $('#thread-msg-body');
+    const bodyHtml = renderDiffLines(m.body || '');
+    container.innerHTML = `<div class="msg-body">` +
+        `<div class="msg-body-header"><b>${esc(m.subject)}</b><br>` +
+        `<span style="color:var(--text-muted);">${esc(m.author)} &middot; ${esc(m.date)}</span></div>` +
+        `<div class="msg-body-content">${bodyHtml}</div></div>`;
+    container.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
 
 function renderDiffLines(text) {
@@ -535,13 +559,6 @@ function renderDiffLines(text) {
         else if (line.startsWith('diff --git')) cls = 'diff-hdr';
         return `<div class="diff-line ${cls}">${esc(line)}</div>`;
     }).join('');
-}
-
-function togglePatch(header) {
-    const body = header.nextElementSibling;
-    const toggle = header.querySelector('.toggle');
-    body.classList.toggle('open');
-    toggle.classList.toggle('open');
 }
 
 function renderFinding(f) {
