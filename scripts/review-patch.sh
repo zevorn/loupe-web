@@ -107,9 +107,12 @@ if [ -d "${QEMU_DIR}" ] && [ -n "${DIFF_TEXT}" ]; then
     (cd "${QEMU_DIR}" && git branch -D "${REVIEW_BRANCH}" 2>/dev/null; git worktree remove --force "${WORKTREE_DIR}" 2>/dev/null; git worktree add -b "${REVIEW_BRANCH}" "${WORKTREE_DIR}" master 2>&1) || true
 
     if [ -d "${WORKTREE_DIR}" ]; then
-        # Save mbox and apply
-        echo "${DIFF_TEXT}" > "${WORKTREE_DIR}/patch.mbox"
+        # Configure git identity for am
         cd "${WORKTREE_DIR}"
+        git config user.email "chao.liu.zevorn@gmail.com"
+        git config user.name "Chao Liu"
+        # Save mbox and apply
+        echo "${DIFF_TEXT}" > patch.mbox
         if git am patch.mbox 2>&1; then
             AM_STATUS="success"
             echo "  git am: success"
