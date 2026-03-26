@@ -75,48 +75,56 @@ echo "  Author: ${AUTHOR_NAME}"
 echo "  Subsystem: ${SUBSYSTEM}, Patches: ${PATCH_COUNT}, v${VERSION}"
 
 # --- Step 3: Download patch diff (b4 preferred, curl fallback) ---
-echo "[3/6] Downloading patch..."
+echo "[3/6] Downloading patch series..."
 DIFF_FILE=$(mktemp)
+COVER_FILE=$(mktemp)
 B4_DIR=$(mktemp -d)
 
 if command -v b4 &>/dev/null; then
     echo "  Trying b4..."
     (cd "${B4_DIR}" && b4 am "${BARE_MSGID}" 2>/dev/null) || true
-    B4_FILE=$(ls "${B4_DIR}"/*.mbx 2>/dev/null | head -1)
-    [ -n "${B4_FILE}" ] && cp "${B4_FILE}" "${DIFF_FILE}"
+    B4_MBX=$(ls "${B4_DIR}"/*.mbx 2>/dev/null | head -1)
+    B4_COVER=$(ls "${B4_DIR}"/*.cover 2>/dev/null | head -1)
+    [ -n "${B4_MBX}" ] && cp "${B4_MBX}" "${DIFF_FILE}"
+    [ -n "${B4_COVER}" ] && cp "${B4_COVER}" "${COVER_FILE}"
 fi
 
 if [ ! -s "${DIFF_FILE}" ]; then
     echo "  b4 failed or unavailable, trying curl..."
-    curl -sL -A "${UA}" "https://lore.kernel.org/qemu-devel/${ENCODED_MSGID}/raw" > "${DIFF_FILE}"
-    # Check if we got HTML (anti-bot page) instead of patch
+    curl -sL -A "${UA}" "https://lore.kernel.org/qemu-devel/${ENCODED_MSGID}/t.mbox.gz" \
+        | gunzip > "${DIFF_FILE}" 2>/dev/null || true
+    if [ ! -s "${DIFF_FILE}" ]; then
+        curl -sL -A "${UA}" "https://lore.kernel.org/qemu-devel/${ENCODED_MSGID}/raw" > "${DIFF_FILE}"
+    fi
     if head -5 "${DIFF_FILE}" | grep -qi '<html\|<!doctype'; then
-        echo "  WARNING: lore returned HTML (anti-bot). Trying mbox.gz..."
-        curl -sL -A "${UA}" "https://lore.kernel.org/qemu-devel/${ENCODED_MSGID}/t.mbox.gz" \
-            | gunzip > "${DIFF_FILE}" 2>/dev/null || true
+        echo "  WARNING: lore returned HTML (anti-bot)."
+        > "${DIFF_FILE}"
     fi
 fi
 
 rm -rf "${B4_DIR}"
 DIFF_LINES=$(wc -l < "${DIFF_FILE}")
-echo "  Downloaded ${DIFF_LINES} lines"
+COVER_LINES=$(wc -l < "${COVER_FILE}" 2>/dev/null || echo 0)
+echo "  Series: ${DIFF_LINES} lines, Cover: ${COVER_LINES} lines"
 
-if [ "${DIFF_LINES}" -lt 5 ] || head -5 "${DIFF_FILE}" | grep -qi '<html'; then
-    echo "  WARNING: Patch content may be unavailable or blocked by anti-bot."
+# Detect if this is a cover letter (title has 0/N pattern)
+IS_COVER=false
+if echo "${TITLE}" | grep -qE '\b0/[0-9]+'; then
+    IS_COVER=true
+    echo "  Detected: cover letter for multi-patch series"
 fi
 
-# Truncate for codex (keep header + first 250 lines of diff)
+# Truncate for codex context limit
 DIFF_TRUNC=$(mktemp)
-head -300 "${DIFF_FILE}" > "${DIFF_TRUNC}"
+head -500 "${DIFF_FILE}" > "${DIFF_TRUNC}"
 
 # --- Step 4: Codex review ---
 echo "[4/6] Running codex review..."
 REVIEW_OUT=$(mktemp)
 
-# Build prompt in a temp file to avoid shell escaping issues
 PROMPT_FILE=$(mktemp)
 cat > "${PROMPT_FILE}" << 'PROMPTEOF'
-You are a QEMU patch reviewer. Analyze the patch below.
+You are a QEMU patch reviewer. Analyze the patch series below.
 Output ONLY a single JSON object. No markdown fences, no explanation.
 The JSON must have exactly these top-level keys:
   verdict (string: needs_revision or ready_to_merge or blocked)
@@ -127,9 +135,17 @@ Each finding: id, severity, file, line, title, description,
   patch_context (array of diff lines), suggestion, confidence,
   confidence_reason
 Start your response with { and end with }
-
-PATCH:
 PROMPTEOF
+
+# Add cover letter context if present
+if [ -s "${COVER_FILE}" ]; then
+    echo "" >> "${PROMPT_FILE}"
+    echo "COVER LETTER:" >> "${PROMPT_FILE}"
+    cat "${COVER_FILE}" >> "${PROMPT_FILE}"
+fi
+
+echo "" >> "${PROMPT_FILE}"
+echo "PATCH SERIES:" >> "${PROMPT_FILE}"
 cat "${DIFF_TRUNC}" >> "${PROMPT_FILE}"
 
 codex exec --full-auto "$(cat "${PROMPT_FILE}")" > "${REVIEW_OUT}" 2>&1 || true
@@ -202,16 +218,32 @@ cat > "${META_FILE}" << METAEOF
 }
 METAEOF
 
-python3 - "${META_FILE}" "${REVIEW_FILE}" "${OUTPUT}" << 'PYEOF'
+python3 - "${META_FILE}" "${REVIEW_FILE}" "${DIFF_FILE}" "${COVER_FILE}" "${OUTPUT}" << 'PYEOF'
 import sys, json
 
 meta = json.load(open(sys.argv[1]))
 review = json.load(open(sys.argv[2]))
-out_path = sys.argv[3]
+diff_path = sys.argv[3]
+cover_path = sys.argv[4]
+out_path = sys.argv[5]
 
 slug = meta["message_id"].strip("<>").replace("@","-at-")
 for c in "/<>?*[]\\": slug = slug.replace(c, "-")
 slug = slug[:60]
+
+# Read cover letter
+cover_text = ""
+try:
+    cover_text = open(cover_path).read().strip()
+except:
+    pass
+
+# Read diff content
+diff_text = ""
+try:
+    diff_text = open(diff_path).read().strip()
+except:
+    pass
 
 output = {
     "schema_version": "1",
@@ -228,6 +260,7 @@ output = {
         "patchwork_url": meta["patchwork_url"],
         "base_branch": "master"
     },
+    "cover_letter": cover_text if cover_text else None,
     "version_history": [],
     "ml_context": {
         "patchwork_state": meta["patchwork_state"],
@@ -245,6 +278,7 @@ output = {
         "findings": review.get("findings", []),
         "checkpatch": {"status": "not_run", "issues": []}
     },
+    "diff": diff_text if diff_text else None,
     "patches": [],
     "generated_at": meta["generated_at"],
     "generator": "loupe-review v1.0",
@@ -255,7 +289,7 @@ with open(out_path, 'w') as f:
     json.dump(output, f, indent=2, ensure_ascii=False)
 PYEOF
 
-rm -f "${META_FILE}" "${REVIEW_FILE}" "${DIFF_FILE}"
+rm -f "${META_FILE}" "${REVIEW_FILE}" "${DIFF_FILE}" "${COVER_FILE}"
 
 if [ -f "${OUTPUT}" ] && jq empty "${OUTPUT}" 2>/dev/null; then
     echo "=== Done ==="
