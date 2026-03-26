@@ -183,7 +183,8 @@ echo -e "\nGIT AM STATUS: ${AM_STATUS}" >> "${PROMPT_FILE}"
 echo -e "\nBUILD STATUS: ${BUILD_STATUS}" >> "${PROMPT_FILE}"
 echo -e "\nPATCH:\n${DIFF_FOR_REVIEW}" >> "${PROMPT_FILE}"
 
-codex exec --full-auto "$(cat "${PROMPT_FILE}")" > "${REVIEW_OUT}" 2>&1 || true
+# Run codex in QEMU dir so it can read source files for deeper analysis
+(cd "${QEMU_DIR}" && codex exec --full-auto "$(cat "${PROMPT_FILE}")") > "${REVIEW_OUT}" 2>&1 || true
 rm -f "${PROMPT_FILE}"
 
 # --- Step 6: Extract review JSON ---
@@ -192,30 +193,53 @@ REVIEW_FILE=$(mktemp)
 
 python3 - "${REVIEW_OUT}" "${REVIEW_FILE}" << 'PYEOF'
 import sys, json
+
 text = open(sys.argv[1]).read()
-blocks = []
-depth = 0
-start = -1
-for i, c in enumerate(text):
-    if c == '{':
-        if depth == 0: start = i
-        depth += 1
-    elif c == '}':
-        depth -= 1
-        if depth == 0 and start >= 0:
-            blocks.append(text[start:i+1])
-            start = -1
+
+# Strategy: codex outputs the review JSON as a single line containing "verdict".
+# Find all lines that are valid JSON and contain "verdict".
+# This avoids MCP tool JSON (which contains thoughtNumber, structuredContent, etc.)
 result = None
-for b in sorted(blocks, key=len, reverse=True):
+
+for line in text.split('\n'):
+    line = line.strip()
+    if not line.startswith('{') or '"verdict"' not in line:
+        continue
     try:
-        obj = json.loads(b)
-        if 'verdict' in obj and 'thoughtNumber' not in obj and 'structuredContent' not in obj:
+        obj = json.loads(line)
+        if 'verdict' in obj and 'thoughtNumber' not in obj:
             result = obj
             break
     except:
         continue
+
+# Fallback: try block-based extraction if line-based failed
+if result is None:
+    blocks = []
+    depth = 0
+    start = -1
+    for i, c in enumerate(text):
+        if c == '{':
+            if depth == 0: start = i
+            depth += 1
+        elif c == '}':
+            depth -= 1
+            if depth == 0 and start >= 0:
+                blocks.append(text[start:i+1])
+                start = -1
+    for b in sorted(blocks, key=len, reverse=True):
+        try:
+            obj = json.loads(b)
+            if 'verdict' in obj and 'thoughtNumber' not in obj \
+               and 'structuredContent' not in obj and 'nextThoughtNeeded' not in obj:
+                result = obj
+                break
+        except:
+            continue
+
 if result is None:
     result = {"verdict":"unknown","summary":"AI review failed","stages":{"A":"","B":"","C":"","D":"","E":""},"findings":[]}
+
 with open(sys.argv[2], 'w') as f:
     json.dump(result, f, ensure_ascii=False)
 PYEOF

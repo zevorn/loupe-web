@@ -8,9 +8,10 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 REVIEWS_DIR="${REPO_ROOT}/docs/reviews"
 
-# Compute 24h ago (GNU date vs BSD date)
-SINCE=$(date -u -d '24 hours ago' +%Y-%m-%dT%H:%M:%S 2>/dev/null \
-    || date -u -v-24H +%Y-%m-%dT%H:%M:%S)
+# Configurable time window (default 48h)
+HOURS_AGO="${LOUPE_FETCH_HOURS:-48}"
+SINCE=$(date -u -d "${HOURS_AGO} hours ago" +%Y-%m-%dT%H:%M:%S 2>/dev/null \
+    || date -u -v-${HOURS_AGO}H +%Y-%m-%dT%H:%M:%S)
 
 API_URL="https://patchwork.ozlabs.org/api/patches/"
 PARAMS="project=qemu-devel&q=riscv&since=${SINCE}&order=-date&per_page=50"
