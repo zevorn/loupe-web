@@ -289,11 +289,19 @@ cat > "${META_FILE}" << METAEOF
 }
 METAEOF
 
-python3 - "${META_FILE}" "${REVIEW_FILE}" "${OUTPUT}" << 'PYEOF'
+# Save diff and cover to temp files for python
+DIFF_TMPFILE=$(mktemp)
+COVER_TMPFILE=$(mktemp)
+echo "${DIFF_TEXT}" > "${DIFF_TMPFILE}"
+echo "${COVER_TEXT}" > "${COVER_TMPFILE}"
+
+python3 - "${META_FILE}" "${REVIEW_FILE}" "${DIFF_TMPFILE}" "${COVER_TMPFILE}" "${OUTPUT}" << 'PYEOF'
 import sys, json
 meta = json.load(open(sys.argv[1]))
 review = json.load(open(sys.argv[2]))
-out_path = sys.argv[3]
+diff_text = open(sys.argv[3]).read().strip()
+cover_text = open(sys.argv[4]).read().strip()
+out_path = sys.argv[5]
 slug = meta["message_id"].strip("<>").replace("@","-at-")
 for c in "/<>?*[]\\": slug = slug.replace(c, "-")
 slug = slug[:60]
@@ -333,6 +341,8 @@ output = {
         "build_status": meta["build_status"],
         "am_status": meta["am_status"]
     },
+    "cover_letter": cover_text if cover_text else None,
+    "diff": diff_text if diff_text else None,
     "patches": [],
     "generated_at": meta["generated_at"],
     "generator": "loupe-review v1.0",
@@ -342,7 +352,7 @@ with open(out_path, 'w') as f:
     json.dump(output, f, indent=2, ensure_ascii=False)
 PYEOF
 
-rm -f "${META_FILE}" "${REVIEW_FILE}"
+rm -f "${META_FILE}" "${REVIEW_FILE}" "${DIFF_TMPFILE}" "${COVER_TMPFILE}"
 
 if [ -f "${OUTPUT}" ] && jq empty "${OUTPUT}" 2>/dev/null; then
     echo "=== Done ==="
