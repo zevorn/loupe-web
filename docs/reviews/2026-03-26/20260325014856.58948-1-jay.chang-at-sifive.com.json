@@ -1,0 +1,74 @@
+{
+  "schema_version": "1",
+  "id": "20260325-20260325014856.58948-1-jay.chang-at-sifive.com",
+  "series": {
+    "title": "[v2] hw/riscv/riscv-iommu: Use standard EN_PRI bit for PRI",
+    "version": 2,
+    "patch_count": 1,
+    "author": {
+      "name": "Jay Chang",
+      "email": "jay.chang@sifive.com"
+    },
+    "date": "2026-03-25",
+    "subsystem": "hw/riscv/riscv-iommu",
+    "message_id": "<20260325014856.58948-1-jay.chang@sifive.com>",
+    "lore_url": "https://lore.kernel.org/qemu-devel/20260325014856.58948-1-jay.chang%40sifive.com/",
+    "patchwork_url": "http://patchwork.ozlabs.org/project/qemu-devel/patch/20260325014856.58948-1-jay.chang@sifive.com/",
+    "base_branch": "master"
+  },
+  "version_history": [],
+  "ml_context": {
+    "patchwork_state": "new",
+    "reviewed_by": [],
+    "acked_by": [],
+    "ci_status": "",
+    "prior_feedback": [],
+    "maintainer_activity": ""
+  },
+  "review": {
+    "verdict": "needs_revision",
+    "summary": "The code change is mechanically small and likely matches the current RISC-V IOMMU spec, but it changes the guest-visible control bit for PRI enablement without any compatibility handling. That creates a migration and machine-type compatibility risk for guests that used the previous temporary bit definition.",
+    "mode": "ci-single",
+    "stages": {
+      "A": "Patch intent is clear: replace the temporary custom TC[32] PRI-enable bit with the standard EN_PRI bit in the RISC-V IOMMU device-context control field.",
+      "B": "The modified logic remains functionally equivalent apart from the controlling bit selection: PRI is still enabled only when the translation result has no permissions and the relevant context-table bit is set.",
+      "C": "The main risk is guest-visible ABI compatibility. A guest configured against older QEMU behavior may carry the old tc bit value in migrated state, and after migration the new QEMU will interpret a different bit for PRI generation.",
+      "D": "No style or basic control-flow issues are visible in the patch itself. CHECKPATCH and configure status do not address the compatibility concern.",
+      "E": "Recommendation: either document this as an intentional incompatible bug fix with maintainer agreement, or gate the new bit interpretation behind machine-version compatibility / migration handling so old guests continue to observe the previous behavior."
+    },
+    "findings": [
+      {
+        "id": "RV-IOMMU-001",
+        "severity": "medium",
+        "file": "hw/riscv/riscv-iommu.c",
+        "line": 1575,
+        "title": "Guest-visible PRI control bit changes without compatibility handling",
+        "description": "This replaces the previously recognized PRI-enable condition from the temporary custom TC[32] bit to RISCV_IOMMU_DC_TC_EN_PRI. That is a guest-visible semantic change in a device-context field. If an older guest or migrated VM has only the old custom bit set in saved state, PRI behavior will silently change after migration or when running on a newer machine type, because the new code no longer recognizes the prior bit.",
+        "patch_context": [
+          "-    /*",
+          "-     * TC[32] is reserved for custom extensions, used here to temporarily",
+          "-     * enable automatic page-request generation for ATS queries.",
+          "-     */",
+          "-    enable_pri = (iotlb->perm == IOMMU_NONE) && (ctx->tc & BIT_ULL(32));",
+          "+    enable_pri = (iotlb->perm == IOMMU_NONE) &&",
+          "+                 (ctx->tc & RISCV_IOMMU_DC_TC_EN_PRI);"
+        ],
+        "suggestion": "If this incompatibility is intentional, call it out explicitly in the commit message and confirm maintainers are comfortable with the ABI change. Otherwise, preserve backward compatibility by machine type or migration versioning, for example by accepting both bits for older machine types or translating old saved state to the new representation during load.",
+        "confidence": "medium",
+        "confidence_reason": "The patch clearly changes which guest-controlled bit enables PRI. In QEMU that is often an ABI concern, but confirming whether this device model already treats the old behavior as non-ABI would require broader tree context that is not present in the patch excerpt."
+      }
+    ],
+    "checkpatch": {
+      "status": "clean",
+      "issues": []
+    },
+    "build_status": "configure_ok",
+    "am_status": "success"
+  },
+  "cover_letter": null,
+  "diff": "From git@z Thu Jan  1 00:00:00 1970\nSubject: [PATCH v2] hw/riscv/riscv-iommu: Use standard EN_PRI bit for PRI\nFrom: Jay Chang <jay.chang@sifive.com>\nDate: Wed, 25 Mar 2026 09:48:56 +0800\nMessage-Id: <20260325014856.58948-1-jay.chang@sifive.com>\nMIME-Version: 1.0\nContent-Type: text/plain; charset=\"utf-8\"\nContent-Transfer-Encoding: 7bit\n\nReplace the temporary custom extension bit (TC[32]) with the\nstandard EN_PRI bit defined in RISC-V IOMMU specification.\n\nSigned-off-by: Jay Chang <jay.chang@sifive.com>\nReviewed-by: Frank Chang <frank.chang@sifive.com>\nReviewed-by: Nutty Liu <nutty.liu@hotmail.com>\n\nChange in V2:\n  Align code\n\nSigned-off-by: Jay Chang <jay.chang@sifive.com>\nReviewed-by: Alistair Francis <alistair.francis@wdc.com>\nReviewed-by: Nutty Liu <nutty.liu@hotmail.com>\n---\n hw/riscv/riscv-iommu.c | 7 ++-----\n 1 file changed, 2 insertions(+), 5 deletions(-)\n\ndiff --git a/hw/riscv/riscv-iommu.c b/hw/riscv/riscv-iommu.c\nindex 225394ea83..30343e98d0 100644\n--- a/hw/riscv/riscv-iommu.c\n+++ b/hw/riscv/riscv-iommu.c\n@@ -1572,11 +1572,8 @@ static int riscv_iommu_translate(RISCVIOMMUState *s, RISCVIOMMUContext *ctx,\n     riscv_iommu_hpm_incr_ctr(s, ctx, RISCV_IOMMU_HPMEVENT_URQ);\n \n     iot_cache = g_hash_table_ref(s->iot_cache);\n-    /*\n-     * TC[32] is reserved for custom extensions, used here to temporarily\n-     * enable automatic page-request generation for ATS queries.\n-     */\n-    enable_pri = (iotlb->perm == IOMMU_NONE) && (ctx->tc & BIT_ULL(32));\n+    enable_pri = (iotlb->perm == IOMMU_NONE) &&\n+                 (ctx->tc & RISCV_IOMMU_DC_TC_EN_PRI);\n     enable_pid = (ctx->tc & RISCV_IOMMU_DC_TC_PDTV);\n \n     /* Check for ATS request. */\n-- \n2.48.1",
+  "patches": [],
+  "generated_at": "2026-03-26T14:31:33Z",
+  "generator": "loupe-review v1.0",
+  "disclaimer": "LLM-generated draft. Not an authoritative review."
+}
