@@ -1,0 +1,65 @@
+{
+  "schema_version": "1",
+  "id": "20260326-20260325050011.66722-3-jay.changsifive.com",
+  "series": {
+    "title": "<20260325050011.66722-3-jay.chang@sifive.com>",
+    "version": 1,
+    "patch_count": 1,
+    "author": {
+      "name": "unknown",
+      "email": ""
+    },
+    "date": "2026-03-26",
+    "subsystem": "riscv",
+    "message_id": "<20260325050011.66722-3-jay.chang@sifive.com>",
+    "lore_url": "https://lore.kernel.org/qemu-devel/%3C20260325050011.66722-3-jay.chang%40sifive.com%3E/",
+    "patchwork_url": "",
+    "base_branch": "master"
+  },
+  "version_history": [],
+  "ml_context": {
+    "patchwork_state": "unknown",
+    "reviewed_by": [],
+    "acked_by": [],
+    "ci_status": "",
+    "prior_feedback": [],
+    "maintainer_activity": ""
+  },
+  "review": {
+    "verdict": "needs_revision or ready_to_merge or blocked",
+    "summary": "one-line summary of the review",
+    "stages": {
+      "A": "conceptual verification summary",
+      "B": "correctness analysis summary",
+      "C": "resource management summary",
+      "D": "security review summary",
+      "E": "dedup and final summary"
+    },
+    "findings": [
+      {
+        "id": 1,
+        "severity": "critical or major or minor or nit",
+        "stage": "A or B or C or D",
+        "file": "path/to/file.c",
+        "line": "line range",
+        "patch_context": [
+          "relevant diff lines"
+        ],
+        "title": "short title",
+        "description": "detailed explanation",
+        "suggestion": "fix suggestion or null",
+        "confidence": "high or medium or low",
+        "confidence_reason": "why this confidence"
+      }
+    ],
+    "mode": "ci-single",
+    "checkpatch": {
+      "status": "not_run",
+      "issues": []
+    }
+  },
+  "patches": [],
+  "generated_at": "2026-03-26T03:11:58Z",
+  "generator": "loupe-review v1.0",
+  "disclaimer": "LLM-generated draft. Not an authoritative review."
+}
