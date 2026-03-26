@@ -1,0 +1,123 @@
+{
+  "schema_version": "1",
+  "id": "20260324-20260324164007.549397-8-djordje.todorovic-at-htecgroup.com",
+  "series": {
+    "title": "[v5,0/7] Add RISC-V big-endian target support",
+    "version": 5,
+    "patch_count": 7,
+    "author": {
+      "name": "Djordje Todorovic",
+      "email": "Djordje.Todorovic@htecgroup.com"
+    },
+    "date": "2026-03-24",
+    "subsystem": "riscv",
+    "message_id": "<20260324164007.549397-8-djordje.todorovic@htecgroup.com>",
+    "lore_url": "https://lore.kernel.org/qemu-devel/20260324164007.549397-8-djordje.todorovic%40htecgroup.com/",
+    "patchwork_url": "http://patchwork.ozlabs.org/project/qemu-devel/patch/20260324164007.549397-8-djordje.todorovic@htecgroup.com/",
+    "base_branch": "master"
+  },
+  "version_history": [],
+  "ml_context": {
+    "patchwork_state": "new",
+    "reviewed_by": [],
+    "acked_by": [],
+    "ci_status": "",
+    "prior_feedback": [],
+    "maintainer_activity": ""
+  },
+  "review": {
+    "verdict": "changes_requested",
+    "summary": "The series is close, but it still has correctness gaps in boot/image loading and in how endianness is derived for implicit/translated memory accesses. The most serious issue is that page-table walks are switched on current privilege rather than supervisor translation endianness, which breaks configurations where UBE and SBE differ. There is also a clear boot regression risk because ELF loading remains hardcoded to little-endian, and the new per-CPU property is consumed as if endianness were uniform across the hart array.",
+    "mode": "ci-single",
+    "stages": {
+      "A": {
+        "status": "completed",
+        "summary": "Reviewed the cover letter and visible patches 1/7 through 5/7, focusing on CPU state, translation state, boot ROM generation, and MMU/page-table access paths."
+      },
+      "B": {
+        "status": "completed",
+        "summary": "Cross-checked the patch intent against RISC-V endianness rules: instructions stay little-endian, explicit data accesses depend on effective privilege, and implicit page-table accesses follow supervisor translation endianness rather than user endianness."
+      },
+      "C": {
+        "status": "completed",
+        "summary": "Identified 3 actionable correctness issues: hardcoded ELF endianness in boot loading, wrong endianness source for page-table walks, and a mismatch between per-hart configurability and hart-array-wide boot data generation."
+      },
+      "D": {
+        "status": "completed",
+        "summary": "Risk is moderate to high for big-endian boot and MMU bring-up. The page-table issue can cause faults/hangs once MMU is enabled, and the ELF-loading issue can reject or misparse BE kernel images."
+      },
+      "E": {
+        "status": "completed",
+        "summary": "Recommendation is to respin after fixing the endianness source for MMU/page-table operations, making ELF loading actually select ELFDATA2MSB for BE kernels, and either enforcing uniform hart-array endianness or handling mixed-endian hart arrays explicitly."
+      }
+    },
+    "findings": [
+      {
+        "id": "RVBE-001",
+        "severity": "high",
+        "file": "target/riscv/cpu_helper.c",
+        "line": 1368,
+        "title": "Page-table walk endianness is taken from current privilege instead of supervisor translation state",
+        "description": "The page walker now chooses `address_space_ldl_be/ldq_be` based on `riscv_cpu_data_is_big_endian(env)`, but that helper keys off `env->priv` and therefore returns UBE while executing in U-mode. For address translation, implicit accesses to page tables are supervisor memory-management accesses and must follow supervisor translation endianness, not user data endianness. If `UBE != SBE`, user accesses will walk page tables with the wrong byte order and can fault or hang once the MMU is active.",
+        "patch_context": [
+          "if (riscv_cpu_mxl(env) == MXL_RV32) {",
+          "-            pte = address_space_ldl_le(cs->as, pte_addr, attrs, &res);",
+          "+            pte = riscv_cpu_data_is_big_endian(env)",
+          "+                ? address_space_ldl_be(cs->as, pte_addr, attrs, &res)",
+          "+                : address_space_ldl_le(cs->as, pte_addr, attrs, &res);",
+          "         } else {"
+        ],
+        "suggestion": "Derive page-table-walk endianness from the translation context (`mmu_idx` / effective translation mode), not from `env->priv`. In practice this should use supervisor translation endianness for S/U page tables, and the appropriate virtualization-specific endianness where applicable, independent of UBE.",
+        "confidence": "high",
+        "confidence_reason": "This follows directly from the privileged-spec rule for implicit accesses to supervisor memory-management structures and from the helper implementation shown in patch 3, which only switches on `env->priv`."
+      },
+      {
+        "id": "RVBE-002",
+        "severity": "medium",
+        "file": "hw/riscv/boot.c",
+        "line": 274,
+        "title": "Kernel ELF loading is still hardcoded to little-endian",
+        "description": "The commit message says boot code should pass `ELFDATA2MSB` or `ELFDATA2LSB` based on runtime endianness, but the actual `load_elf_ram_sym()` call still passes `ELFDATA2LSB` unconditionally. A big-endian RISC-V ELF kernel image will therefore still be parsed as little-endian at load time, which defeats the advertised BE boot support.",
+        "patch_context": [
+          "kernel_size = load_elf_ram_sym(kernel_filename, NULL, NULL, NULL, NULL,",
+          "                               &info->image_low_addr, &info->image_high_addr,",
+          "-                                   NULL, ELFDATA2LSB, EM_RISCV,",
+          "-                                   1, 0, NULL, true, sym_cb);",
+          "+                                   NULL,",
+          "+                                   ELFDATA2LSB,",
+          "+                                   EM_RISCV, 1, 0, NULL, true, sym_cb);"
+        ],
+        "suggestion": "Actually select the ELF class endianness argument from `riscv_is_big_endian(harts)`, using `ELFDATA2MSB` for BE and `ELFDATA2LSB` for LE.",
+        "confidence": "high",
+        "confidence_reason": "The bug is explicit in the posted diff: only formatting changed and the endianness argument remained hardcoded to `ELFDATA2LSB`."
+      },
+      {
+        "id": "RVBE-003",
+        "severity": "medium",
+        "file": "hw/riscv/boot.c",
+        "line": 43,
+        "title": "Boot code treats endianness as hart-array-wide even though the new property is per-CPU",
+        "description": "Patch 1 introduces `big-endian` as a per-CPU property and the cover letter says machine models can configure individual HARTs. Patch 4 then implements `riscv_is_big_endian()` as `harts->harts[0].cfg.big_endian` and uses that single value for shared reset data, firmware info, and image loading. If a hart array contains mixed-endian CPUs, secondary harts will observe boot data encoded for hart 0 rather than for themselves.",
+        "patch_context": [
+          "+bool riscv_is_big_endian(RISCVHartArrayState *harts)",
+          "+{",
+          "+    return harts->harts[0].cfg.big_endian;",
+          "+}"
+        ],
+        "suggestion": "Either reject mixed-endian hart arrays during machine initialization and document that boot-time endianness must be uniform, or rework boot/reset data generation so it is per-hart instead of derived from `harts[0]`.",
+        "confidence": "high",
+        "confidence_reason": "The mismatch is visible from the new per-CPU property and the new helper implementation that always reads only hart 0."
+      }
+    ],
+    "checkpatch": {
+      "status": "not_run",
+      "issues": []
+    },
+    "build_status": "not_run",
+    "am_status": "failed"
+  },
+  "patches": [],
+  "generated_at": "2026-03-26T10:36:06Z",
+  "generator": "loupe-review v1.0",
+  "disclaimer": "LLM-generated draft. Not an authoritative review."
+}

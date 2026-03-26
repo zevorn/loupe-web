@@ -1,0 +1,68 @@
+{
+  "schema_version": "1",
+  "id": "20260325-20260325014856.58948-1-jay.chang-at-sifive.com",
+  "series": {
+    "title": "[v2] hw/riscv/riscv-iommu: Use standard EN_PRI bit for PRI",
+    "version": 2,
+    "patch_count": 1,
+    "author": {
+      "name": "Jay Chang",
+      "email": "jay.chang@sifive.com"
+    },
+    "date": "2026-03-25",
+    "subsystem": "hw/riscv/riscv-iommu",
+    "message_id": "<20260325014856.58948-1-jay.chang@sifive.com>",
+    "lore_url": "https://lore.kernel.org/qemu-devel/20260325014856.58948-1-jay.chang%40sifive.com/",
+    "patchwork_url": "http://patchwork.ozlabs.org/project/qemu-devel/patch/20260325014856.58948-1-jay.chang@sifive.com/",
+    "base_branch": "master"
+  },
+  "version_history": [],
+  "ml_context": {
+    "patchwork_state": "new",
+    "reviewed_by": [],
+    "acked_by": [],
+    "ci_status": "",
+    "prior_feedback": [],
+    "maintainer_activity": ""
+  },
+  "review": {
+    "verdict": "needs_revision",
+    "summary": "The functional change is small and appears directionally correct, but it introduces a guest-visible behavior change with no compatibility handling for VMs or machine types that previously enabled PRI through the old temporary TC[32] bit.",
+    "mode": "ci-single",
+    "stages": {
+      "A": "Patch intent is clear: switch PRI enablement from the temporary custom TC[32] bit to the standard EN_PRI bit.",
+      "B": "The code change itself is mechanically correct if RISCV_IOMMU_DC_TC_EN_PRI is the architectural replacement for the temporary bit.",
+      "C": "Compatibility is not addressed. Existing migrated or resumed guests that still carry TC[32] set will stop triggering PRI until software rewrites the register.",
+      "D": "No build or runtime validation was provided, and checkpatch/build status were not run.",
+      "E": "Recommendation: add migration/machine-type compatibility handling or explicitly scope this to a new compat boundary."
+    },
+    "findings": [
+      {
+        "id": "RVIOMMU-001",
+        "severity": "medium",
+        "file": "hw/riscv/riscv-iommu.c",
+        "line": 1575,
+        "title": "Changing PRI enable bit without compat handling can break migrated or existing guests",
+        "description": "Before this patch, PRI was enabled when `ctx->tc` had the temporary custom bit `BIT_ULL(32)` set. After this patch, the same runtime state no longer enables PRI unless the guest rewrites `tc` to set `RISCV_IOMMU_DC_TC_EN_PRI`. If `ctx->tc` is preserved across migration, reset, or compat machine types, a VM created by an older QEMU can silently lose PRI behavior after migration or upgrade.",
+        "patch_context": [
+          "-    enable_pri = (iotlb->perm == IOMMU_NONE) && (ctx->tc & BIT_ULL(32));",
+          "+    enable_pri = (iotlb->perm == IOMMU_NONE) &&",
+          "+                 (ctx->tc & RISCV_IOMMU_DC_TC_EN_PRI);"
+        ],
+        "suggestion": "Preserve backward compatibility by translating the legacy TC[32] bit to EN_PRI during vmstate/load or register write handling, or gate the new interpretation behind a machine-version compat knob so older machine types continue to honor TC[32].",
+        "confidence": "medium",
+        "confidence_reason": "The risk depends on how `ctx->tc` is serialized and whether compat machine types exist for this device, but QEMU device state is commonly migrated verbatim, so changing the meaning of a guest-visible register bit is a plausible compatibility regression."
+      }
+    ],
+    "checkpatch": {
+      "status": "not_run",
+      "issues": []
+    },
+    "build_status": "not_run",
+    "am_status": "failed"
+  },
+  "patches": [],
+  "generated_at": "2026-03-26T10:36:47Z",
+  "generator": "loupe-review v1.0",
+  "disclaimer": "LLM-generated draft. Not an authoritative review."
+}

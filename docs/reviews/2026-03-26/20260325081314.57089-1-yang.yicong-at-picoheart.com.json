@@ -1,0 +1,66 @@
+{
+  "schema_version": "1",
+  "id": "20260325-20260325081314.57089-1-yang.yicong-at-picoheart.com",
+  "series": {
+    "title": "hw/riscv/virt-acpi-build.c: Use kvm timer frequency when kvm enabled",
+    "version": 1,
+    "patch_count": 1,
+    "author": {
+      "name": "Yicong Yang",
+      "email": "yang.yicong@picoheart.com"
+    },
+    "date": "2026-03-25",
+    "subsystem": "hw/riscv/virt-acpi-build.c",
+    "message_id": "<20260325081314.57089-1-yang.yicong@picoheart.com>",
+    "lore_url": "https://lore.kernel.org/qemu-devel/20260325081314.57089-1-yang.yicong%40picoheart.com/",
+    "patchwork_url": "http://patchwork.ozlabs.org/project/qemu-devel/patch/20260325081314.57089-1-yang.yicong@picoheart.com/",
+    "base_branch": "master"
+  },
+  "version_history": [],
+  "ml_context": {
+    "patchwork_state": "new",
+    "reviewed_by": [],
+    "acked_by": [],
+    "ci_status": "",
+    "prior_feedback": [],
+    "maintainer_activity": ""
+  },
+  "review": {
+    "verdict": "accept",
+    "summary": "The change is small and matches existing RISC-V virt behavior for DT guests: RHCT should advertise the host-provided timebase when KVM is active instead of the fixed ACLINT default. I did not identify a functional issue in the patch itself. Residual risk remains because checkpatch, git status inspection, and build/test validation were not run.",
+    "mode": "ci-single",
+    "stages": {
+      "A": {
+        "result": "pass",
+        "details": "Problem statement and fix direction are coherent. ACPI RHCT time base frequency should reflect the effective timer frequency seen by a KVM guest, not the TCG/default ACLINT constant."
+      },
+      "B": {
+        "result": "pass",
+        "details": "The code updates only the RHCT time base field and gates the KVM-specific path behind kvm_enabled(). That is the expected behavior change and is consistent with the commit message."
+      },
+      "C": {
+        "result": "pass",
+        "details": "The added includes and helper usage appear appropriate for a RISC-V KVM-specific query path. No obvious build-configuration issue is visible from the patch alone, though this was not compile-verified."
+      },
+      "D": {
+        "result": "pass",
+        "details": "Regression risk is low because non-KVM behavior remains unchanged and the KVM path is limited to the advertised RHCT frequency value."
+      },
+      "E": {
+        "result": "pass",
+        "details": "Recommendation is to take the patch, with the usual caveat that a build and a basic KVM boot validation should still be performed."
+      }
+    },
+    "findings": [],
+    "checkpatch": {
+      "status": "not_run",
+      "issues": []
+    },
+    "build_status": "not_run",
+    "am_status": "failed"
+  },
+  "patches": [],
+  "generated_at": "2026-03-26T10:39:16Z",
+  "generator": "loupe-review v1.0",
+  "disclaimer": "LLM-generated draft. Not an authoritative review."
+}
