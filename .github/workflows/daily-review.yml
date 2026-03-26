@@ -18,16 +18,24 @@ concurrency:
 
 jobs:
   review:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     env:
       CODEX_HOME: ${{ github.workspace }}/.codex
+      QEMU_DIR: ${{ github.workspace }}/qemu
     steps:
       - uses: actions/checkout@v4
 
       - name: Install system dependencies
         run: |
+          sudo sed -i 's/^Types: deb$/Types: deb deb-src/' /etc/apt/sources.list.d/ubuntu.sources
           sudo apt-get update -qq
           sudo apt-get install -y -qq jq b4
+          sudo apt-get build-dep -y qemu
+
+      - name: Clone QEMU source tree
+        run: |
+          git clone --depth=1 https://gitlab.com/qemu-project/qemu.git "${QEMU_DIR}"
+          cd "${QEMU_DIR}" && git submodule update --init --depth=1
 
       - name: Install Codex CLI
         run: npm install -g @openai/codex
@@ -81,7 +89,6 @@ jobs:
             SLUG=$(echo "${msgid}" | sed 's/[<>]//g; s/@/-at-/; s/[^a-zA-Z0-9._-]/-/g' | cut -c1-80)
             OUTPUT_FILE="${DATE_DIR}/${SLUG}.json"
 
-            # Script builds JSON structure, codex only fills review content
             bash scripts/review-patch.sh "${msgid}" "${OUTPUT_FILE}" || \
               echo "Review failed for ${msgid}, continuing with next..."
           done
@@ -99,14 +106,10 @@ jobs:
           for i in 1 2 3; do
             git push && break
             echo "Push failed (attempt $i), pulling and retrying..."
-            # Abort any in-progress rebase first
             git rebase --abort 2>/dev/null || true
-            # Pull with rebase, auto-resolve conflicts by keeping remote
             if ! git pull --rebase; then
-              echo "Rebase conflict — remote likely has same content. Resetting."
               git rebase --abort 2>/dev/null || true
               git reset --hard origin/main
-              # Re-apply our new files on top of remote
               bash scripts/update-index.sh
               git add docs/reviews/
               git diff --cached --quiet && { echo "No new changes after reset."; exit 0; }
