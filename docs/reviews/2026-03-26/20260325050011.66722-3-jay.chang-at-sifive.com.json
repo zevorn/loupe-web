@@ -1,0 +1,74 @@
+{
+  "schema_version": "1",
+  "id": "20260325-20260325050011.66722-3-jay.chang-at-sifive.com",
+  "series": {
+    "title": "[v2,0/2] Bug fixes and IPSR.PMIP support",
+    "version": 2,
+    "patch_count": 2,
+    "author": {
+      "name": "Jay Chang",
+      "email": "jay.chang@sifive.com"
+    },
+    "date": "2026-03-25",
+    "subsystem": "riscv",
+    "message_id": "<20260325050011.66722-3-jay.chang@sifive.com>",
+    "lore_url": "https://lore.kernel.org/qemu-devel/20260325050011.66722-3-jay.chang%40sifive.com/",
+    "patchwork_url": "http://patchwork.ozlabs.org/project/qemu-devel/patch/20260325050011.66722-3-jay.chang@sifive.com/",
+    "base_branch": "master"
+  },
+  "version_history": [],
+  "ml_context": {
+    "patchwork_state": "new",
+    "reviewed_by": [],
+    "acked_by": [],
+    "ci_status": "",
+    "prior_feedback": [],
+    "maintainer_activity": ""
+  },
+  "review": {
+    "verdict": "reject",
+    "summary": "Patch 1 looks correct and fixes stale timer state. Patch 2 implements IPSR.PMIP clearing with inverted RW1C logic, so the bit would clear on writes of 0 instead of 1 and fail to clear on writes of 1.",
+    "mode": "ci-single",
+    "stages": {
+      "A": "Scope understood: 2-patch RISC-V IOMMU series touching HPM timer state and IPSR pending-bit handling.",
+      "B": "Patch 1 review: resetting irq_overflow_left before recomputing overflow state is consistent with the stated bug and does not introduce an obvious regression.",
+      "C": "Patch 2 review: the new PMIP handling does not match RW1C semantics as described in the commit message.",
+      "D": "Risk assessment: incorrect PMIP clearing would break guest-visible interrupt-pending behavior and make the register semantics inconsistent with other RW1C bits.",
+      "E": "Conclusion: series should not be applied as-is; patch 2 needs correction."
+    },
+    "findings": [
+      {
+        "id": "F1",
+        "severity": "high",
+        "file": "hw/riscv/riscv-iommu.c",
+        "line": 2156,
+        "title": "IPSR.PMIP RW1C handling is inverted",
+        "description": "The added PMIP branch clears the bit when the guest writes 0, but RW1C fields must clear when the guest writes 1. As written, a write with PMIP=1 would leave the pending bit set, while a write with PMIP=0 would clear it. That contradicts the commit message and expected IPSR semantics.",
+        "patch_context": [
+          "@@ -2153,6 +2153,10 @@ static void riscv_iommu_update_ipsr(RISCVIOMMUState *s, uint64_t data)",
+          "         ipsr_clr |= RISCV_IOMMU_IPSR_FIP;",
+          "     }",
+          "",
+          "+    if (!(data & RISCV_IOMMU_IPSR_PMIP)) {",
+          "+        ipsr_clr |= RISCV_IOMMU_IPSR_PMIP;",
+          "+    }",
+          "+",
+          "     if (data & RISCV_IOMMU_IPSR_PIP) {"
+        ],
+        "suggestion": "Change the condition to `if (data & RISCV_IOMMU_IPSR_PMIP) { ipsr_clr |= RISCV_IOMMU_IPSR_PMIP; }` so PMIP follows RW1C behavior like the other pending bits.",
+        "confidence": "high",
+        "confidence_reason": "The patch explicitly claims RW1C support, and RW1C semantics require clearing on writes of 1. The introduced negated condition does the opposite."
+      }
+    ],
+    "checkpatch": {
+      "status": "clean",
+      "issues": []
+    },
+    "build_status": "configure_ok",
+    "am_status": "success"
+  },
+  "patches": [],
+  "generated_at": "2026-03-26T11:22:24Z",
+  "generator": "loupe-review v1.0",
+  "disclaimer": "LLM-generated draft. Not an authoritative review."
+}

@@ -1,0 +1,51 @@
+{
+  "schema_version": "1",
+  "id": "20260325-20260325014856.58948-1-jay.chang-at-sifive.com",
+  "series": {
+    "title": "[v2] hw/riscv/riscv-iommu: Use standard EN_PRI bit for PRI",
+    "version": 2,
+    "patch_count": 1,
+    "author": {
+      "name": "Jay Chang",
+      "email": "jay.chang@sifive.com"
+    },
+    "date": "2026-03-25",
+    "subsystem": "hw/riscv/riscv-iommu",
+    "message_id": "<20260325014856.58948-1-jay.chang@sifive.com>",
+    "lore_url": "https://lore.kernel.org/qemu-devel/20260325014856.58948-1-jay.chang%40sifive.com/",
+    "patchwork_url": "http://patchwork.ozlabs.org/project/qemu-devel/patch/20260325014856.58948-1-jay.chang@sifive.com/",
+    "base_branch": "master"
+  },
+  "version_history": [],
+  "ml_context": {
+    "patchwork_state": "new",
+    "reviewed_by": [],
+    "acked_by": [],
+    "ci_status": "",
+    "prior_feedback": [],
+    "maintainer_activity": ""
+  },
+  "review": {
+    "verdict": "accept",
+    "summary": "The change is narrow and appears semantically correct: PRI enablement switches from a temporary custom TC[32] bit to the standard RISCV_IOMMU_DC_TC_EN_PRI definition, matching the stated spec alignment without altering the surrounding control flow.",
+    "mode": "ci-single",
+    "stages": {
+      "A": "Patch intent is clear and self-consistent: replace a temporary guest-visible control bit with the standardized PRI enable bit.",
+      "B": "Code-path review of the touched logic shows no functional change beyond the selected bit mask used to gate automatic page-request generation when IOTLB permission is IOMMU_NONE.",
+      "C": "I did not identify missing follow-up changes in the shown path; enable_pid and ATS handling remain unchanged, so the patch preserves existing behavior apart from the intended bit definition update.",
+      "D": "Reported metadata is favorable but limited: checkpatch is clean and configure passes, though no compile or runtime test result is provided.",
+      "E": "No blocking issues found in the submitted diff. The patch is suitable for merging as a spec-alignment cleanup."
+    },
+    "findings": [],
+    "checkpatch": {
+      "status": "clean",
+      "issues": []
+    },
+    "build_status": "configure_ok",
+    "am_status": "success"
+  },
+  "patches": [],
+  "generated_at": "2026-03-26T11:21:19Z",
+  "generator": "loupe-review v1.0",
+  "disclaimer": "LLM-generated draft. Not an authoritative review."
+}

@@ -1,0 +1,51 @@
+{
+  "schema_version": "1",
+  "id": "20260325-20260325081314.57089-1-yang.yicong-at-picoheart.com",
+  "series": {
+    "title": "hw/riscv/virt-acpi-build.c: Use kvm timer frequency when kvm enabled",
+    "version": 1,
+    "patch_count": 1,
+    "author": {
+      "name": "Yicong Yang",
+      "email": "yang.yicong@picoheart.com"
+    },
+    "date": "2026-03-25",
+    "subsystem": "hw/riscv/virt-acpi-build.c",
+    "message_id": "<20260325081314.57089-1-yang.yicong@picoheart.com>",
+    "lore_url": "https://lore.kernel.org/qemu-devel/20260325081314.57089-1-yang.yicong%40picoheart.com/",
+    "patchwork_url": "http://patchwork.ozlabs.org/project/qemu-devel/patch/20260325081314.57089-1-yang.yicong@picoheart.com/",
+    "base_branch": "master"
+  },
+  "version_history": [],
+  "ml_context": {
+    "patchwork_state": "new",
+    "reviewed_by": [],
+    "acked_by": [],
+    "ci_status": "",
+    "prior_feedback": [],
+    "maintainer_activity": ""
+  },
+  "review": {
+    "verdict": "accept",
+    "summary": "The change is directionally correct: RHCT should advertise the actual guest timer frequency, and under KVM that frequency is host/KVM-defined rather than the fixed ACLINT default. The diff is narrowly scoped, guarded by `kvm_enabled()`, and matches the stated intent to align ACPI behavior with the existing DT path. I did not identify a concrete functional regression from the patch as shown.",
+    "mode": "ci-single",
+    "stages": {
+      "A": "Problem statement and fix rationale are sound. Using the fixed `RISCV_ACLINT_DEFAULT_TIMEBASE_FREQ` under KVM would misdescribe the platform timer to ACPI guests.",
+      "B": "Implementation scope is minimal and localized to RHCT construction. The new includes and conditional selection of the KVM-provided frequency are consistent with the intended behavior.",
+      "C": "No clear correctness issue is visible in the diff itself. Using hart 0 as the source for the VM-wide timebase is consistent with the assumption of a single platform timer frequency.",
+      "D": "Validation is limited: the provided status shows `configure_ok` but not a full compile or guest-level ACPI verification. That is a testing gap, not a blocker based on the patch alone.",
+      "E": "Recommendation: accept. A follow-up runtime check or test that verifies RHCT timebase under KVM would improve confidence, but no code change is required for this patch."
+    },
+    "findings": [],
+    "checkpatch": {
+      "status": "issues",
+      "issues": []
+    },
+    "build_status": "configure_ok",
+    "am_status": "success"
+  },
+  "patches": [],
+  "generated_at": "2026-03-26T11:23:32Z",
+  "generator": "loupe-review v1.0",
+  "disclaimer": "LLM-generated draft. Not an authoritative review."
+}
