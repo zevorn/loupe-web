@@ -113,24 +113,40 @@ if [ -d "${QEMU_DIR}" ] && [ -n "${DIFF_TEXT}" ]; then
         git config user.name "Chao Liu"
         # Save mbox and apply
         echo "${DIFF_TEXT}" > patch.mbox
+
+        # Try git am, fall back to --3way on conflict
+        AM_OUTPUT=""
         if git am patch.mbox 2>&1; then
             AM_STATUS="success"
             echo "  git am: success"
-
-            # Run checkpatch
-            if [ -x scripts/checkpatch.pl ]; then
-                echo "  Running checkpatch..."
-                CHECKPATCH_OUT=$(perl scripts/checkpatch.pl patch.mbox 2>&1 || true)
-                if echo "${CHECKPATCH_OUT}" | grep -q "total: 0 errors, 0 warnings"; then
-                    CHECKPATCH_RESULT="clean"
-                else
-                    CHECKPATCH_RESULT="issues"
-                    CHECKPATCH_ISSUES=$(echo "${CHECKPATCH_OUT}" | grep -E "^(ERROR|WARNING|CHECK):" | head -10)
-                fi
-                echo "  checkpatch: ${CHECKPATCH_RESULT}"
+        else
+            echo "  git am failed, retrying with --3way..."
+            git am --abort 2>/dev/null || true
+            if git am --3way patch.mbox 2>&1; then
+                AM_STATUS="success_3way"
+                echo "  git am --3way: success"
+            else
+                AM_STATUS="failed"
+                git am --abort 2>/dev/null || true
+                echo "  git am --3way: FAILED"
             fi
+        fi
 
-            # Quick build test (configure only, full build too slow for CI)
+        # Run checkpatch regardless of am status (runs on the mbox file)
+        if [ -x scripts/checkpatch.pl ]; then
+            echo "  Running checkpatch..."
+            CHECKPATCH_OUT=$(perl scripts/checkpatch.pl patch.mbox 2>&1 || true)
+            if echo "${CHECKPATCH_OUT}" | grep -q "total: 0 errors, 0 warnings"; then
+                CHECKPATCH_RESULT="clean"
+            else
+                CHECKPATCH_RESULT="issues"
+                CHECKPATCH_ISSUES=$(echo "${CHECKPATCH_OUT}" | grep -E "^(ERROR|WARNING|CHECK):" | head -10)
+            fi
+            echo "  checkpatch: ${CHECKPATCH_RESULT}"
+        fi
+
+        # Build test only if am succeeded
+        if [ "${AM_STATUS}" = "success" ] || [ "${AM_STATUS}" = "success_3way" ]; then
             echo "  Quick build check..."
             if ./configure --target-list=riscv64-softmmu 2>&1 | tail -3; then
                 BUILD_STATUS="configure_ok"
@@ -140,9 +156,7 @@ if [ -d "${QEMU_DIR}" ] && [ -n "${DIFF_TEXT}" ]; then
                 echo "  configure: failed"
             fi
         else
-            AM_STATUS="failed"
-            git am --abort 2>/dev/null || true
-            echo "  git am: FAILED"
+            echo "  Skipping build (am failed)"
         fi
         rm -f patch.mbox
         cd - >/dev/null
