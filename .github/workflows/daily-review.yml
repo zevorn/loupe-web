@@ -1,0 +1,115 @@
+name: Daily Patch Review
+
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - 'docs/reviews/**'
+  schedule:
+    - cron: '0 8 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: daily-review
+  cancel-in-progress: false
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    env:
+      CODEX_HOME: ${{ github.workspace }}/.codex
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq jq b4
+
+      - name: Install Codex CLI
+        run: npm install -g @openai/codex
+
+      - name: Setup Codex config and install loupe skill
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          OPENAI_API_URL: ${{ secrets.OPENAI_API_URL }}
+          OPENAI_MODEL_NAME: ${{ secrets.OPENAI_MODEL_NAME }}
+        run: |
+          mkdir -p "${CODEX_HOME}/skills/loupe"
+
+          cat > "${CODEX_HOME}/auth.json" << EOF
+          {
+            "OPENAI_API_KEY": "${OPENAI_API_KEY}"
+          }
+          EOF
+          sed -i 's/^          //' "${CODEX_HOME}/auth.json"
+
+          cat > "${CODEX_HOME}/config.toml" << TOML
+          model_provider = "ci-provider"
+          model = "${OPENAI_MODEL_NAME}"
+
+          [model_providers.ci-provider]
+          name = "ci-provider"
+          base_url = "${OPENAI_API_URL}"
+          wire_api = "responses"
+          requires_openai_auth = true
+          TOML
+          sed -i 's/^          //' "${CODEX_HOME}/config.toml"
+
+          curl -sL "https://raw.githubusercontent.com/zevorn/loupe/main/codex/SKILL.md" \
+            -o "${CODEX_HOME}/skills/loupe/SKILL.md"
+          curl -sL "https://raw.githubusercontent.com/zevorn/loupe/main/commands/loupe-review.md" \
+            -o "${CODEX_HOME}/skills/loupe/loupe-review.md"
+
+      - name: Fetch new patches from Patchwork
+        run: bash scripts/fetch-new-patches.sh
+
+      - name: Review patches
+        run: |
+          COUNT=$(jq length /tmp/new-patches.json)
+          if [ "$COUNT" -eq 0 ]; then
+            echo "No new patches to review."
+            exit 0
+          fi
+          DATE_DIR="$(pwd)/docs/reviews/$(date +%Y-%m-%d)"
+          mkdir -p "$DATE_DIR"
+
+          for msgid in $(jq -r '.[]' /tmp/new-patches.json); do
+            SLUG=$(echo "${msgid}" | sed 's/[<>]//g; s/@/-at-/; s/[^a-zA-Z0-9._-]/-/g' | cut -c1-80)
+            OUTPUT_FILE="${DATE_DIR}/${SLUG}.json"
+
+            # Script builds JSON structure, codex only fills review content
+            bash scripts/review-patch.sh "${msgid}" "${OUTPUT_FILE}" || \
+              echo "Review failed for ${msgid}, continuing with next..."
+          done
+
+      - name: Update index
+        run: bash scripts/update-index.sh
+
+      - name: Commit and push
+        run: |
+          git config user.name "loupe-bot"
+          git config user.email "loupe-bot@users.noreply.github.com"
+          git add docs/reviews/
+          git diff --cached --quiet && { echo "No changes to commit."; exit 0; }
+          git commit -m "review: $(date +%Y-%m-%d) daily patch review"
+          for i in 1 2 3; do
+            git push && break
+            echo "Push failed (attempt $i), pulling and retrying..."
+            # Abort any in-progress rebase first
+            git rebase --abort 2>/dev/null || true
+            # Pull with rebase, auto-resolve conflicts by keeping remote
+            if ! git pull --rebase; then
+              echo "Rebase conflict — remote likely has same content. Resetting."
+              git rebase --abort 2>/dev/null || true
+              git reset --hard origin/main
+              # Re-apply our new files on top of remote
+              bash scripts/update-index.sh
+              git add docs/reviews/
+              git diff --cached --quiet && { echo "No new changes after reset."; exit 0; }
+              git commit -m "review: $(date +%Y-%m-%d) daily patch review"
+            fi
+          done

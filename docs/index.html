@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>loupe — LLM-assisted patch review</title>
+<style>
+:root {
+    --bg: #f5f5f5;
+    --bg-card: #ffffff;
+    --bg-code: #f6f8fa;
+    --text: #24292f;
+    --text-muted: #666666;
+    --text-dim: #999999;
+    --border: #d0d7de;
+    --border-light: #eee;
+    --link: #007bff;
+    --sev-critical: #d32f2f;
+    --sev-major: #1565c0;
+    --sev-minor: #f59e0b;
+    --sev-nit: #94a3b8;
+    --diff-add: rgba(46, 160, 67, 0.15);
+    --diff-del: rgba(248, 81, 73, 0.15);
+    --confidence-high: #22863a;
+    --confidence-medium: #d67f05;
+    --confidence-low: #d73a49;
+    --ai-border: #283593;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+    font-size: 13px; line-height: 1.4; color: var(--text);
+    background: var(--bg); padding: 12px; max-width: 1200px; margin: 0 auto;
+}
+h1 { font-size: 1.6em; font-weight: 600; margin-bottom: 4px; }
+h2 { font-size: 1.1em; font-weight: 600; margin: 16px 0 8px; }
+h3 { font-size: 1.0em; font-weight: 600; margin: 12px 0 6px; }
+a { color: var(--link); text-decoration: none; }
+a:hover { text-decoration: underline; }
+.subtitle { color: var(--text-muted); margin-bottom: 16px; }
+.hidden { display: none !important; }
+
+/* Badges */
+.badge { display: inline-block; padding: 1px 6px; border-radius: 3px; font-size: 11px; font-weight: 600; }
+.badge-ok { background: #e6ffed; color: #22863a; border: 1px solid #a6f3a6; }
+.badge-revision { background: #fff8e1; color: #d67f05; border: 1px solid #ffe082; }
+.badge-blocked { background: #ffeef0; color: #d73a49; border: 1px solid #f9a8a8; }
+.badge-stage { background: #e0f7fa; color: #006064; border: 1px solid #b2ebf2; }
+.badge-source { background: #f3e8fd; color: #6f42c1; border: 1px solid #d8b9fc; }
+
+/* Disclaimer */
+.disclaimer {
+    background: var(--bg-card); border: 1px solid var(--ai-border); border-left: 3px solid var(--ai-border);
+    border-radius: 4px; padding: 8px 12px; margin: 12px 0; font-size: 12px; color: var(--text-muted);
+}
+
+/* Stats */
+.stats-row { display: flex; gap: 12px; margin: 12px 0; }
+.stat-box { background: var(--bg-card); border: 1px solid var(--border); border-radius: 4px; padding: 8px 16px; text-align: center; flex: 1; }
+.stat-num { font-size: 20px; font-weight: 600; }
+.stat-label { color: var(--text-muted); font-size: 11px; text-transform: uppercase; }
+
+/* Filter bar */
+.filter-bar {
+    background: var(--bg-card); border: 1px solid var(--border); border-radius: 4px;
+    padding: 8px 12px; margin: 12px 0; display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
+}
+.filter-bar label { font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+.search-input {
+    font-family: inherit; font-size: 13px; padding: 4px 8px; border: 1px solid var(--border);
+    border-radius: 3px; background: var(--bg); color: var(--text); width: 260px; outline: none;
+}
+.search-input:focus { border-color: var(--link); box-shadow: 0 0 0 2px rgba(0,123,255,0.15); }
+.search-input::placeholder { color: var(--text-dim); }
+.filter-select {
+    font-family: inherit; font-size: 13px; padding: 4px 8px; border: 1px solid var(--border);
+    border-radius: 3px; background: var(--bg-card); color: var(--text); cursor: pointer; outline: none;
+}
+.filter-group { display: flex; align-items: center; gap: 6px; }
+.filter-count { font-size: 11px; color: var(--text-dim); margin-left: auto; }
+
+/* Table */
+.review-table { width: 100%; border-collapse: collapse; background: var(--bg-card); border: 1px solid var(--border); border-radius: 4px; overflow: hidden; }
+.review-table th {
+    background: #fafafa; text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--border);
+    font-weight: 600; font-size: 12px; color: var(--text-muted); text-transform: uppercase;
+    letter-spacing: 0.5px; cursor: pointer; user-select: none;
+}
+.review-table th:hover { color: var(--text); }
+.review-table td { padding: 6px 8px; border-bottom: 1px solid var(--border-light); }
+.review-table tr:hover td { background: #e8e8e8; cursor: pointer; }
+.review-table tr.selected td { background: #d0e8ff; }
+
+/* Finding dots */
+.findings-dots { display: inline-flex; gap: 4px; align-items: center; }
+.finding-dot {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 20px; height: 20px; border-radius: 50%; font-size: 11px; font-weight: 700; color: #fff;
+}
+.dot-critical { background: var(--sev-critical); }
+.dot-major { background: var(--sev-major); }
+.dot-minor { background: var(--sev-minor); color: #24292f; }
+.dot-nit { background: var(--sev-nit); }
+.dot-zero { opacity: 0.25; }
+
+/* Legend */
+.legend { display: flex; gap: 16px; align-items: center; margin-top: 12px; font-size: 11px; color: var(--text-dim); }
+.legend-item { display: flex; align-items: center; gap: 4px; }
+.legend-dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; }
+
+/* Detail page */
+.nav { margin-bottom: 12px; font-size: 12px; }
+.meta-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin: 4px 0 12px; font-size: 12px; color: var(--text-muted); }
+.meta-sep { color: var(--border); }
+.stages { background: var(--bg-card); border: 1px solid var(--border); border-radius: 4px; margin: 8px 0; }
+.stage-row { display: flex; padding: 4px 12px; border-bottom: 1px solid var(--border-light); font-size: 12px; }
+.stage-row:last-child { border-bottom: none; }
+.stage-label { width: 80px; flex-shrink: 0; font-weight: 600; color: #006064; }
+.stage-text { color: var(--text-muted); }
+.version-table { width: 100%; border-collapse: collapse; background: var(--bg-card); border: 1px solid var(--border); border-radius: 4px; overflow: hidden; margin: 8px 0; }
+.version-table th { background: #fafafa; text-align: left; padding: 4px 8px; border-bottom: 1px solid var(--border); font-weight: 600; font-size: 11px; color: var(--text-muted); text-transform: uppercase; }
+.version-table td { padding: 4px 8px; border-bottom: 1px solid var(--border-light); font-size: 12px; }
+.findings-summary { background: var(--bg-card); border: 1px solid var(--border); border-radius: 4px; padding: 8px 12px; margin: 8px 0; display: flex; gap: 16px; align-items: center; font-size: 12px; }
+
+/* Thread / original patch view */
+.patch-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 4px; margin: 12px 0; overflow: hidden; }
+.patch-card-header {
+    display: flex; align-items: center; gap: 8px; padding: 8px 12px;
+    border-bottom: 1px solid var(--border-light); background: #fafafa;
+    font-size: 12px; cursor: pointer; user-select: none;
+}
+.patch-card-header:hover { background: #f0f0f0; }
+.patch-card-header .toggle { color: var(--text-dim); font-size: 10px; transition: transform 0.2s; }
+.patch-card-header .toggle.open { transform: rotate(90deg); }
+.patch-card-header .patch-subject { font-weight: 600; flex: 1; }
+.patch-card-header .patch-meta { color: var(--text-muted); font-size: 11px; }
+.patch-card-body { display: none; }
+.patch-card-body.open { display: block; }
+.patch-card-body .commit-msg {
+    padding: 8px 12px; border-bottom: 1px solid var(--border-light);
+    font-size: 12px; color: var(--text-muted); white-space: pre-wrap;
+}
+.patch-card-body .diff-view {
+    background: var(--bg-code); font-size: 12px; line-height: 1.5;
+    overflow-x: auto; padding: 0;
+}
+.patch-card-body .diff-view .diff-line { padding: 1px 12px; white-space: pre; }
+.patch-card-body .lore-link { padding: 6px 12px; font-size: 11px; border-top: 1px solid var(--border-light); }
+
+/* Finding card */
+.finding { background: var(--bg-card); border: 1px solid var(--border); border-radius: 4px; margin: 12px 0; overflow: hidden; }
+.finding-header { display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-bottom: 1px solid var(--border-light); background: #fafafa; font-size: 12px; }
+.finding-header .file { color: var(--link); font-weight: 600; }
+.finding-header .line { color: var(--text-muted); }
+.patch-context { background: var(--bg-code); border-bottom: 1px solid var(--border-light); padding: 0; font-size: 12px; line-height: 1.5; overflow-x: auto; }
+.patch-context .diff-line { padding: 1px 12px; white-space: pre; }
+.diff-add { background: var(--diff-add); }
+.diff-del { background: var(--diff-del); }
+.diff-hdr { color: #005cc5; font-weight: 600; }
+.diff-ctx { color: var(--text-muted); }
+.finding-body { padding: 10px 12px; border-bottom: 1px solid var(--border-light); }
+.finding-title { font-weight: 600; margin-bottom: 4px; }
+.finding-desc { color: var(--text); margin-bottom: 6px; }
+.finding-suggestion { background: var(--bg-code); border: 1px solid var(--border); border-radius: 3px; padding: 4px 8px; font-size: 12px; display: inline-block; }
+.finding-footer { padding: 6px 12px; font-size: 11px; color: var(--text-dim); display: flex; gap: 16px; align-items: center; }
+.conf-high { color: var(--confidence-high); font-weight: 600; }
+.conf-medium { color: var(--confidence-medium); font-weight: 600; }
+.conf-low { color: var(--confidence-low); font-weight: 600; }
+
+/* Error */
+.error-box { background: var(--bg-card); border: 1px solid var(--sev-critical); border-radius: 4px; padding: 16px; margin: 24px 0; text-align: center; color: var(--text-muted); }
+
+kbd { background: var(--bg); border: 1px solid var(--border); border-radius: 3px; padding: 1px 4px; font-size: 11px; color: var(--text-muted); }
+</style>
+</head>
+<body>
+
+<!-- Landing View -->
+<div id="landing-view">
+    <h1>loupe</h1>
+    <p class="subtitle">LLM-assisted patch review for QEMU &mdash; <kbd>/</kbd> search &middot; <kbd>j</kbd>/<kbd>k</kbd> navigate</p>
+    <div class="disclaimer">This site contains LLM-generated review drafts. These are NOT authoritative reviews. Human reviewers should verify all findings before acting on them.</div>
+    <div class="stats-row">
+        <div class="stat-box"><div class="stat-num" id="stat-total">0</div><div class="stat-label">Reviews</div></div>
+        <div class="stat-box"><div class="stat-num" id="stat-week">0</div><div class="stat-label">This week</div></div>
+        <div class="stat-box"><div class="stat-num" id="stat-critical" style="color:var(--sev-critical);">0</div><div class="stat-label">Critical</div></div>
+        <div class="stat-box"><div class="stat-num" id="stat-ready" style="color:#22863a;">0</div><div class="stat-label">Ready to merge</div></div>
+    </div>
+    <div class="filter-bar">
+        <div class="filter-group"><label>Search</label><input class="search-input" id="filter-search" type="text" placeholder="subject, author, message-id..."></div>
+        <div class="filter-group"><label>Subsystem</label><select class="filter-select" id="filter-subsystem"><option value="">All subsystems</option></select></div>
+        <div class="filter-group"><label>Verdict</label><select class="filter-select" id="filter-verdict"><option value="">All</option><option value="needs_revision">needs revision</option><option value="ready_to_merge">ready to merge</option><option value="blocked">blocked</option></select></div>
+        <div class="filter-group"><label>Severity</label><select class="filter-select" id="filter-severity"><option value="">All</option><option value="critical">has critical</option><option value="major">has major</option><option value="clean">clean</option></select></div>
+        <div class="filter-group"><label>Date</label><select class="filter-select" id="filter-date"><option value="">All time</option><option value="today">Today</option><option value="week">This week</option><option value="month">This month</option></select></div>
+        <span class="filter-count" id="filter-count"></span>
+    </div>
+    <table class="review-table"><thead><tr>
+        <th>Date</th><th>Subsystem</th><th>Series</th><th>Author</th><th>#</th><th>Verdict</th><th>Findings</th>
+    </tr></thead><tbody id="table-body"></tbody></table>
+    <div class="legend">
+        <span style="font-weight:600;">Findings:</span>
+        <span class="legend-item"><span class="legend-dot" style="background:var(--sev-critical);"></span> Critical</span>
+        <span class="legend-item"><span class="legend-dot" style="background:var(--sev-major);"></span> Major</span>
+        <span class="legend-item"><span class="legend-dot" style="background:var(--sev-minor);"></span> Minor</span>
+        <span class="legend-item"><span class="legend-dot" style="background:var(--sev-nit);"></span> Nit</span>
+        <span style="margin-left:8px;">Click any row to view full review.</span>
+    </div>
+</div>
+
+<!-- Detail View -->
+<div id="detail-view" class="hidden">
+    <div class="nav"><a href="#" id="back-link">&larr; Back to reviews</a></div>
+    <div id="detail-error" class="error-box hidden">Review not found or failed to load.</div>
+    <div id="detail-content">
+        <h1 id="detail-title"></h1>
+        <div class="meta-row" id="detail-meta"></div>
+        <h2 id="detail-verdict-line"></h2>
+        <p style="color:var(--text-muted);font-size:12px;margin:4px 0 12px;" id="detail-summary"></p>
+        <div id="detail-version-history"></div>
+        <h3>Mailing list context</h3>
+        <div id="detail-ml-context" class="stages"></div>
+        <h3>Review stages</h3>
+        <div id="detail-stages" class="stages"></div>
+        <h2># Findings</h2>
+        <div id="detail-findings-summary" class="findings-summary"></div>
+        <div id="detail-findings"></div>
+        <h2 id="thread-header" class="hidden"># Thread (Original Patches)</h2>
+        <div id="detail-thread"></div>
+        <div class="disclaimer" style="margin-top:24px;" id="detail-footer"></div>
+    </div>
+</div>
+
+<script>
+const state = { reviews: [], current: null, selectedRow: -1 };
+
+function $(sel) { return document.querySelector(sel); }
+function $$(sel) { return document.querySelectorAll(sel); }
+
+// Data loading
+async function loadIndex() {
+    try {
+        const r = await fetch('reviews/index.json');
+        const d = await r.json();
+        state.reviews = d.reviews || [];
+        renderLanding();
+    } catch (e) {
+        $('#table-body').innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--text-dim);padding:24px;">No review data available.</td></tr>';
+    }
+}
+
+async function loadReview(path) {
+    try {
+        const r = await fetch(path);
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        state.current = await r.json();
+        $('#detail-error').classList.add('hidden');
+        $('#detail-content').classList.remove('hidden');
+        renderDetail();
+        showDetail();
+    } catch (e) {
+        $('#detail-error').classList.remove('hidden');
+        $('#detail-content').classList.add('hidden');
+        showDetail();
+    }
+}
+
+function showLanding() { $('#landing-view').classList.remove('hidden'); $('#detail-view').classList.add('hidden'); state.selectedRow = -1; }
+function showDetail() { $('#landing-view').classList.add('hidden'); $('#detail-view').classList.remove('hidden'); }
+
+// Filters
+function getFilters() {
+    return {
+        search: $('#filter-search').value.toLowerCase().trim(),
+        subsystem: $('#filter-subsystem').value,
+        verdict: $('#filter-verdict').value,
+        severity: $('#filter-severity').value,
+        date: $('#filter-date').value,
+    };
+}
+
+function applyFilters(reviews) {
+    const f = getFilters();
+    const now = new Date();
+    return reviews.filter(r => {
+        if (f.search) {
+            const s = f.search;
+            const hay = (r.title + ' ' + r.author + ' ' + (r.id || '') + ' ' + (r.message_id || '')).toLowerCase();
+            if (!hay.includes(s)) return false;
+        }
+        if (f.subsystem && r.subsystem !== f.subsystem) return false;
+        if (f.verdict && r.verdict !== f.verdict) return false;
+        if (f.severity) {
+            const fi = r.findings || {};
+            if (f.severity === 'critical' && !fi.critical) return false;
+            if (f.severity === 'major' && !fi.major && !fi.critical) return false;
+            if (f.severity === 'clean' && (fi.critical || fi.major || fi.minor || fi.nit)) return false;
+        }
+        if (f.date) {
+            const rd = new Date(r.date + 'T00:00:00');
+            const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            if (f.date === 'today' && rd.toDateString() !== today.toDateString()) return false;
+            if (f.date === 'week') {
+                const day = today.getDay() || 7;
+                const weekStart = new Date(today);
+                weekStart.setDate(today.getDate() - day + 1);
+                if (rd < weekStart) return false;
+            }
+            if (f.date === 'month' && (rd.getFullYear() !== now.getFullYear() || rd.getMonth() !== now.getMonth())) return false;
+        }
+        return true;
+    });
+}
+
+// Render landing
+function renderLanding() {
+    renderStats();
+    renderSubsystems();
+    const filtered = applyFilters(state.reviews);
+    renderTable(filtered);
+    $('#filter-count').textContent = `Showing ${filtered.length} of ${state.reviews.length} reviews`;
+}
+
+function renderStats() {
+    const rs = state.reviews;
+    const now = new Date();
+    $('#stat-total').textContent = rs.length;
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const day = today.getDay() || 7;
+    const weekStart = new Date(today);
+    weekStart.setDate(today.getDate() - day + 1);
+    $('#stat-week').textContent = rs.filter(r => new Date(r.date + 'T00:00:00') >= weekStart).length;
+    $('#stat-critical').textContent = rs.filter(r => (r.findings || {}).critical > 0).length;
+    $('#stat-ready').textContent = rs.filter(r => r.verdict === 'ready_to_merge').length;
+}
+
+let subsystemsBuilt = false;
+function renderSubsystems() {
+    if (subsystemsBuilt) return;
+    const subs = [...new Set(state.reviews.map(r => r.subsystem).filter(Boolean))].sort();
+    const sel = $('#filter-subsystem');
+    sel.innerHTML = '<option value="">All subsystems</option>';
+    subs.forEach(s => { const o = document.createElement('option'); o.value = s; o.textContent = s; sel.appendChild(o); });
+    subsystemsBuilt = true;
+}
+
+function renderTable(reviews) {
+    const tb = $('#table-body');
+    if (!reviews.length) {
+        tb.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--text-dim);padding:24px;">No reviews match filters.</td></tr>';
+        return;
+    }
+    tb.innerHTML = reviews.map((r, i) => `
+        <tr data-path="${esc(r.path)}" data-idx="${i}">
+            <td>${esc((r.date || '').slice(5))}</td>
+            <td style="color:var(--text-muted);">${esc(r.subsystem || '')}</td>
+            <td><a href="#/review/${encodeURIComponent(r.path)}">${esc(r.title || '')}</a></td>
+            <td>${esc(r.author || '')}</td>
+            <td>${r.patch_count || 0}</td>
+            <td>${verdictBadge(r.verdict)}</td>
+            <td>${findingDots(r.findings)}</td>
+        </tr>
+    `).join('');
+}
+function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+
+function verdictBadge(v) {
+    const map = { needs_revision: ['needs revision', 'badge-revision'], ready_to_merge: ['ready to merge', 'badge-ok'], blocked: ['blocked', 'badge-blocked'] };
+    const [label, cls] = map[v] || [v || 'unknown', ''];
+    return `<span class="badge ${cls}">${label}</span>`;
+}
+
+function findingDots(f) {
+    if (!f) return '<span style="color:var(--text-dim);">-</span>';
+    const d = (n, cls) => `<span class="finding-dot ${cls}${n === 0 ? ' dot-zero' : ''}">${n}</span>`;
+    return `<div class="findings-dots">${d(f.critical||0,'dot-critical')}${d(f.major||0,'dot-major')}${d(f.minor||0,'dot-minor')}${d(f.nit||0,'dot-nit')}</div>`;
+}
+
+// Render detail
+function renderDetail() {
+    const r = state.current;
+    if (!r) return;
+    const s = r.series || {};
+    $('#detail-title').textContent = s.title || 'Unknown';
+    $('#detail-meta').innerHTML = `
+        <span>${esc(s.author?.name || '')} &lt;${esc(s.author?.email || '')}&gt;</span>
+        <span class="meta-sep">|</span><span>${esc(s.date || '')}</span>
+        <span class="meta-sep">|</span><span>${s.patch_count || 0} patches</span>
+        <span class="meta-sep">|</span><span>base: ${esc(s.base_branch || 'master')}</span>
+        ${s.lore_url ? `<span class="meta-sep">|</span><a href="${esc(s.lore_url)}">lore</a>` : ''}
+        ${s.patchwork_url ? `<span class="meta-sep">|</span><a href="${esc(s.patchwork_url)}">patchwork</a>` : ''}
+    `;
+    const rv = r.review || {};
+    $('#detail-verdict-line').innerHTML = `# Verdict: ${verdictBadge(rv.verdict)}`;
+    $('#detail-summary').textContent = rv.summary || '';
+
+    // Version history
+    const vh = r.version_history || [];
+    if (vh.length) {
+        let h = '<h3>Version history</h3><table class="version-table"><thead><tr><th>Ver</th><th>Date</th><th>Key change</th></tr></thead><tbody>';
+        vh.forEach(v => {
+            const cur = v.version === s.version;
+            h += `<tr${cur ? ' style="background:#fffde7;"' : ''}><td>${cur ? '<b>' : ''}v${v.version}${cur ? '</b>' : ''}</td><td>${esc(v.date || '')}</td><td>${esc(v.key_change || '')}</td></tr>`;
+        });
+        h += '</tbody></table>';
+        $('#detail-version-history').innerHTML = h;
+    } else {
+        $('#detail-version-history').innerHTML = '';
+    }
+
+    // ML context
+    const ml = r.ml_context || {};
+    const mlRows = [
+        ['State', ml.patchwork_state || 'unknown'],
+        ['R-b tags', (ml.reviewed_by || []).join(', ') || 'none yet'],
+        ['CI', ml.ci_status || 'unknown'],
+        ...((ml.prior_feedback || []).map((f, i) => [`Prior${i > 0 ? ' ' + (i+1) : ''}`, f])),
+        ['Maintainer', ml.maintainer_activity || 'unknown'],
+    ];
+    $('#detail-ml-context').innerHTML = mlRows.map(([l, v]) =>
+        `<div class="stage-row"><span class="stage-label">${esc(l)}</span><span class="stage-text">${esc(v)}</span></div>`
+    ).join('');
+
+    // Stages
+    const stages = rv.stages || {};
+    $('#detail-stages').innerHTML = Object.entries(stages).map(([k, v]) =>
+        `<div class="stage-row"><span class="stage-label">Stage ${esc(k)}</span><span class="stage-text">${esc(v)}</span></div>`
+    ).join('');
+
+    // Findings summary
+    const findings = rv.findings || [];
+    const counts = { critical: 0, major: 0, minor: 0, nit: 0 };
+    findings.forEach(f => { if (counts[f.severity] !== undefined) counts[f.severity]++; });
+    const cp = rv.checkpatch || {};
+    $('#detail-findings-summary').innerHTML = `
+        <span>Total: <b>${findings.length}</b></span>
+        ${Object.entries(counts).filter(([,v]) => v > 0).map(([k, v]) =>
+            `<span><span class="badge" style="background:var(--sev-${k});color:${k === 'minor' ? '#24292f' : '#fff'};">${v} ${k}</span></span>`
+        ).join('')}
+        <span style="margin-left:auto;color:var(--text-dim);">checkpatch: <span style="color:${cp.status === 'clean' ? 'var(--confidence-high)' : 'var(--confidence-low)'};">${cp.status || 'unknown'}</span></span>
+    `;
+
+    // Finding cards
+    $('#detail-findings').innerHTML = findings.map(f => renderFinding(f)).join('');
+
+    // Thread (original patches)
+    renderThread(r.patches || []);
+
+    // Footer
+    $('#detail-footer').textContent = `Generated by ${r.generator || 'loupe'} at ${r.generated_at || 'unknown'}. ${r.disclaimer || ''}`;
+}
+
+function renderThread(patches) {
+    const header = $('#thread-header');
+    const container = $('#detail-thread');
+    if (!patches.length) {
+        header.classList.add('hidden');
+        container.innerHTML = '';
+        return;
+    }
+    header.classList.remove('hidden');
+    container.innerHTML = patches.map((p, i) => {
+        const diffHtml = (p.diff || '').split('\n').map(line => {
+            let cls = 'diff-ctx';
+            if (line.startsWith('+')) cls = 'diff-add';
+            else if (line.startsWith('-')) cls = 'diff-del';
+            else if (line.startsWith('@@')) cls = 'diff-hdr';
+            else if (line.startsWith('diff --git')) cls = 'diff-hdr';
+            return `<div class="diff-line ${cls}">${esc(line)}</div>`;
+        }).join('');
+        const loreLink = p.lore_url ? `<div class="lore-link"><a href="${esc(p.lore_url)}" target="_blank">View on lore.kernel.org</a></div>` : '';
+        const commitMsg = p.commit_message ? `<div class="commit-msg">${esc(p.commit_message)}</div>` : '';
+        return `
+        <div class="patch-card">
+            <div class="patch-card-header" onclick="togglePatch(this)">
+                <span class="toggle">&#9654;</span>
+                <span class="patch-subject">${esc(p.subject || 'Patch ' + (i+1))}</span>
+                <span class="patch-meta">${esc(p.author || '')} &middot; ${esc(p.date || '')}</span>
+            </div>
+            <div class="patch-card-body">
+                ${commitMsg}
+                <div class="diff-view">${diffHtml}</div>
+                ${loreLink}
+            </div>
+        </div>`;
+    }).join('');
+}
+
+function togglePatch(header) {
+    const body = header.nextElementSibling;
+    const toggle = header.querySelector('.toggle');
+    body.classList.toggle('open');
+    toggle.classList.toggle('open');
+}
+
+function renderFinding(f) {
+    const sevColors = { critical: 'var(--sev-critical)', major: 'var(--sev-major)', minor: 'var(--sev-minor)', nit: 'var(--sev-nit)' };
+    const sevTextColor = f.severity === 'minor' ? '#24292f' : '#fff';
+    const ctx = (f.patch_context || []).map(line => {
+        let cls = 'diff-ctx';
+        if (line.startsWith('+')) cls = 'diff-add';
+        else if (line.startsWith('-')) cls = 'diff-del';
+        else if (line.startsWith('@@')) cls = 'diff-hdr';
+        return `<div class="diff-line ${cls}">${esc(line)}</div>`;
+    }).join('');
+
+    return `
+    <div class="finding">
+        <div class="finding-header">
+            <span class="badge" style="background:${sevColors[f.severity] || '#999'};color:${sevTextColor};">${(f.severity || '').toUpperCase()}</span>
+            <span class="badge badge-stage">Stage ${esc(f.stage || '?')}</span>
+            <span class="badge badge-source">${esc(f.source || '')}</span>
+            <span class="file">${esc(f.file || '')}</span>
+            <span class="line">:${esc(f.line || '')}</span>
+            <span style="margin-left:auto;" class="badge">Patch ${esc(f.patch_index || '')}</span>
+        </div>
+        ${ctx ? `<div class="patch-context">${ctx}</div>` : ''}
+        <div class="finding-body">
+            <div class="finding-title">${esc(f.title || '')}</div>
+            <div class="finding-desc">${esc(f.description || '')}</div>
+            ${f.suggestion ? `<div class="finding-suggestion">${esc(f.suggestion)}</div>` : ''}
+        </div>
+        <div class="finding-footer">
+            <span>confidence: <b class="conf-${f.confidence || 'medium'}">${f.confidence || 'medium'}</b>${f.confidence_reason ? ' &mdash; ' + esc(f.confidence_reason) : ''}</span>
+        </div>
+    </div>`;
+}
+
+// Routing
+function handleRoute() {
+    const hash = window.location.hash;
+    if (hash.startsWith('#/review/')) {
+        const path = decodeURIComponent(hash.slice(9));
+        loadReview(path);
+    } else {
+        showLanding();
+    }
+}
+
+// Events
+$('#filter-search').addEventListener('input', renderLanding);
+$$('.filter-select').forEach(el => el.addEventListener('change', renderLanding));
+$('#back-link').addEventListener('click', (e) => { e.preventDefault(); window.location.hash = ''; });
+
+// Row click navigation (event delegation on tbody)
+$('#table-body').addEventListener('click', (e) => {
+    const row = e.target.closest('tr[data-path]');
+    if (row) {
+        window.location.hash = '#/review/' + encodeURIComponent(row.dataset.path);
+    }
+});
+
+// Keyboard
+let focusedRow = -1;
+document.addEventListener('keydown', (e) => {
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') {
+        if (e.key === 'Escape') { e.target.blur(); e.preventDefault(); }
+        return;
+    }
+    const rows = $$('#table-body tr[data-path]');
+    if (e.key === '/') { e.preventDefault(); $('#filter-search').focus(); }
+    else if (e.key === 'j') { focusedRow = Math.min(focusedRow + 1, rows.length - 1); highlightRow(rows); }
+    else if (e.key === 'k') { focusedRow = Math.max(focusedRow - 1, 0); highlightRow(rows); }
+    else if (e.key === 'Enter' && focusedRow >= 0 && rows[focusedRow]) {
+        const path = rows[focusedRow].dataset.path;
+        window.location.hash = '#/review/' + encodeURIComponent(path);
+    }
+    else if (e.key === 'Escape') { window.location.hash = ''; }
+});
+
+function highlightRow(rows) {
+    rows.forEach((r, i) => r.classList.toggle('selected', i === focusedRow));
+    if (rows[focusedRow]) rows[focusedRow].scrollIntoView({ block: 'nearest' });
+}
+
+// Init
+window.addEventListener('DOMContentLoaded', () => {
+    loadIndex().then(() => handleRoute());
+    window.addEventListener('hashchange', handleRoute);
+});
+</script>
+</body>
+</html>

@@ -11,6 +11,28 @@ Live site: [zevorn.github.io/loupe-web](https://zevorn.github.io/loupe-web/)
 3. Review results are saved as JSON files in `docs/reviews/`
 4. GitHub Pages serves `docs/` as a static site — zero build step
 
+## Setup
+
+### GitHub Secrets
+
+Configure in **Settings → Secrets and variables → Actions → Secrets**:
+
+| Secret | Description | Codex config mapping |
+|--------|-------------|---------------------|
+| `OPENAI_API_KEY` | API key (bearer token) | `OPENAI_API_KEY` env var |
+| `OPENAI_API_URL` | API base URL (e.g., `https://api.example.com/v1`) | `config.toml` → `base_url` |
+| `OPENAI_MODEL_NAME` | Model name (e.g., `gpt-5.4`) | `config.toml` → `model` |
+
+The workflow generates `$CODEX_HOME/config.toml` from these secrets at
+runtime, since Codex CLI reads API endpoint and model from config, not
+environment variables.
+
+### GitHub Pages
+
+Enable GitHub Pages in **Settings → Pages**:
+- Source: **Deploy from a branch**
+- Branch: **main**, folder: **/docs**
+
 ## Run Locally
 
 ```bash
