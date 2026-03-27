@@ -6,7 +6,7 @@ Live site: [zevorn.github.io/loupe-web](https://zevorn.github.io/loupe-web/)
 
 ## How It Works
 
-1. GitHub Actions runs daily (UTC 08:00), queries Patchwork for new QEMU RISC-V patches
+1. GitHub Actions runs daily (UTC 08:00), queries Patchwork for new QEMU patches
 2. New patches are reviewed via `codex exec` with the loupe-review skill
 3. Review results are saved as JSON files in `docs/reviews/`
 4. GitHub Pages serves `docs/` as a static site — zero build step
@@ -58,6 +58,17 @@ loupe-web/
 │   └── update-index.sh          # Rebuild index.json
 └── README.md
 ```
+
+## Acknowledgments
+
+The static site UI design and multi-stage review protocol are inspired by
+[Sashiko](https://sashiko.dev/) — an agentic Linux kernel code review
+system created by the [Linux Foundation](https://www.linuxfoundation.org/)
+and licensed under the [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0).
+Sashiko source: [github.com/sashiko-dev/sashiko](https://github.com/sashiko-dev/sashiko).
+
+The per-subsystem review prompts draw from the open-source
+[review-prompts](https://github.com/masoncl/review-prompts) by Chris Mason.
 
 ## License
 
