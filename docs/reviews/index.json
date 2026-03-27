@@ -1,6 +1,42 @@
 {
-  "updated_at": "2026-03-27T11:01:01Z",
+  "updated_at": "2026-03-27T11:59:20Z",
   "reviews": [
+    {
+      "id": "20260327-20260327111700.795099-7-peter.maydell-at-linaro.org",
+      "path": "reviews/2026-03-27/20260327111700.795099-7-peter.maydell-at-linaro.org.json",
+      "title": "[PATCH v2 0/65] arm: Implement an emulation of GICv5 interrupt",
+      "author": "Peter Maydell",
+      "date": "2026-03-27",
+      "subsystem": "hw/intc/arm_gicv5",
+      "version": 2,
+      "patch_count": 1,
+      "message_id": "<20260327111700.795099-7-peter.maydell@linaro.org>",
+      "verdict": "changes_requested",
+      "findings": {
+        "critical": 0,
+        "major": 1,
+        "minor": 0,
+        "nit": 0
+      }
+    },
+    {
+      "id": "20260327-20260327111700.795099-66-peter.maydell-at-linaro.org",
+      "path": "reviews/2026-03-27/20260327111700.795099-66-peter.maydell-at-linaro.org.json",
+      "title": "[PATCH v2 0/65] arm: Implement an emulation of GICv5 interrupt",
+      "author": "Peter Maydell",
+      "date": "2026-03-27",
+      "subsystem": "arm",
+      "version": 2,
+      "patch_count": 64,
+      "message_id": "<20260327111700.795099-66-peter.maydell@linaro.org>",
+      "verdict": "no_findings",
+      "findings": {
+        "critical": 0,
+        "major": 0,
+        "minor": 0,
+        "nit": 0
+      }
+    },
     {
       "id": "20260327-20260327065006.2567463-1-guoqing.zhang-at-amd.com",
       "path": "reviews/2026-03-27/20260327065006.2567463-1-guoqing.zhang-at-amd.com.json",
@@ -106,6 +142,24 @@
         "critical": 0,
         "major": 1,
         "minor": 1,
+        "nit": 0
+      }
+    },
+    {
+      "id": "20260327-20260327-tpm-tis-sysbus-ppi-v2-3-d8ec84d25dbc-at-redhat.com",
+      "path": "reviews/2026-03-27/20260327-tpm-tis-sysbus-ppi-v2-3-d8ec84d25dbc-at-redhat.com.json",
+      "title": "[PATCH v2 0/3] hw/tpm: add PPI support to tpm-tis-device on ARM64",
+      "author": "Mohammadfaiz Bawa",
+      "date": "2026-03-27",
+      "subsystem": "hw/tpm",
+      "version": 2,
+      "patch_count": 3,
+      "message_id": "<20260327-tpm-tis-sysbus-ppi-v2-3-d8ec84d25dbc@redhat.com>",
+      "verdict": "needs_revision",
+      "findings": {
+        "critical": 0,
+        "major": 1,
+        "minor": 2,
         "nit": 0
       }
     },

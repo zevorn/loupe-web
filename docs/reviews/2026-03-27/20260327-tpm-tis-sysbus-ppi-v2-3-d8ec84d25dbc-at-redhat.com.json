@@ -1,0 +1,110 @@
+{
+  "schema_version": "1",
+  "id": "20260327-20260327-tpm-tis-sysbus-ppi-v2-3-d8ec84d25dbc-at-redhat.com",
+  "series": {
+    "title": "[PATCH v2 0/3] hw/tpm: add PPI support to tpm-tis-device on ARM64",
+    "version": 2,
+    "patch_count": 3,
+    "author": {
+      "name": "Mohammadfaiz Bawa",
+      "email": "mbawa@redhat.com"
+    },
+    "date": "2026-03-27",
+    "subsystem": "hw/tpm",
+    "message_id": "<20260327-tpm-tis-sysbus-ppi-v2-3-d8ec84d25dbc@redhat.com>",
+    "lore_url": "https://lore.kernel.org/qemu-devel/20260327-tpm-tis-sysbus-ppi-v2-3-d8ec84d25dbc%40redhat.com/",
+    "patchwork_url": "http://patchwork.ozlabs.org/project/qemu-devel/patch/20260327-tpm-tis-sysbus-ppi-v2-3-d8ec84d25dbc@redhat.com/",
+    "base_branch": "master"
+  },
+  "version_history": [],
+  "ml_context": {
+    "patchwork_state": "new",
+    "reviewed_by": [],
+    "acked_by": [],
+    "ci_status": "",
+    "prior_feedback": [],
+    "maintainer_activity": ""
+  },
+  "review": {
+    "verdict": "needs_revision",
+    "summary": "The series addresses a real Windows-on-ARM64 TPM PPI gap, but patch 3 introduces guest-visible ABI changes on existing `virt` machine types and does not fully wire the new `ppi` property into the sysbus implementation.",
+    "mode": "ci-single",
+    "stages": {
+      "A": "Intent and patch split look reasonable: documentation, API refactor, then ARM virt wiring.",
+      "B": "Correctness is incomplete in patch 3 because the new sysbus PPI region/property handling is not aligned with existing guest-visible behavior.",
+      "C": "Compatibility risk is high: adding a second platform-bus MMIO region and changing ACPI `_UID` both alter the guest ABI for existing ARM `virt` machines.",
+      "D": "The series description mentions functional testing on Win11 ARM64, but there is no evidence of compat/off-path validation (`ppi=off`, migration, older machine types).",
+      "E": "Recommendation: respin with compat gating for guest-visible changes and make `ppi=off` suppress the extra MMIO/migration footprint as well as AML exposure."
+    },
+    "findings": [
+      {
+        "id": "F1",
+        "severity": "high",
+        "file": "hw/tpm/tpm_tis_sysbus.c",
+        "line": 114,
+        "title": "Adding a second sysbus MMIO region changes ARM virt guest ABI without compat gating",
+        "description": "`tpm-tis-device` previously exposed a single MMIO region on ARM `virt`. This patch unconditionally adds a second sysbus MMIO region for PPI, which the platform bus will allocate dynamically. On `virt`, platform-bus resource assignment is guest-visible; adding a new region can change the TPM device's own layout and also shift addresses assigned to later platform-bus devices. There is no machine-version or compat gating here, so existing `virt` machine types would see a different firmware/ACPI-visible hardware layout.",
+        "patch_context": [
+          "+    s->ppi.buf = qemu_memalign(host_page_size,",
+          " +                                ROUND_UP(TPM_PPI_ADDR_SIZE, host_page_size));",
+          "+    memory_region_init_ram_device_ptr(&s->ppi.ram, obj, \"tpm-ppi\",",
+          " +                                      TPM_PPI_ADDR_SIZE, s->ppi.buf);",
+          "+    sysbus_init_mmio(SYS_BUS_DEVICE(obj), &s->ppi.ram);"
+        ],
+        "suggestion": "Gate the extra PPI MMIO region behind a new machine type / compat property for ARM `virt`, so existing machine types keep the old single-region layout. Only expose the second region on new machine versions where the ABI change is intentional.",
+        "confidence": "high",
+        "confidence_reason": "The diff unconditionally adds a new sysbus MMIO region to an existing device model on ARM `virt`, and the cover letter explicitly states the address is dynamically allocated by the platform bus."
+      },
+      {
+        "id": "F2",
+        "severity": "medium",
+        "file": "hw/arm/virt-acpi-build.c",
+        "line": 243,
+        "title": "Changing TPM ACPI _UID from 0 to 1 is a guest-visible ABI break",
+        "description": "The TPM device's ACPI `_UID` is changed from `0` to `1` with no compat handling. `_UID` is part of the guest-visible ACPI identity of the device, and changing it on existing machine types can cause guest redetection or persistence issues. Even if the new value is preferable for Windows behavior, it still needs machine-version gating rather than an in-place change.",
+        "patch_context": [
+          "-    aml_append(dev, aml_name_decl(\"_UID\", aml_int(0)));",
+          "+    aml_append(dev, aml_name_decl(\"_UID\", aml_int(1)));",
+          "+    aml_append(dev, aml_name_decl(\"_STA\", aml_int(0xF)));"
+        ],
+        "suggestion": "Keep `_UID` unchanged for existing machine types and only use the new value on a versioned machine type where the ABI change is explicitly introduced. If `_STA` is needed, that can be added independently without rewriting `_UID` for old machines.",
+        "confidence": "high",
+        "confidence_reason": "The patch directly changes an ACPI identifier that guests consume, and there is no accompanying compat logic in the series."
+      },
+      {
+        "id": "F3",
+        "severity": "medium",
+        "file": "hw/tpm/tpm_tis_sysbus.c",
+        "line": 109,
+        "title": "The new `ppi` property does not control sysbus resource creation",
+        "description": "The series adds a `ppi` property to `tpm-tis-device`, but the sysbus PPI buffer/MMIO region is still created and registered unconditionally. That means `ppi=off` still allocates host memory, consumes a platform-bus MMIO slot, and registers migration state for the PPI area. In `virt-acpi-build.c`, AML generation is keyed off region lookup, not the property, so the off-path is at best incomplete and at worst still guest-visible depending on `tpm_build_ppi_acpi()` internals.",
+        "patch_context": [
+          "+    DEFINE_PROP_BOOL(\"ppi\", TPMStateSysBus, state.ppi_enabled, true),",
+          "...",
+          "+    s->ppi.buf = qemu_memalign(host_page_size,",
+          " +                                ROUND_UP(TPM_PPI_ADDR_SIZE, host_page_size));",
+          "+    memory_region_init_ram_device_ptr(&s->ppi.ram, obj, \"tpm-ppi\",",
+          " +                                      TPM_PPI_ADDR_SIZE, s->ppi.buf);",
+          "+    sysbus_init_mmio(SYS_BUS_DEVICE(obj), &s->ppi.ram);",
+          "...",
+          "+    vmstate_register_ram(&s->ppi.ram, dev);"
+        ],
+        "suggestion": "Make `ppi=off` skip PPI buffer allocation, `sysbus_init_mmio()`/registration for the extra region, and AML emission. The ACPI side should also check the property explicitly instead of inferring enablement from region presence alone.",
+        "confidence": "medium",
+        "confidence_reason": "The unconditional allocation/registration is explicit in the diff. The exact guest-visible effect depends on existing `tpm_build_ppi_acpi()` logic, but the property is clearly not fully wired through the sysbus lifecycle."
+      }
+    ],
+    "checkpatch": {
+      "status": "clean",
+      "issues": []
+    },
+    "build_status": "configure_ok",
+    "am_status": "success"
+  },
+  "cover_letter": "Subject: [PATCH v2 0/3] hw/tpm: add PPI support to tpm-tis-device on ARM64\n virt\nFrom: Mohammadfaiz Bawa <mbawa@redhat.com>\nDate: Fri, 27 Mar 2026 17:18:21 +0530\nMessage-Id: <20260327-tpm-tis-sysbus-ppi-v2-0-d8ec84d25dbc@redhat.com>\nMIME-Version: 1.0\nContent-Type: text/plain; charset=\"utf-8\"\nContent-Transfer-Encoding: 7bit\n\nThe ARM virt machine's tpm-tis-device lacks Physical Presence Interface\n(PPI) support - no _DSM, _STA, or PPI operation regions in the ACPI\nnamespace. This causes Windows 11 ARM64 guests to log Event ID 15\n(tpm.sys) errors per boot.\n\nThis series documents the change, refactors tpm_build_ppi_acpi() to\naccept a dynamic PPI base address, then wires up PPI MMIO and ACPI\non tpm-tis-sysbus via the platform bus.\n\nTested: aarch64 KVM, upstream QEMU, Win11 ARM64 25H2, swtpm.\nEvent ID 15 eliminated.\n\nChanges in v2:\n- Moved tpm.rst documentation hunk from patch 3 into patch 1 (Stefan)\n- Added Reviewed-by tags\n\nSigned-off-by: Mohammadfaiz Bawa <mbawa@redhat.com>\n---\nMohammadfaiz Bawa (3):\n      docs/specs/tpm: document PPI support on ARM64 virt\n      hw/acpi/tpm: parameterize PPI base address in tpm_build_ppi_acpi\n      hw/tpm: add PPI support to tpm-tis-device for ARM64 virt\n\n docs/specs/tpm.rst       | 24 ++++++++++++++++++++++++\n hw/acpi/tpm.c            |  8 ++++----\n hw/arm/virt-acpi-build.c |  9 ++++++++-\n hw/tpm/tpm_tis_isa.c     |  2 +-\n hw/tpm/tpm_tis_sysbus.c  | 11 +++++++++++\n include/hw/acpi/tpm.h    |  3 ++-\n 6 files changed, 50 insertions(+), 7 deletions(-)\n---\nbase-commit: 8e711856d7639cbffa51405f2cc2366e3d9e3a23\nchange-id: 20260324-tpm-tis-sysbus-ppi-ef31a7d71753\n\nBest regards,\n-- \nMohammadfaiz Bawa <mbawa@redhat.com>",
+  "diff": "From git@z Thu Jan  1 00:00:00 1970\nSubject: [PATCH v2 1/3] docs/specs/tpm: document PPI support on ARM64 virt\nFrom: Mohammadfaiz Bawa <mbawa@redhat.com>\nDate: Fri, 27 Mar 2026 17:18:22 +0530\nMessage-Id: <20260327-tpm-tis-sysbus-ppi-v2-1-d8ec84d25dbc@redhat.com>\nMIME-Version: 1.0\nContent-Type: text/plain; charset=\"utf-8\"\nContent-Transfer-Encoding: 7bit\n\nDocument that tpm-tis-device on the ARM virt machine supports PPI\nwith dynamically allocated MMIO via the platform bus, unlike x86\nwhere PPI is at the fixed address 0xFED45000.\n\nAlso add hw/arm/virt-acpi-build.c and hw/acpi/tpm.c to the list\nof files related to TPM ACPI tables.\n\nReviewed-by: Stefan Berger <stefanb@linux.ibm.com>\nSigned-off-by: Mohammadfaiz Bawa <mbawa@redhat.com>\n---\n docs/specs/tpm.rst | 24 ++++++++++++++++++++++++\n 1 file changed, 24 insertions(+)\n\ndiff --git a/docs/specs/tpm.rst b/docs/specs/tpm.rst\nindex b630a351b4f77a8d2512f22446d00a4d674c7777..ba2b0d726745fdf8ebc4c73c9c42e1ff8047a9db 100644\n--- a/docs/specs/tpm.rst\n+++ b/docs/specs/tpm.rst\n@@ -187,8 +187,32 @@ The location of the table is given by the fw_cfg ``tpmppi_address``\n field.  The PPI memory region size is 0x400 (``TPM_PPI_ADDR_SIZE``) to\n leave enough room for future updates.\n \n+PPI on ARM64 virt\n+-----------------\n+\n+The ARM virt machine supports PPI for ``tpm-tis-device`` as defined\n+in the `PPI specification`_.\n+\n+Unlike the x86 TIS device where the PPI memory region is mapped at\n+the fixed address ``0xFED45000`` (within the TIS MMIO range), the\n+ARM64 sysbus device registers PPI memory as a second MMIO region\n+on the platform bus. The platform bus assigns the guest physical\n+address dynamically at device plug time. The ACPI ``_DSM`` method\n+and PPI operation regions reference this dynamically resolved\n+address.\n+\n+PPI is controlled by the ``ppi`` property (default ``on``)::\n+\n+    -device tpm-tis-device,tpmdev=tpm0,ppi=on\n+\n+Without PPI, guest operating systems such as Windows 11\n+ARM64 will log errors when attempting to query TPM Physical\n+Presence capabilities via the ACPI ``_DSM`` method.\n+\n QEMU files related to TPM ACPI tables:\n  - ``hw/i386/acpi-build.c``\n+ - ``hw/arm/virt-acpi-build.c``\n+ - ``hw/acpi/tpm.c``\n  - ``include/hw/acpi/tpm.h``\n \n TPM backend devices\n-- \n2.53.0\n\nFrom git@z Thu Jan  1 00:00:00 1970\nSubject: [PATCH v2 2/3] hw/acpi/tpm: parameterize PPI base address in\n tpm_build_ppi_acpi\nFrom: Mohammadfaiz Bawa <mbawa@redhat.com>\nDate: Fri, 27 Mar 2026 17:18:23 +0530\nMessage-Id: <20260327-tpm-tis-sysbus-ppi-v2-2-d8ec84d25dbc@redhat.com>\nMIME-Version: 1.0\nContent-Type: text/plain; charset=\"utf-8\"\nContent-Transfer-Encoding: 7bit\n\nAdd a ppi_base parameter to tpm_build_ppi_acpi() instead of\nhardcoding TPM_PPI_ADDR_BASE. This prepares for ARM64 support where\nPPI memory is dynamically allocated by the platform bus and the\naddress is not known at compile time.\n\nUpdate the x86 ISA TIS caller to pass TPM_PPI_ADDR_BASE explicitly.\nNo behavioral change.\n\nReviewed-by: Stefan Berger <stefanb@linux.ibm.com>\nSigned-off-by: Mohammadfaiz Bawa <mbawa@redhat.com>\n---\n hw/acpi/tpm.c         | 8 ++++----\n hw/tpm/tpm_tis_isa.c  | 2 +-\n include/hw/acpi/tpm.h | 3 ++-\n 3 files changed, 7 insertions(+), 6 deletions(-)\n\ndiff --git a/hw/acpi/tpm.c b/hw/acpi/tpm.c\nindex cdc022753659af102e56ea4148423b94de1531f6..c4ff2f8cb836c16b00f70865bf55781d5c402aa2 100644\n--- a/hw/acpi/tpm.c\n+++ b/hw/acpi/tpm.c\n@@ -20,7 +20,7 @@\n #include \"qapi/error.h\"\n #include \"hw/acpi/tpm.h\"\n \n-void tpm_build_ppi_acpi(TPMIf *tpm, Aml *dev)\n+void tpm_build_ppi_acpi(TPMIf *tpm, Aml *dev, hwaddr ppi_base)\n {\n     Aml *method, *field, *ifctx, *ifctx2, *ifctx3, *func_mask,\n         *not_implemented, *pak, *tpm2, *tpm3, *pprm, *pprq, *zero, *one;\n@@ -40,7 +40,7 @@ void tpm_build_ppi_acpi(TPMIf *tpm, Aml *dev)\n      */\n     aml_append(dev,\n                aml_operation_region(\"TPP2\", AML_SYSTEM_MEMORY,\n-                                    aml_int(TPM_PPI_ADDR_BASE + 0x100),\n+                                    aml_int(ppi_base + 0x100),\n                                     0x5A));\n     field = aml_field(\"TPP2\", AML_ANY_ACC, AML_NOLOCK, AML_PRESERVE);\n     aml_append(field, aml_named_field(\"PPIN\", 8));\n@@ -56,7 +56,7 @@ void tpm_build_ppi_acpi(TPMIf *tpm, Aml *dev)\n     aml_append(dev,\n                aml_operation_region(\n                    \"TPP3\", AML_SYSTEM_MEMORY,\n-                   aml_int(TPM_PPI_ADDR_BASE +\n+                   aml_int(ppi_base +\n                            0x15a /* movv, docs/specs/tpm.rst */),\n                            0x1));\n     field = aml_field(\"TPP3\", AML_BYTE_ACC, AML_NOLOCK, AML_PRESERVE);\n@@ -78,7 +78,7 @@ void tpm_build_ppi_acpi(TPMIf *tpm, Aml *dev)\n \n         aml_append(method,\n             aml_operation_region(\"TPP1\", AML_SYSTEM_MEMORY,\n-                aml_add(aml_int(TPM_PPI_ADDR_BASE), op, NULL), 0x1));\n+                aml_add(aml_int(ppi_base), op, NULL), 0x1));\n         field = aml_field(\"TPP1\", AML_BYTE_ACC, AML_NOLOCK, AML_PRESERVE);\n         aml_append(field, aml_named_field(\"TPPF\", 8));\n         aml_append(method, field);\ndiff --git a/hw/tpm/tpm_tis_isa.c b/hw/tpm/tpm_tis_isa.c\nindex 61e95434f5b824fa99f0a2aff7f151e87ea631ed..e30bef49558673f4c857c02dae059ce3361a1bc7 100644\n--- a/hw/tpm/tpm_tis_isa.c\n+++ b/hw/tpm/tpm_tis_isa.c\n@@ -162,7 +162,7 @@ static void build_tpm_tis_isa_aml(AcpiDevAmlIf *adev, Aml *scope)\n      */\n     /* aml_append(crs, aml_irq_no_flags(isadev->state.irq_num)); */\n     aml_append(dev, aml_name_decl(\"_CRS\", crs));\n-    tpm_build_ppi_acpi(ti, dev);\n+    tpm_build_ppi_acpi(ti, dev, TPM_PPI_ADDR_BASE);\n     aml_append(scope, dev);\n }\n \ndiff --git a/include/hw/acpi/tpm.h b/include/hw/acpi/tpm.h\nindex d2bf6637c5424b92ad99f5baa938fd6cea3520bf..2ab186a7455593df205a7ffecbea2abdfdbd11d5 100644\n--- a/include/hw/acpi/tpm.h\n+++ b/include/hw/acpi/tpm.h\n@@ -20,6 +20,7 @@\n #include \"hw/core/registerfields.h\"\n #include \"hw/acpi/aml-build.h\"\n #include \"system/tpm.h\"\n+#include \"exec/hwaddr.h\"\n \n #ifdef CONFIG_TPM\n \n@@ -250,7 +251,7 @@ REG32(CRB_DATA_BUFFER, 0x80)\n  */\n #define TPM_I2C_INT_ENABLE_MASK   0x0\n \n-void tpm_build_ppi_acpi(TPMIf *tpm, Aml *dev);\n+void tpm_build_ppi_acpi(TPMIf *tpm, Aml *dev, hwaddr ppi_base);\n \n #endif /* CONFIG_TPM */\n \n-- \n2.53.0\n\nFrom git@z Thu Jan  1 00:00:00 1970\nSubject: [PATCH v2 3/3] hw/tpm: add PPI support to tpm-tis-device for ARM64\n virt\nFrom: Mohammadfaiz Bawa <mbawa@redhat.com>\nDate: Fri, 27 Mar 2026 17:18:24 +0530\nMessage-Id: <20260327-tpm-tis-sysbus-ppi-v2-3-d8ec84d25dbc@redhat.com>\nMIME-Version: 1.0\nContent-Type: text/plain; charset=\"utf-8\"\nContent-Transfer-Encoding: 7bit\n\nAdd PPI memory region and ACPI _STA, _DSM to tpm-tis-sysbus so\nWindows 11 ARM64 guests no longer log Event ID 15 errors from\ntpm.sys on every boot.\n\nReviewed-by: Stefan Berger <stefanb@linux.ibm.com>\nSigned-off-by: Mohammadfaiz Bawa <mbawa@redhat.com>\n---\n hw/arm/virt-acpi-build.c |  9 ++++++++-\n hw/tpm/tpm_tis_sysbus.c  | 11 +++++++++++\n 2 files changed, 19 insertions(+), 1 deletion(-)\n\ndiff --git a/hw/arm/virt-acpi-build.c b/hw/arm/virt-acpi-build.c\nindex 719d2f994e65f976f6e754259d0b4f1336f82f13..27a7389a33df221a9dfb0cde1bc35b3ab62e56be 100644\n--- a/hw/arm/virt-acpi-build.c\n+++ b/hw/arm/virt-acpi-build.c\n@@ -240,7 +240,8 @@ static void acpi_dsdt_add_tpm(Aml *scope, VirtMachineState *vms)\n     Aml *dev = aml_device(\"TPM0\");\n     aml_append(dev, aml_name_decl(\"_HID\", aml_string(\"MSFT0101\")));\n     aml_append(dev, aml_name_decl(\"_STR\", aml_string(\"TPM 2.0 Device\")));\n-    aml_append(dev, aml_name_decl(\"_UID\", aml_int(0)));\n+    aml_append(dev, aml_name_decl(\"_UID\", aml_int(1)));\n+    aml_append(dev, aml_name_decl(\"_STA\", aml_int(0xF)));\n \n     Aml *crs = aml_resource_template();\n     aml_append(crs,\n@@ -248,6 +249,12 @@ static void acpi_dsdt_add_tpm(Aml *scope, VirtMachineState *vms)\n                                   (uint32_t)memory_region_size(sbdev_mr),\n                                   AML_READ_WRITE));\n     aml_append(dev, aml_name_decl(\"_CRS\", crs));\n+\n+    hwaddr ppi_base = platform_bus_get_mmio_addr(pbus, sbdev, 1);\n+    if (ppi_base != -1) {\n+        ppi_base += pbus_base;\n+        tpm_build_ppi_acpi(TPM_IF(sbdev), dev, ppi_base);\n+    }\n     aml_append(scope, dev);\n }\n #endif\ndiff --git a/hw/tpm/tpm_tis_sysbus.c b/hw/tpm/tpm_tis_sysbus.c\nindex e9372e7316305fe1a4d415a712ab516e0fd5f073..f8b63dd4607cacb319e27ea83e421ec5bdc1cb0f 100644\n--- a/hw/tpm/tpm_tis_sysbus.c\n+++ b/hw/tpm/tpm_tis_sysbus.c\n@@ -30,6 +30,7 @@\n #include \"hw/core/sysbus.h\"\n #include \"tpm_tis.h\"\n #include \"qom/object.h\"\n+#include \"qemu/memalign.h\"\n \n struct TPMStateSysBus {\n     /*< private >*/\n@@ -93,12 +94,14 @@ static void tpm_tis_sysbus_reset(DeviceState *dev)\n static const Property tpm_tis_sysbus_properties[] = {\n     DEFINE_PROP_UINT32(\"irq\", TPMStateSysBus, state.irq_num, TPM_TIS_IRQ),\n     DEFINE_PROP_TPMBE(\"tpmdev\", TPMStateSysBus, state.be_driver),\n+    DEFINE_PROP_BOOL(\"ppi\", TPMStateSysBus, state.ppi_enabled, true),\n };\n \n static void tpm_tis_sysbus_initfn(Object *obj)\n {\n     TPMStateSysBus *sbdev = TPM_TIS_SYSBUS(obj);\n     TPMState *s = &sbdev->state;\n+    size_t host_page_size = qemu_real_host_page_size();\n \n     memory_region_init_io(&s->mmio, obj, &tpm_tis_memory_ops,\n                           s, \"tpm-tis-mmio\",\n@@ -106,6 +109,12 @@ static void tpm_tis_sysbus_initfn(Object *obj)\n \n     sysbus_init_mmio(SYS_BUS_DEVICE(obj), &s->mmio);\n     sysbus_init_irq(SYS_BUS_DEVICE(obj), &s->irq);\n+\n+    s->ppi.buf = qemu_memalign(host_page_size,\n+                                ROUND_UP(TPM_PPI_ADDR_SIZE, host_page_size));\n+    memory_region_init_ram_device_ptr(&s->ppi.ram, obj, \"tpm-ppi\",\n+                                      TPM_PPI_ADDR_SIZE, s->ppi.buf);\n+    sysbus_init_mmio(SYS_BUS_DEVICE(obj), &s->ppi.ram);\n }\n \n static void tpm_tis_sysbus_realizefn(DeviceState *dev, Error **errp)\n@@ -122,6 +131,8 @@ static void tpm_tis_sysbus_realizefn(DeviceState *dev, Error **errp)\n         error_setg(errp, \"'tpmdev' property is required\");\n         return;\n     }\n+\n+    vmstate_register_ram(&s->ppi.ram, dev);\n }\n \n static void tpm_tis_sysbus_class_init(ObjectClass *klass, const void *data)\n-- \n2.53.0",
+  "patches": [],
+  "generated_at": "2026-03-27T11:59:20Z",
+  "generator": "loupe-review v1.0",
+  "disclaimer": "LLM-generated draft. Not an authoritative review."
+}
