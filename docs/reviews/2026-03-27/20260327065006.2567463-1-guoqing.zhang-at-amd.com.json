@@ -1,0 +1,95 @@
+{
+  "schema_version": "1",
+  "id": "20260327-20260327065006.2567463-1-guoqing.zhang-at-amd.com",
+  "series": {
+    "title": "[PATCH v3] migration/rdma: add x-rdma-chunk-size parameter",
+    "version": 3,
+    "patch_count": 1,
+    "author": {
+      "name": "Samuel Zhang",
+      "email": "guoqing.zhang@amd.com"
+    },
+    "date": "2026-03-27",
+    "subsystem": "migration/rdma",
+    "message_id": "<20260327065006.2567463-1-guoqing.zhang@amd.com>",
+    "lore_url": "https://lore.kernel.org/qemu-devel/20260327065006.2567463-1-guoqing.zhang%40amd.com/",
+    "patchwork_url": "http://patchwork.ozlabs.org/project/qemu-devel/patch/20260327065006.2567463-1-guoqing.zhang@amd.com/",
+    "base_branch": "master"
+  },
+  "version_history": [],
+  "ml_context": {
+    "patchwork_state": "new",
+    "reviewed_by": [],
+    "acked_by": [],
+    "ci_status": "",
+    "prior_feedback": [],
+    "maintainer_activity": ""
+  },
+  "review": {
+    "verdict": "needs_revision",
+    "summary": "The parameter is wired through QAPI/HMP/QMP correctly, but the RDMA chunk size now affects on-the-wire chunk indexing without any peer negotiation or mismatch check. That creates a high-risk interoperability bug if source and destination are configured differently. There is also a secondary validation gap for property-based startup configuration.",
+    "mode": "ci-single",
+    "stages": {
+      "A": "pass",
+      "B": "pass",
+      "C": "fail",
+      "D": "fail",
+      "E": "needs_revision"
+    },
+    "findings": [
+      {
+        "id": "F1",
+        "severity": "high",
+        "file": "migration/rdma.c",
+        "line": 3524,
+        "title": "RDMA chunk size becomes protocol-significant without synchronization between peers",
+        "description": "The new parameter changes how chunk indices are computed on the source and how they are decoded on the destination, but the patch does not negotiate or transmit the selected chunk size. `ram_chunk_index()` now divides by `migrate_rdma_chunk_size()`, while `rdma_registration_handle()` reconstructs the host address with the destination's local `migrate_rdma_chunk_size()`. If only one side changes `x-rdma-chunk-size`, the destination interprets the incoming chunk number using a different unit, which can point at the wrong address and break or corrupt RDMA migration.",
+        "patch_context": [
+          "-    return ((uintptr_t) host - (uintptr_t) start) >> RDMA_REG_CHUNK_SHIFT;",
+          "+    return ((uintptr_t) host - (uintptr_t) start) / migrate_rdma_chunk_size();",
+          "-                        (reg->key.chunk * (1UL << RDMA_REG_CHUNK_SHIFT));",
+          "+                        (reg->key.chunk * migrate_rdma_chunk_size());"
+        ],
+        "suggestion": "Make the chunk size part of the RDMA migration protocol or handshake and reject mismatches explicitly before migration starts. At minimum, ensure the destination decodes registration keys using the source-selected chunk size rather than its local default/configuration.",
+        "confidence": "high",
+        "confidence_reason": "The changed code directly uses the local runtime parameter in both chunk encoding and decoding paths, and no synchronization mechanism appears anywhere in the patch."
+      },
+      {
+        "id": "F2",
+        "severity": "medium",
+        "file": "migration/options.c",
+        "line": 185,
+        "title": "Invalid startup property values can bypass validation and reach a runtime assert",
+        "description": "The new setting is exposed as a migration property via `DEFINE_PROP_UINT64`, but the range/power-of-two checks were only added to `migrate_params_check()`, which covers QMP/HMP parameter updates. A user can still set `migration.x-rdma-chunk-size` from startup configuration/property paths, and `migrate_rdma_chunk_size()` then enforces validity with `assert(...)`. That turns bad configuration into an abort instead of a normal user-visible error.",
+        "patch_context": [
+          "+    DEFINE_PROP_UINT64(\"x-rdma-chunk-size\", MigrationState,",
+          "+                      parameters.x_rdma_chunk_size,",
+          "+                      DEFAULT_MIGRATE_X_RDMA_CHUNK_SIZE),",
+          "+uint64_t migrate_rdma_chunk_size(void)",
+          "+{",
+          "+    MigrationState *s = migrate_get_current();",
+          "+    uint64_t size = s->parameters.x_rdma_chunk_size;",
+          "+",
+          "+    assert(MiB <= size && size <= GiB && is_power_of_2(size));",
+          "+    return size;",
+          "+}"
+        ],
+        "suggestion": "Validate the property on the startup/property path as well, or move the check into migration setup with a proper error return. Avoid relying on `assert()` for user-provided configuration.",
+        "confidence": "medium",
+        "confidence_reason": "The patch clearly adds validation only in the parameter update path and uses an assert in the getter; the exact startup path behavior depends on surrounding migration property handling not included here."
+      }
+    ],
+    "checkpatch": {
+      "status": "clean",
+      "issues": []
+    },
+    "build_status": "configure_ok",
+    "am_status": "success"
+  },
+  "cover_letter": null,
+  "diff": "From git@z Thu Jan  1 00:00:00 1970\nSubject: [PATCH v3] migration/rdma: add x-rdma-chunk-size parameter\nFrom: Samuel Zhang <guoqing.zhang@amd.com>\nDate: Fri, 27 Mar 2026 14:50:06 +0800\nMessage-Id: <20260327065006.2567463-1-guoqing.zhang@amd.com>\nMIME-Version: 1.0\nContent-Type: text/plain; charset=\"utf-8\"\nContent-Transfer-Encoding: 7bit\n\nThe default 1MB RDMA chunk size causes slow live migration because\neach chunk triggers a write_flush (ibv_post_send). For 8GB RAM,\n1MB chunk size produces ~15000 flushes vs ~3700 with 1024MB chunk size.\n\nAdd x-rdma-chunk-size parameter to configure the RDMA chunk size for\nfaster migration.\nUsage: `migrate_set_parameter x-rdma-chunk-size 1024M`\n\nPerformance with RDMA live migration of 8GB RAM VM:\n\n| x-rdma-chunk-size (B) | time (s) | throughput (MB/s) |\n|-----------------------|----------|-------------------|\n| 1M (default)          | 37.915   |  1,007            |\n| 32M                   | 17.880   |  2,260            |\n| 1024M                 |  4.368   | 17,529            |\n\nSigned-off-by: Samuel Zhang <guoqing.zhang@amd.com>\n---\nv2:\n- Renamed x-rdma-chunk-shift to x-rdma-chunk-size (byte count)\n- Added validation in migrate_params_check()\n- Added hmp_migrate_set_parameter() support\n- Added hmp_info_migrate_parameters() support\n- Added migrate_mark_all_params_present()\n- Use qemu_strtosz() for size suffix support\nv3:\n- Use visit_type_size() in HMP set parameter\n- Use MiB/GiB constants\n\n migration/migration-hmp-cmds.c | 11 +++++++++++\n migration/options.c            | 33 ++++++++++++++++++++++++++++++++-\n migration/options.h            |  1 +\n migration/rdma.c               | 30 ++++++++++++++++--------------\n qapi/migration.json            | 12 ++++++++++--\n 5 files changed, 70 insertions(+), 17 deletions(-)\n\ndiff --git a/migration/migration-hmp-cmds.c b/migration/migration-hmp-cmds.c\nindex 0a193b8f54..4f6c1dbf89 100644\n--- a/migration/migration-hmp-cmds.c\n+++ b/migration/migration-hmp-cmds.c\n@@ -451,6 +451,13 @@ void hmp_info_migrate_parameters(Monitor *mon, const QDict *qdict)\n                            params->direct_io ? \"on\" : \"off\");\n         }\n \n+        if (params->has_x_rdma_chunk_size) {\n+            monitor_printf(mon, \"%s: %\" PRIu64 \" bytes\\n\",\n+                           MigrationParameter_str(\n+                               MIGRATION_PARAMETER_X_RDMA_CHUNK_SIZE),\n+                           params->x_rdma_chunk_size);\n+        }\n+\n         assert(params->has_cpr_exec_command);\n         monitor_print_cpr_exec_command(mon, params->cpr_exec_command);\n     }\n@@ -734,6 +741,10 @@ void hmp_migrate_set_parameter(Monitor *mon, const QDict *qdict)\n         p->has_direct_io = true;\n         visit_type_bool(v, param, &p->direct_io, &err);\n         break;\n+    case MIGRATION_PARAMETER_X_RDMA_CHUNK_SIZE:\n+        p->has_x_rdma_chunk_size = true;\n+        visit_type_size(v, param, &p->x_rdma_chunk_size, &err);\n+        break;\n     case MIGRATION_PARAMETER_CPR_EXEC_COMMAND: {\n         /*\n          * NOTE: g_autofree will only auto g_free() the strv array when\ndiff --git a/migration/options.c b/migration/options.c\nindex f33b297929..bc61c8665d 100644\n--- a/migration/options.c\n+++ b/migration/options.c\n@@ -13,6 +13,7 @@\n \n #include \"qemu/osdep.h\"\n #include \"qemu/error-report.h\"\n+#include \"qemu/units.h\"\n #include \"exec/target_page.h\"\n #include \"qapi/clone-visitor.h\"\n #include \"qapi/error.h\"\n@@ -90,6 +91,7 @@ const PropertyInfo qdev_prop_StrOrNull;\n \n #define DEFAULT_MIGRATE_VCPU_DIRTY_LIMIT_PERIOD     1000    /* milliseconds */\n #define DEFAULT_MIGRATE_VCPU_DIRTY_LIMIT            1       /* MB/s */\n+#define DEFAULT_MIGRATE_X_RDMA_CHUNK_SIZE           MiB     /* 1MB */\n \n const Property migration_properties[] = {\n     DEFINE_PROP_BOOL(\"store-global-state\", MigrationState,\n@@ -183,6 +185,9 @@ const Property migration_properties[] = {\n     DEFINE_PROP_ZERO_PAGE_DETECTION(\"zero-page-detection\", MigrationState,\n                        parameters.zero_page_detection,\n                        ZERO_PAGE_DETECTION_MULTIFD),\n+    DEFINE_PROP_UINT64(\"x-rdma-chunk-size\", MigrationState,\n+                      parameters.x_rdma_chunk_size,\n+                      DEFAULT_MIGRATE_X_RDMA_CHUNK_SIZE),\n \n     /* Migration capabilities */\n     DEFINE_PROP_MIG_CAP(\"x-xbzrle\", MIGRATION_CAPABILITY_XBZRLE),\n@@ -993,6 +998,15 @@ ZeroPageDetection migrate_zero_page_detection(void)\n     return s->parameters.zero_page_detection;\n }\n \n+uint64_t migrate_rdma_chunk_size(void)\n+{\n+    MigrationState *s = migrate_get_current();\n+    uint64_t size = s->parameters.x_rdma_chunk_size;\n+\n+    assert(MiB <= size && size <= GiB && is_power_of_2(size));\n+    return size;\n+}\n+\n /* parameters helpers */\n \n AnnounceParameters *migrate_announce_params(void)\n@@ -1055,7 +1069,7 @@ static void migrate_mark_all_params_present(MigrationParameters *p)\n         &p->has_announce_step, &p->has_block_bitmap_mapping,\n         &p->has_x_vcpu_dirty_limit_period, &p->has_vcpu_dirty_limit,\n         &p->has_mode, &p->has_zero_page_detection, &p->has_direct_io,\n-        &p->has_cpr_exec_command,\n+        &p->has_x_rdma_chunk_size, &p->has_cpr_exec_command,\n     };\n \n     len = ARRAY_SIZE(has_fields);\n@@ -1266,6 +1280,15 @@ bool migrate_params_check(MigrationParameters *params, Error **errp)\n         return false;\n     }\n \n+    if (params->has_x_rdma_chunk_size &&\n+        (params->x_rdma_chunk_size < MiB ||\n+         params->x_rdma_chunk_size > GiB ||\n+         !is_power_of_2(params->x_rdma_chunk_size))) {\n+        error_setg(errp, \"Option x_rdma_chunk_size expects \"\n+                   \"a power of 2 in the range 1MiB to 1024MiB\");\n+        return false;\n+    }\n+\n     return true;\n }\n \n@@ -1391,6 +1414,10 @@ static void migrate_params_test_apply(MigrationParameters *params,\n         dest->direct_io = params->direct_io;\n     }\n \n+    if (params->has_x_rdma_chunk_size) {\n+        dest->x_rdma_chunk_size = params->x_rdma_chunk_size;\n+    }\n+\n     if (params->has_cpr_exec_command) {\n         dest->cpr_exec_command = params->cpr_exec_command;\n     }\n@@ -1517,6 +1544,10 @@ static void migrate_params_apply(MigrationParameters *params)\n         s->parameters.direct_io = params->direct_io;\n     }\n \n+    if (params->has_x_rdma_chunk_size) {\n+        s->parameters.x_rdma_chunk_size = params->x_rdma_chunk_size;\n+    }\n+\n     if (params->has_cpr_exec_command) {\n         qapi_free_strList(s->parameters.cpr_exec_command);\n         s->parameters.cpr_exec_command =\ndiff --git a/migration/options.h b/migration/options.h\nindex b502871097..b46221998a 100644\n--- a/migration/options.h\n+++ b/migration/options.h\n@@ -87,6 +87,7 @@ const char *migrate_tls_creds(void);\n const char *migrate_tls_hostname(void);\n uint64_t migrate_xbzrle_cache_size(void);\n ZeroPageDetection migrate_zero_page_detection(void);\n+uint64_t migrate_rdma_chunk_size(void);\n \n /* parameters helpers */\n \ndiff --git a/migration/rdma.c b/migration/rdma.c\nindex 55ab85650a..3e37a1d440 100644\n--- a/migration/rdma.c\n+++ b/migration/rdma.c\n@@ -45,10 +45,12 @@\n #define RDMA_RESOLVE_TIMEOUT_MS 10000\n \n /* Do not merge data if larger than this. */\n-#define RDMA_MERGE_MAX (2 * 1024 * 1024)\n-#define RDMA_SIGNALED_SEND_MAX (RDMA_MERGE_MAX / 4096)\n+static inline uint64_t rdma_merge_max(void)\n+{\n+    return migrate_rdma_chunk_size() * 2;\n+}\n \n-#define RDMA_REG_CHUNK_SHIFT 20 /* 1 MB */\n+#define RDMA_SIGNALED_SEND_MAX 512\n \n /*\n  * This is only for non-live state being migrated.\n@@ -527,21 +529,21 @@ static int qemu_rdma_exchange_send(RDMAContext *rdma, RDMAControlHeader *head,\n static inline uint64_t ram_chunk_index(const uint8_t *start,\n                                        const uint8_t *host)\n {\n-    return ((uintptr_t) host - (uintptr_t) start) >> RDMA_REG_CHUNK_SHIFT;\n+    return ((uintptr_t) host - (uintptr_t) start) / migrate_rdma_chunk_size();\n }\n \n static inline uint8_t *ram_chunk_start(const RDMALocalBlock *rdma_ram_block,\n                                        uint64_t i)\n {\n     return (uint8_t *)(uintptr_t)(rdma_ram_block->local_host_addr +\n-                                  (i << RDMA_REG_CHUNK_SHIFT));\n+                                  (i * migrate_rdma_chunk_size()));\n }\n \n static inline uint8_t *ram_chunk_end(const RDMALocalBlock *rdma_ram_block,\n                                      uint64_t i)\n {\n     uint8_t *result = ram_chunk_start(rdma_ram_block, i) +\n-                                         (1UL << RDMA_REG_CHUNK_SHIFT);\n+                                         migrate_rdma_chunk_size();\n \n     if (result > (rdma_ram_block->local_host_addr + rdma_ram_block->length)) {\n         result = rdma_ram_block->local_host_addr + rdma_ram_block->length;\n@@ -1841,6 +1843,7 @@ static int qemu_rdma_write_one(RDMAContext *rdma,\n     struct ibv_send_wr *bad_wr;\n     int reg_result_idx, ret, count = 0;\n     uint64_t chunk, chunks;\n+    uint64_t chunk_size = migrate_rdma_chunk_size();\n     uint8_t *chunk_start, *chunk_end;\n     RDMALocalBlock *block = &(rdma->local_ram_blocks.block[current_index]);\n     RDMARegister reg;\n@@ -1861,22 +1864,21 @@ retry:\n     chunk_start = ram_chunk_start(block, chunk);\n \n     if (block->is_ram_block) {\n-        chunks = length / (1UL << RDMA_REG_CHUNK_SHIFT);\n+        chunks = length / chunk_size;\n \n-        if (chunks && ((length % (1UL << RDMA_REG_CHUNK_SHIFT)) == 0)) {\n+        if (chunks && ((length % chunk_size) == 0)) {\n             chunks--;\n         }\n     } else {\n-        chunks = block->length / (1UL << RDMA_REG_CHUNK_SHIFT);\n+        chunks = block->length / chunk_size;\n \n-        if (chunks && ((block->length % (1UL << RDMA_REG_CHUNK_SHIFT)) == 0)) {\n+        if (chunks && ((block->length % chunk_size) == 0)) {\n             chunks--;\n         }\n     }\n \n     trace_qemu_rdma_write_one_top(chunks + 1,\n-                                  (chunks + 1) *\n-                                  (1UL << RDMA_REG_CHUNK_SHIFT) / 1024 / 1024);\n+                                  (chunks + 1) * chunk_size / 1024 / 1024);\n \n     chunk_end = ram_chunk_end(block, chunk + chunks);\n \n@@ -2176,7 +2178,7 @@ static int qemu_rdma_write(RDMAContext *rdma,\n     rdma->current_length += len;\n \n     /* flush it if buffer is too large */\n-    if (rdma->current_length >= RDMA_MERGE_MAX) {\n+    if (rdma->current_length >= rdma_merge_max()) {\n         return qemu_rdma_write_flush(rdma, errp);\n     }\n \n@@ -3522,7 +3524,7 @@ int rdma_registration_handle(QEMUFile *f)\n                 } else {\n                     chunk = reg->key.chunk;\n                     host_addr = block->local_host_addr +\n-                        (reg->key.chunk * (1UL << RDMA_REG_CHUNK_SHIFT));\n+                        (reg->key.chunk * migrate_rdma_chunk_size());\n                     /* Check for particularly bad chunk value */\n                     if (host_addr < (void *)block->local_host_addr) {\n                         error_report(\"rdma: bad chunk for block %s\"\ndiff --git a/qapi/migration.json b/qapi/migration.json\nindex 7134d4ce47..292d96c95a 100644\n--- a/qapi/migration.json\n+++ b/qapi/migration.json\n@@ -806,7 +806,7 @@\n #\n # Features:\n #\n-# @unstable: Members @x-checkpoint-delay and\n+# @unstable: Members @x-checkpoint-delay, @x-rdma-chunk-size, and\n #     @x-vcpu-dirty-limit-period are experimental.\n #\n # Since: 2.4\n@@ -831,6 +831,7 @@\n            'mode',\n            'zero-page-detection',\n            'direct-io',\n+           { 'name': 'x-rdma-chunk-size', 'features': [ 'unstable' ] },\n            'cpr-exec-command'] }\n \n ##\n@@ -1007,9 +1008,14 @@\n #     is @cpr-exec.  The first list element is the program's filename,\n #     the remainder its arguments.  (Since 10.2)\n #\n+# @x-rdma-chunk-size: RDMA memory registration chunk size in bytes.\n+#     Default is 1MiB.  Must be a power of 2 in the range\n+#     [1MiB, 1024MiB].  Only takes effect for RDMA migration.\n+#     (Since 11.1)\n+#\n # Features:\n #\n-# @unstable: Members @x-checkpoint-delay and\n+# @unstable: Members @x-checkpoint-delay, @x-rdma-chunk-size, and\n #     @x-vcpu-dirty-limit-period are experimental.\n #\n # Since: 2.4\n@@ -1046,6 +1052,8 @@\n             '*mode': 'MigMode',\n             '*zero-page-detection': 'ZeroPageDetection',\n             '*direct-io': 'bool',\n+            '*x-rdma-chunk-size': { 'type': 'uint64',\n+                                    'features': [ 'unstable' ] },\n             '*cpr-exec-command': [ 'str' ]} }\n \n ##\n-- \n2.43.7",
+  "patches": [],
+  "generated_at": "2026-03-27T07:25:18Z",
+  "generator": "loupe-review v1.0",
+  "disclaimer": "LLM-generated draft. Not an authoritative review."
+}
