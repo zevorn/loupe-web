@@ -558,7 +558,7 @@ header nav {
     color: var(--text-dim);
 }
 .legend-item {
-    display: flex;
+    display: inline-flex;
     align-items: center;
     gap: 4px;
 }
@@ -705,16 +705,9 @@ kbd {
     </table>
     <div id="loading-indicator" class="loading-bar hidden"></div>
     <div class="pagination" id="pagination"></div>
-    <div class="legend" id="list-legend" style="display:flex;justify-content:space-between;align-items:center;">
-        <div>
-            <span style="font-weight:600;">Findings:</span>
-            <span class="legend-item"><span class="legend-dot" style="background:var(--sev-critical);"></span> Critical</span>
-            <span class="legend-item"><span class="legend-dot" style="background:var(--sev-major);"></span> Major</span>
-            <span class="legend-item"><span class="legend-dot" style="background:var(--sev-minor);"></span> Minor</span>
-            <span class="legend-item"><span class="legend-dot" style="background:var(--sev-nit);"></span> Nit</span>
-            <span style="margin-left:8px;">Click any row to view full review.</span>
-        </div>
-        <div><kbd>/</kbd> search &middot; <kbd>j</kbd>/<kbd>k</kbd> navigate &middot; <kbd>Enter</kbd> open &middot; <kbd>q</kbd> back</div>
+    <div class="legend" id="list-legend" style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;">
+        <span><span style="font-weight:600;">Findings:</span> <span class="legend-item"><span class="legend-dot" style="background:var(--sev-critical);"></span> Critical</span> <span class="legend-item"><span class="legend-dot" style="background:var(--sev-major);"></span> Major</span> <span class="legend-item"><span class="legend-dot" style="background:var(--sev-minor);"></span> Minor</span> <span class="legend-item"><span class="legend-dot" style="background:var(--sev-nit);"></span> Nit</span> &middot; Click any row to view full review.</span>
+        <span><kbd>/</kbd> search &middot; <kbd>j</kbd>/<kbd>k</kbd> navigate &middot; <kbd>Enter</kbd> open &middot; <kbd>q</kbd> back</span>
     </div>
 </div>
 
