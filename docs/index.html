@@ -681,15 +681,6 @@ kbd {
             </select>
         </div>
         <div class="filter-group">
-            <label>Severity</label>
-            <select class="filter-select" id="filter-severity">
-                <option value="">All</option>
-                <option value="critical">has critical</option>
-                <option value="major">has major</option>
-                <option value="clean">clean</option>
-            </select>
-        </div>
-        <div class="filter-group">
             <label>Date</label>
             <select class="filter-select" id="filter-date">
                 <option value="">All time</option>
@@ -957,7 +948,6 @@ function getFilters() {
         search: ($('#filter-search').value || '').toLowerCase().trim(),
         subsystem: $('#filter-subsystem').value,
         verdict: $('#filter-verdict').value,
-        severity: $('#filter-severity').value,
         date: $('#filter-date').value
     };
 }
@@ -974,12 +964,6 @@ function applyFilters(reviews) {
         }
         if (f.subsystem && r.subsystem !== f.subsystem) return false;
         if (f.verdict && r.verdict !== f.verdict) return false;
-        if (f.severity) {
-            const fi = r.findings || {};
-            if (f.severity === 'critical' && !fi.critical) return false;
-            if (f.severity === 'major' && !fi.major && !fi.critical) return false;
-            if (f.severity === 'clean' && (fi.critical || fi.major || fi.minor || fi.nit)) return false;
-        }
         if (f.date) {
             const rd = new Date(r.date + 'T00:00:00');
             if (f.date === 'today') {
