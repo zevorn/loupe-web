@@ -1,0 +1,53 @@
+{
+  "schema_version": "1",
+  "id": "20260327-20260327030404.1840571-1-hayatake396-at-gmail.com",
+  "series": {
+    "title": "[PATCH] tests/qtest/migration: Add mapped-ram/postcopy validation",
+    "version": 1,
+    "patch_count": 1,
+    "author": {
+      "name": "Takeru Hayasaka",
+      "email": "hayatake396@gmail.com"
+    },
+    "date": "2026-03-27",
+    "subsystem": "tests/qtest/migration",
+    "message_id": "<20260327030404.1840571-1-hayatake396@gmail.com>",
+    "lore_url": "https://lore.kernel.org/qemu-devel/20260327030404.1840571-1-hayatake396%40gmail.com/",
+    "patchwork_url": "http://patchwork.ozlabs.org/project/qemu-devel/patch/20260327030404.1840571-1-hayatake396@gmail.com/",
+    "base_branch": "master"
+  },
+  "version_history": [],
+  "ml_context": {
+    "patchwork_state": "new",
+    "reviewed_by": [],
+    "acked_by": [],
+    "ci_status": "",
+    "prior_feedback": [],
+    "maintainer_activity": ""
+  },
+  "review": {
+    "verdict": "pass",
+    "summary": "No functional issues found in this patch. The new qtest covers the mapped-ram/postcopy-ram incompatibility in both enablement orders and matches existing migration validation test patterns.",
+    "mode": "ci-single",
+    "stages": {
+      "A": "Patch intent is correct: add regression coverage for an existing migration capability constraint without changing behavior.",
+      "B": "Implementation is consistent with surrounding qtest style, using a helper to exercise both ordering cases and assert QMP failure.",
+      "C": "Behavioral coverage is adequate for the stated goal: both capability ordering permutations are tested against the expected rejection path.",
+      "D": "No build or API misuse issues are evident from the diff. Resource cleanup is handled on the success path via migrate_end().",
+      "E": "Residual risk is low and mostly limited to future wording changes in the exact error string assertion, which is acceptable for this validation-style test."
+    },
+    "findings": [],
+    "checkpatch": {
+      "status": "clean",
+      "issues": []
+    },
+    "build_status": "configure_ok",
+    "am_status": "success"
+  },
+  "cover_letter": null,
+  "diff": "From git@z Thu Jan  1 00:00:00 1970\nSubject: [PATCH] tests/qtest/migration: Add mapped-ram/postcopy validation\n test\nFrom: Takeru Hayasaka <hayatake396@gmail.com>\nDate: Fri, 27 Mar 2026 03:04:01 +0000\nMessage-Id: <20260327030404.1840571-1-hayatake396@gmail.com>\nMIME-Version: 1.0\nContent-Type: text/plain; charset=\"utf-8\"\nContent-Transfer-Encoding: 7bit\n\nThe migration capability checks reject enabling postcopy-ram together\nwith mapped-ram, but there is no qtest covering this incompatibility.\n\nAdd a validation test that verifies QMP rejects the combination in\nboth capability ordering cases and returns the expected error.\n\nThis keeps the existing capability boundary covered without changing\nmigration behavior.\n\nSigned-off-by: Takeru Hayasaka <hayatake396@gmail.com>\n---\nBuilt with:\n  ./configure --target-list=x86_64-softmmu --disable-werror\n  ninja -C build tests/qtest/migration-test qemu-system-x86_64\n\nTested with:\n  QTEST_QEMU_BINARY=./build/qemu-system-x86_64 \\\n  ./build/tests/qtest/migration-test --full \\\n  -p /x86_64/migration/validate_caps/mapped_ram_postcopy\n---\n tests/qtest/migration/misc-tests.c | 45 ++++++++++++++++++++++++++++++\n 1 file changed, 45 insertions(+)\n\ndiff --git a/tests/qtest/migration/misc-tests.c b/tests/qtest/migration/misc-tests.c\nindex 196f1ca84287..ae247250713b 100644\n--- a/tests/qtest/migration/misc-tests.c\n+++ b/tests/qtest/migration/misc-tests.c\n@@ -215,6 +215,49 @@ static void do_test_validate_uri_channel(MigrateCommon *args)\n     migrate_end(from, to, false);\n }\n \n+static void do_test_validate_capability_pair(MigrateCommon *args,\n+                                             const char *first_capability,\n+                                             const char *second_capability,\n+                                             const char *expected_error)\n+{\n+    QTestState *from, *to;\n+    QDict *rsp;\n+    const char *error_desc;\n+\n+    args->start.hide_stderr = true;\n+\n+    if (migrate_start(&from, &to, \"defer\", &args->start)) {\n+        return;\n+    }\n+\n+    migrate_set_capability(from, first_capability, true);\n+\n+    rsp = qtest_qmp_assert_failure_ref(\n+        from,\n+        \"{ 'execute': 'migrate-set-capabilities',\"\n+        \"  'arguments': { 'capabilities': [ { \"\n+        \"      'capability': %s, 'state': true } ] } }\",\n+        second_capability);\n+\n+    error_desc = qdict_get_str(rsp, \"desc\");\n+    g_assert_cmpstr(error_desc, ==, expected_error);\n+    qobject_unref(rsp);\n+\n+    migrate_end(from, to, false);\n+}\n+\n+static void test_validate_caps_mapped_ram_postcopy(char *name,\n+                                                   MigrateCommon *args)\n+{\n+    const char *error =\n+        \"Mapped-ram migration is incompatible with postcopy\";\n+\n+    do_test_validate_capability_pair(args, \"mapped-ram\", \"postcopy-ram\",\n+                                     error);\n+    do_test_validate_capability_pair(args, \"postcopy-ram\", \"mapped-ram\",\n+                                     error);\n+}\n+\n static void test_validate_uri_channels_both_set(char *name, MigrateCommon *args)\n {\n     args->listen_uri = \"defer\",\n@@ -276,4 +319,6 @@ void migration_test_add_misc(MigrationTestEnv *env)\n                        test_validate_uri_channels_both_set);\n     migration_test_add(\"/migration/validate_uri/channels/none_set\",\n                        test_validate_uri_channels_none_set);\n+    migration_test_add(\"/migration/validate_caps/mapped_ram_postcopy\",\n+                       test_validate_caps_mapped_ram_postcopy);\n }\n-- \n2.43.0",
+  "patches": [],
+  "generated_at": "2026-03-27T03:20:29Z",
+  "generator": "loupe-review v1.0",
+  "disclaimer": "LLM-generated draft. Not an authoritative review."
+}
