@@ -1,0 +1,53 @@
+{
+  "schema_version": "1",
+  "id": "20260326-20260326121947.51200-1-heinrich.schuchardt-at-canonical.com",
+  "series": {
+    "title": "[PATCH] hw/acpi: correct field sequence in SPCR table",
+    "version": 1,
+    "patch_count": 1,
+    "author": {
+      "name": "Heinrich Schuchardt",
+      "email": "heinrich.schuchardt@canonical.com"
+    },
+    "date": "2026-03-26",
+    "subsystem": "hw/acpi",
+    "message_id": "<20260326121947.51200-1-heinrich.schuchardt@canonical.com>",
+    "lore_url": "https://lore.kernel.org/qemu-devel/20260326121947.51200-1-heinrich.schuchardt%40canonical.com/",
+    "patchwork_url": "http://patchwork.ozlabs.org/project/qemu-devel/patch/20260326121947.51200-1-heinrich.schuchardt@canonical.com/",
+    "base_branch": "master"
+  },
+  "version_history": [],
+  "ml_context": {
+    "patchwork_state": "new",
+    "reviewed_by": [],
+    "acked_by": [],
+    "ci_status": "",
+    "prior_feedback": [],
+    "maintainer_activity": ""
+  },
+  "review": {
+    "verdict": "accept",
+    "summary": "The patch corrects the SPCR byte layout by restoring the specification-defined order of Terminal Type before Language. The change is narrowly scoped, matches the reported regression introduced by the earlier refactor, and presents no evident compatibility or build risk.",
+    "mode": "ci-single",
+    "stages": {
+      "A": "Problem statement is coherent: the reported SPCR contents show Terminal Type and Language swapped, and the patch directly addresses that exact symptom.",
+      "B": "Patch logic is correct on its face: it changes only serialization order, not values, widths, or surrounding fields. This matches an on-wire table layout fix rather than a behavioral change.",
+      "C": "Risk is low: the modification is limited to two adjacent 1-byte fields in SPCR construction, so impact is constrained to table consumers that parse these fields.",
+      "D": "Regression potential is low and favorable: systems previously emitting invalid SPCR tables should now emit spec-compliant ones, while platforms already relying on the common builder should benefit from the same correction.",
+      "E": "No blocking issues found. Given clean checkpatch, successful `git am`, and `configure` success, the patch is suitable for merging."
+    },
+    "findings": [],
+    "checkpatch": {
+      "status": "clean",
+      "issues": []
+    },
+    "build_status": "configure_ok",
+    "am_status": "success"
+  },
+  "cover_letter": null,
+  "diff": "From git@z Thu Jan  1 00:00:00 1970\nSubject: [PATCH] hw/acpi: correct field sequence in SPCR table\nFrom: Heinrich Schuchardt <heinrich.schuchardt@canonical.com>\nDate: Thu, 26 Mar 2026 13:19:47 +0100\nMessage-Id: <20260326121947.51200-1-heinrich.schuchardt@canonical.com>\nMIME-Version: 1.0\nContent-Type: text/plain; charset=\"utf-8\"\nContent-Transfer-Encoding: 7bit\n\nOn LoongArch and RISC-V invalid SPCR tables are created:\n\nTerrminal Type : 00\nLanguage : 03\n\nThe correct values are:\n\nTerrminal Type : 03\nLanguage : 00\n\nThis is due to commit 7dd0b070fa09 (\"hw/arm/virt-acpi-build.c: Migrate\nSPCR creation to common location\") that swapped the fields.\n\nSee the specification of the table in\nhttps://learn.microsoft.com/en-us/windows-hardware/drivers/bringup/serial-port-console-redirection-table\n\nFixes: 7dd0b070fa09 (\"hw/arm/virt-acpi-build.c: Migrate SPCR creation to common location\")\nSigned-off-by: Heinrich Schuchardt <heinrich.schuchardt@canonical.com>\n---\n hw/acpi/aml-build.c | 4 ++--\n 1 file changed, 2 insertions(+), 2 deletions(-)\n\ndiff --git a/hw/acpi/aml-build.c b/hw/acpi/aml-build.c\nindex 4b37405088..a999320e61 100644\n--- a/hw/acpi/aml-build.c\n+++ b/hw/acpi/aml-build.c\n@@ -2115,10 +2115,10 @@ void build_spcr(GArray *table_data, BIOSLinker *linker,\n     build_append_int_noprefix(table_data, f->stop_bits, 1);\n     /* Flow Control */\n     build_append_int_noprefix(table_data, f->flow_control, 1);\n-    /* Language */\n-    build_append_int_noprefix(table_data, f->language, 1);\n     /* Terminal Type */\n     build_append_int_noprefix(table_data, f->terminal_type, 1);\n+    /* Language */\n+    build_append_int_noprefix(table_data, f->language, 1);\n     /* PCI Device ID  */\n     build_append_int_noprefix(table_data, f->pci_device_id, 2);\n     /* PCI Vendor ID */\n-- \n2.53.0",
+  "patches": [],
+  "generated_at": "2026-03-27T01:39:05Z",
+  "generator": "loupe-review v1.0",
+  "disclaimer": "LLM-generated draft. Not an authoritative review."
+}

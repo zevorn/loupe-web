@@ -1,0 +1,55 @@
+{
+  "schema_version": "1",
+  "id": "20260326-20260326113457.159065-1-thuth-at-redhat.com",
+  "series": {
+    "title": "[PATCH] hw/display/vga-isa: Fix migration of the isa-vga device",
+    "version": 1,
+    "patch_count": 1,
+    "author": {
+      "name": "Thomas Huth",
+      "email": "thuth@redhat.com"
+    },
+    "date": "2026-03-26",
+    "subsystem": "hw/display/vga-isa",
+    "message_id": "<20260326113457.159065-1-thuth@redhat.com>",
+    "lore_url": "https://lore.kernel.org/qemu-devel/20260326113457.159065-1-thuth%40redhat.com/",
+    "patchwork_url": "http://patchwork.ozlabs.org/project/qemu-devel/patch/20260326113457.159065-1-thuth@redhat.com/",
+    "base_branch": "master"
+  },
+  "version_history": [],
+  "ml_context": {
+    "patchwork_state": "new",
+    "reviewed_by": [],
+    "acked_by": [],
+    "ci_status": "",
+    "prior_feedback": [],
+    "maintainer_activity": ""
+  },
+  "review": {
+    "verdict": "accept",
+    "summary": "The patch correctly fixes isa-vga migration by introducing an ISAVGAState wrapper VMStateDescription and wiring dc->vmsd to it, so migration state is serialized into the embedded VGACommonState rather than the ISADevice base object. I did not find a functional regression in the code change. Dropping global_vmstate is a migration format change, but the justification is credible because migration for this device was already broken before this patch.",
+    "mode": "ci-single",
+    "stages": {
+      "A": "Problem statement matches the code: using vmstate_vga_common directly on an isa-vga DeviceClass is invalid because the device object base is ISAVGAState/ISADevice, not VGACommonState.",
+      "B": "Implementation approach is consistent with existing QEMU patterns for wrapped VGA state: the new vmstate_vga_isa delegates migration to the embedded state field via VMSTATE_STRUCT.",
+      "C": "Behavioral impact is correct for the intended fix: new-to-new migration should target ISAVGAState.state and avoid the previous crash/corruption path.",
+      "D": "Compatibility impact exists because the section layout changes and global_vmstate is removed, but that is acceptable given the prior migration path was already non-functional for isa-vga.",
+      "E": "No additional code issues were identified from the patch itself beyond the non-functional checkpatch line-length warning."
+    },
+    "findings": [],
+    "checkpatch": {
+      "status": "issues",
+      "issues": [
+        "WARNING: line over 80 characters"
+      ]
+    },
+    "build_status": "configure_ok",
+    "am_status": "success"
+  },
+  "cover_letter": null,
+  "diff": "From git@z Thu Jan  1 00:00:00 1970\nSubject: [PATCH] hw/display/vga-isa: Fix migration of the isa-vga device\nFrom: Thomas Huth <thuth@redhat.com>\nDate: Thu, 26 Mar 2026 12:34:57 +0100\nMessage-Id: <20260326113457.159065-1-thuth@redhat.com>\nMIME-Version: 1.0\nContent-Type: text/plain; charset=\"utf-8\"\nContent-Transfer-Encoding: 7bit\n\nQEMU currently crashes when migrating a guest that uses the\nisa-vga device as display. This happens because vga_isa_class_initfn()\nregisters a vmsd for vmstate_vga_common that operates on VGACommonState.\nBut the isa-vga device is derived from ISADevice, not from VGACommonState,\nso the migration code tries to fill in the data for VGACommonState to\nthe memory that is a ISADevice instead, which is of cause causing trouble.\n\nWe need an indirection here as it's also e.g. done in vga-pci.c, so\nthat the migration data gets filled into the right location.\n\nWhile we're at it, also drop the \"global_vmstate = true\" here. Since\nmigration was broken for this device during the last 15 years (!) anyway,\nwe don't have to worry about maintaining backward compatibility with this\nswitch for older versions of QEMU anymore.\n\nFixes: 7435b791ca9 (\"vga-isa: convert to qdev\")\nSigned-off-by: Thomas Huth <thuth@redhat.com>\nReviewed-by: Fabiano Rosas <farosas@suse.de>\n---\n hw/display/vga-isa.c | 13 +++++++++++--\n 1 file changed, 11 insertions(+), 2 deletions(-)\n\ndiff --git a/hw/display/vga-isa.c b/hw/display/vga-isa.c\nindex 95d85ff69a5..5f55c884a1b 100644\n--- a/hw/display/vga-isa.c\n+++ b/hw/display/vga-isa.c\n@@ -32,6 +32,7 @@\n #include \"qemu/timer.h\"\n #include \"hw/core/loader.h\"\n #include \"hw/core/qdev-properties.h\"\n+#include \"migration/vmstate.h\"\n #include \"ui/console.h\"\n #include \"qom/object.h\"\n \n@@ -62,7 +63,6 @@ static void vga_isa_realizefn(DeviceState *dev, Error **errp)\n     MemoryRegion *vga_io_memory;\n     const MemoryRegionPortio *vga_ports, *vbe_ports;\n \n-    s->global_vmstate = true;\n     if (!vga_common_init(s, OBJECT(dev), errp)) {\n         return;\n     }\n@@ -88,6 +88,15 @@ static void vga_isa_realizefn(DeviceState *dev, Error **errp)\n     rom_add_vga(VGABIOS_FILENAME);\n }\n \n+static const VMStateDescription vmstate_vga_isa = {\n+    .name = \"vga-isa\",\n+    .version_id = 1,\n+    .fields = (const VMStateField[]) {\n+        VMSTATE_STRUCT(state, ISAVGAState, 0, vmstate_vga_common, VGACommonState),\n+        VMSTATE_END_OF_LIST()\n+    }\n+};\n+\n static const Property vga_isa_properties[] = {\n     DEFINE_PROP_UINT32(\"vgamem_mb\", ISAVGAState, state.vram_size_mb, 8),\n };\n@@ -98,7 +107,7 @@ static void vga_isa_class_initfn(ObjectClass *klass, const void *data)\n \n     dc->realize = vga_isa_realizefn;\n     device_class_set_legacy_reset(dc, vga_isa_reset);\n-    dc->vmsd = &vmstate_vga_common;\n+    dc->vmsd = &vmstate_vga_isa;\n     device_class_set_props(dc, vga_isa_properties);\n     set_bit(DEVICE_CATEGORY_DISPLAY, dc->categories);\n }\n-- \n2.53.0",
+  "patches": [],
+  "generated_at": "2026-03-27T01:38:18Z",
+  "generator": "loupe-review v1.0",
+  "disclaimer": "LLM-generated draft. Not an authoritative review."
+}

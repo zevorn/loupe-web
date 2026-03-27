@@ -1,0 +1,53 @@
+{
+  "schema_version": "1",
+  "id": "20260326-20260326165124.138593-1-kwolf-at-redhat.com",
+  "series": {
+    "title": "[PATCH] ide: Fix potential assertion failure on VM stop for PIO",
+    "version": 1,
+    "patch_count": 1,
+    "author": {
+      "name": "Kevin Wolf",
+      "email": "kwolf@redhat.com"
+    },
+    "date": "2026-03-26",
+    "subsystem": "ide",
+    "message_id": "<20260326165124.138593-1-kwolf@redhat.com>",
+    "lore_url": "https://lore.kernel.org/qemu-devel/20260326165124.138593-1-kwolf%40redhat.com/",
+    "patchwork_url": "http://patchwork.ozlabs.org/project/qemu-devel/patch/20260326165124.138593-1-kwolf@redhat.com/",
+    "base_branch": "master"
+  },
+  "version_history": [],
+  "ml_context": {
+    "patchwork_state": "new",
+    "reviewed_by": [],
+    "acked_by": [],
+    "ci_status": "",
+    "prior_feedback": [],
+    "maintainer_activity": ""
+  },
+  "review": {
+    "verdict": "accept",
+    "summary": "The change is correct and narrowly scoped. `ide_sector_read()` can start block I/O before `ide_transfer_start()` runs, so moving `ide_set_retry()` into the read path closes the stale-retry window described in the commit message. I did not identify a behavioral regression from the added call, and the patch matches the existing write-side intent of recording retry state before issuing I/O.",
+    "mode": "ci-single",
+    "stages": {
+      "A": "Patch intent is clear: prevent stale retry metadata when a PIO read request fails before `ide_transfer_start()` has a chance to record retry state.",
+      "B": "Code-path analysis supports the fix. For reads, I/O is initiated from `ide_sector_read()`, so setting retry state there is the right place to satisfy `ide_handle_rw_error()` expectations.",
+      "C": "The change is minimal and low risk: one added call before the existing zero-length check and before any read I/O submission. No ABI, interface, or unrelated control-flow changes are introduced.",
+      "D": "The patch is consistent with the commit message rationale that write requests are already covered by the retry setup in the transfer path, while reads are not.",
+      "E": "With checkpatch clean, git-am successful, and configure passing, this looks ready from a review perspective. Residual risk is limited to runtime coverage of the specific failing-read path, but I found no code-level issue in the patch itself."
+    },
+    "findings": [],
+    "checkpatch": {
+      "status": "clean",
+      "issues": []
+    },
+    "build_status": "configure_ok",
+    "am_status": "success"
+  },
+  "cover_letter": null,
+  "diff": "From git@z Thu Jan  1 00:00:00 1970\nSubject: [PATCH] ide: Fix potential assertion failure on VM stop for PIO\n read error\nFrom: Kevin Wolf <kwolf@redhat.com>\nDate: Thu, 26 Mar 2026 17:51:24 +0100\nMessage-Id: <20260326165124.138593-1-kwolf@redhat.com>\nMIME-Version: 1.0\nContent-Type: text/plain; charset=\"utf-8\"\nContent-Transfer-Encoding: 7bit\n\nide_sector_read() as well as its callers neglect to call ide_set_retry()\nbefore starting I/O. If the I/O fails, this means that the retry\ninformation is stale. In particular, ide_handle_rw_error() has an\nassertion that s->bus->retry_unit == s->unit, which can fail if either\nthere was no previous request or it came from another device on the bus.\nIf the assertion weren't there, a wrong request would be retried after\nresuming the VM.\n\nFix this by adding a ide_set_retry() call to ide_sector_read().\n\nThis affects only reads because ide_transfer_start() does call\nide_set_retry(). For writes, the data transfer comes first and the I/O\nis only started when the data has been read into s->io_buffer, so by\nthat time, ide_set_retry() has been called. For reads, however, the I/O\ncomes first and only then the data is transferred to the guest, so the\ncall in ide_transfer_start() is too late.\n\nBuglink: https://redhat.atlassian.net/browse/RHEL-153537\nReported-by: Tingting Mao <timao@redhat.com>\nSigned-off-by: Kevin Wolf <kwolf@redhat.com>\n---\n hw/ide/core.c | 1 +\n 1 file changed, 1 insertion(+)\n\ndiff --git a/hw/ide/core.c b/hw/ide/core.c\nindex b45abf067b2..52a991fc482 100644\n--- a/hw/ide/core.c\n+++ b/hw/ide/core.c\n@@ -799,6 +799,7 @@ static void ide_sector_read(IDEState *s)\n     s->error = 0; /* not needed by IDE spec, but needed by Windows */\n     sector_num = ide_get_sector(s);\n     n = s->nsector;\n+    ide_set_retry(s);\n \n     if (n == 0) {\n         ide_transfer_stop(s);\n-- \n2.53.0",
+  "patches": [],
+  "generated_at": "2026-03-27T01:52:16Z",
+  "generator": "loupe-review v1.0",
+  "disclaimer": "LLM-generated draft. Not an authoritative review."
+}

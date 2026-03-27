@@ -1,0 +1,130 @@
+{
+  "schema_version": "1",
+  "id": "20260326-20260326135109.67394-1-mohamed-at-unpredictable.fr",
+  "series": {
+    "title": "[PATCH] docs: add WHPX section with initial info",
+    "version": 1,
+    "patch_count": 1,
+    "author": {
+      "name": "Mohamed Mediouni",
+      "email": "mohamed@unpredictable.fr"
+    },
+    "date": "2026-03-26",
+    "subsystem": "docs",
+    "message_id": "<20260326135109.67394-1-mohamed@unpredictable.fr>",
+    "lore_url": "https://lore.kernel.org/qemu-devel/20260326135109.67394-1-mohamed%40unpredictable.fr/",
+    "patchwork_url": "http://patchwork.ozlabs.org/project/qemu-devel/patch/20260326135109.67394-1-mohamed@unpredictable.fr/",
+    "base_branch": "master"
+  },
+  "version_history": [],
+  "ml_context": {
+    "patchwork_state": "new",
+    "reviewed_by": [],
+    "acked_by": [],
+    "ci_status": "",
+    "prior_feedback": [],
+    "maintainer_activity": ""
+  },
+  "review": {
+    "verdict": "changes_requested",
+    "summary": "The series is mechanically simple and builds, but the new WHPX documentation still has review blockers: three checkpatch-visible trailing whitespace errors, release-specific wording that will age out immediately, and an imprecise Windows 11 arm64 prerequisite that does not give users a concrete build/KB target to verify.",
+    "mode": "ci-single",
+    "stages": {
+      "A": "Patch applies cleanly and only touches documentation/indexing plus MAINTAINERS.",
+      "B": "No code-path risk was introduced, but there are documentation quality issues that should be fixed before merge.",
+      "C": "The document structure is reasonable and discoverable via docs/system/index.rst, but some wording is too release-bound and one prerequisite is underspecified.",
+      "D": "Reported status is configure_ok; no functional build regression is indicated by this patch.",
+      "E": "Request changes before merge due to documentation correctness/maintainability issues and checkpatch errors."
+    },
+    "findings": [
+      {
+        "id": "WHPXDOC-001",
+        "severity": "low",
+        "file": "docs/system/whpx.rst",
+        "line": 44,
+        "title": "Trailing whitespace triggers checkpatch errors",
+        "description": "The new document introduces trailing whitespace on multiple lines, which already shows up as checkpatch errors. This is a merge blocker in practice because it adds avoidable style noise to an otherwise small docs-only patch.",
+        "patch_context": [
+          "+-cpu `type` ignored",
+          "+^^^^^^^^^^^^^^^^^^^",
+          "+",
+          "+In this release, -cpu is an ignored argument. ",
+          "+",
+          "...",
+          "+-On Windows 11, Windows 11 24H2 with the April 2025 optional updates",
+          "+-or May 2025 security updates is the minimum required release. ",
+          "+",
+          "+-version of the Windows Hypervisor Platform API, which is not ",
+          "+supported in QEMU."
+        ],
+        "suggestion": "Remove the trailing spaces from the affected lines before resubmitting.",
+        "confidence": "high",
+        "confidence_reason": "The issue is explicitly reported by checkpatch, and the offending spaces are visible in the diff."
+      },
+      {
+        "id": "WHPXDOC-002",
+        "severity": "medium",
+        "file": "docs/system/whpx.rst",
+        "line": 73,
+        "title": "arm64 host prerequisite is not concrete enough to verify",
+        "description": "The arm64 baseline says Windows 11 24H2 needs either the April 2025 optional update or the May 2025 security update, but it does not name the exact KB or build number. Users and downstream maintainers cannot reliably determine whether a system meets the minimum requirement from this wording alone.",
+        "patch_context": [
+          "+OS baseline",
+          "+^^^^^^^^^^^",
+          "+",
+          "+On Windows 11, Windows 11 24H2 with the April 2025 optional updates",
+          "+or May 2025 security updates is the minimum required release. ",
+          "+",
+          "+-Prior releases of Windows 11 version 24H2 shipped with a pre-release",
+          "+version of the Windows Hypervisor Platform API, which is not ",
+          "+supported in QEMU."
+        ],
+        "suggestion": "Replace the marketing/update wording with the exact minimum OS build number and/or KB identifier that introduced the supported WHPX API level.",
+        "confidence": "medium",
+        "confidence_reason": "The ambiguity is directly visible in the text; the exact replacement value would need confirmation from the WHPX/API change that motivated the requirement."
+      },
+      {
+        "id": "WHPXDOC-003",
+        "severity": "low",
+        "file": "docs/system/whpx.rst",
+        "line": 30,
+        "title": "Release-specific phrasing will become stale immediately after the next version bump",
+        "description": "The document mixes \"In this release\" with explicit references to \"QEMU 11.0\". That wording is fragile in versioned documentation because it becomes misleading as soon as the branch moves forward or the text is backported. The behavior should be described in version-neutral terms unless it is intentionally documenting a historical transition.",
+        "patch_context": [
+          "+However, in QEMU 11.0, the guest will still be a 64-bit x86",
+          "+ISA machine with all the corresponding CPUID leaves exposed.",
+          "+",
+          "...",
+          "+-cpu `type` ignored",
+          "+^^^^^^^^^^^^^^^^^^^",
+          "+",
+          "+In this release, -cpu is an ignored argument. ",
+          "+",
+          "...",
+          "+This has been addressed in QEMU 11.0 on Windows 11 platforms but",
+          "+functionality to make it available on Windows 10 isn't present."
+        ],
+        "suggestion": "Rewrite these passages to describe current behavior without tying them to a specific upcoming release, or explicitly scope them to a documented versioned branch if that is the intent.",
+        "confidence": "high",
+        "confidence_reason": "The staleness risk follows directly from the text in the patch and does not depend on implementation details."
+      }
+    ],
+    "checkpatch": {
+      "status": "issues",
+      "issues": [
+        "ERROR: trailing whitespace",
+        "ERROR: trailing whitespace",
+        "ERROR: trailing whitespace",
+        "WARNING: Does new file 'docs/system/whpx.rst' need 'SPDX-License-Identifier'?"
+      ]
+    },
+    "build_status": "configure_ok",
+    "am_status": "success"
+  },
+  "cover_letter": null,
+  "diff": "From git@z Thu Jan  1 00:00:00 1970\nSubject: [PATCH] docs: add WHPX section with initial info\nFrom: Mohamed Mediouni <mohamed@unpredictable.fr>\nDate: Thu, 26 Mar 2026 14:51:09 +0100\nMessage-Id: <20260326135109.67394-1-mohamed@unpredictable.fr>\nMIME-Version: 1.0\nContent-Type: text/plain; charset=\"utf-8\"\nContent-Transfer-Encoding: 7bit\n\nSigned-off-by: Mohamed Mediouni <mohamed@unpredictable.fr>\n---\n MAINTAINERS           |  1 +\n docs/system/index.rst |  1 +\n docs/system/whpx.rst  | 83 +++++++++++++++++++++++++++++++++++++++++++\n 3 files changed, 85 insertions(+)\n create mode 100644 docs/system/whpx.rst\n\ndiff --git a/MAINTAINERS b/MAINTAINERS\nindex cd8ba14450..eb7132e39d 100644\n--- a/MAINTAINERS\n+++ b/MAINTAINERS\n@@ -582,6 +582,7 @@ F: include/system/whpx.h\n F: include/system/whpx-accel-ops.h\n F: include/system/whpx-common.h\n F: include/system/whpx-internal.h\n+F: docs/system/whpx.rst\n \n MSHV\n M: Magnus Kulke <magnuskulke@linux.microsoft.com>\ndiff --git a/docs/system/index.rst b/docs/system/index.rst\nindex bb948e2993..4509630fa4 100644\n--- a/docs/system/index.rst\n+++ b/docs/system/index.rst\n@@ -40,6 +40,7 @@ or Hypervisor.Framework.\n    confidential-guest-support\n    igvm\n    nitro\n+   whpx\n    vm-templating\n    sriov\n    qemu-colo\ndiff --git a/docs/system/whpx.rst b/docs/system/whpx.rst\nnew file mode 100644\nindex 0000000000..a3a7ecd38f\n--- /dev/null\n+++ b/docs/system/whpx.rst\n@@ -0,0 +1,83 @@\n+Windows Hypervisor Platform\n+===========================\n+\n+Common\n+------\n+\n+Windows Hypervisor Platform is available for installation through\n+Windows Features (`optionalfeatures.exe`).\n+\n+VM state save/restore is not implemented.\n+\n+Known issues on x86_64\n+----------------------\n+\n+Guests using legacy VGA modes\n+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n+\n+In guests using VGA modes that QEMU doesn't pass through framebuffer\n+memory for, performance will be quite suboptimal.\n+\n+Workaround: for affected guests, use a more modern graphics mode.\n+Alternatively, use TCG to run those guests.\n+\n+`-M isapc`\n+^^^^^^^^^^\n+\n+`-M isapc` doesn't disable the Hyper-V LAPIC on its own yet. To\n+be able to use that machine, use `-accel whpx,hyperv=off,kernel-irqchip=off`.\n+\n+However, in QEMU 11.0, the guest will still be a 64-bit x86\n+ISA machine with all the corresponding CPUID leaves exposed.\n+\n+gdbstub\n+^^^^^^^\n+\n+As save/restore of xsave state is not currently present, state\n+exposed through GDB will be incomplete.\n+\n+The same also applies to `info registers`.\n+\n+-cpu `type` ignored\n+^^^^^^^^^^^^^^^^^^^\n+\n+In this release, -cpu is an ignored argument. \n+\n+PIC interrupts on Windows 10\n+^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n+\n+QEMU's Windows Hypervisor Platform backend is tested starting from\n+Windows 10 version 2004. Earlier Windows 10 releases *might* work\n+but are not tested.\n+\n+On Windows 10, a legacy PIC interrupt injected does not wake the guest\n+from an HLT when using the Hyper-V provided interrupt controller.\n+\n+This has been addressed in QEMU 11.0 on Windows 11 platforms but\n+functionality to make it available on Windows 10 isn't present.\n+\n+Workaround: for affected use cases, use -M kernel-irqchip=off.\n+\n+Known issues on Windows 11\n+^^^^^^^^^^^^^^^^^^^^^^^^^^\n+\n+Nested virtualisation-specific Hyper-V enlightenments are not\n+currently exposed.\n+\n+arm64\n+-----\n+\n+OS baseline\n+^^^^^^^^^^^\n+\n+On Windows 11, Windows 11 24H2 with the April 2025 optional updates\n+or May 2025 security updates is the minimum required release. \n+\n+Prior releases of Windows 11 version 24H2 shipped with a pre-release\n+version of the Windows Hypervisor Platform API, which is not \n+supported in QEMU.\n+\n+ISA feature support\n+^^^^^^^^^^^^^^^^^^^\n+\n+SVE and SME are not currently supported.\n-- \n2.50.1 (Apple Git-155)",
+  "patches": [],
+  "generated_at": "2026-03-27T01:42:02Z",
+  "generator": "loupe-review v1.0",
+  "disclaimer": "LLM-generated draft. Not an authoritative review."
+}

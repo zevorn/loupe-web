@@ -1,0 +1,53 @@
+{
+  "schema_version": "1",
+  "id": "20260326-20260326164405.1626-1-farosas-at-suse.de",
+  "series": {
+    "title": "[PATCH v1] tests/qtest/migration: Fix slow test dirty_limit",
+    "version": 1,
+    "patch_count": 1,
+    "author": {
+      "name": "Fabiano Rosas",
+      "email": "farosas@suse.de"
+    },
+    "date": "2026-03-26",
+    "subsystem": "tests/qtest/migration",
+    "message_id": "<20260326164405.1626-1-farosas@suse.de>",
+    "lore_url": "https://lore.kernel.org/qemu-devel/20260326164405.1626-1-farosas%40suse.de/",
+    "patchwork_url": "http://patchwork.ozlabs.org/project/qemu-devel/patch/20260326164405.1626-1-farosas@suse.de/",
+    "base_branch": "master"
+  },
+  "version_history": [],
+  "ml_context": {
+    "patchwork_state": "new",
+    "reviewed_by": [],
+    "acked_by": [],
+    "ci_status": "",
+    "prior_feedback": [],
+    "maintainer_activity": ""
+  },
+  "review": {
+    "verdict": "accept",
+    "summary": "The change correctly updates `test_dirty_limit()` to use deferred incoming setup and explicitly issue `migrate-incoming`, matching the post-4e8c4dda97 failure-handling model for destination-side migration tests. I found no functional regressions in the patch itself.",
+    "mode": "ci-single",
+    "stages": {
+      "A": "Patch intent is clear and consistent with the cited Fixes commit: tests expecting destination failure must no longer rely on automatic incoming-side exit.",
+      "B": "Code-path review of the modified test logic looks correct: `migrate_start(..., \"defer\", ...)` is paired with an explicit `migrate_incoming_qmp()` before `migrate_qmp()`.",
+      "C": "Behavioral assessment: this should restore the intended ordering for a test that expects the destination side to fail, avoiding the previous stale/incorrect startup mode.",
+      "D": "API/helper usage appears internally consistent. `args->connect_uri` remains the URI used for both the deferred incoming activation and the source-side migrate command.",
+      "E": "No checkpatch, build, or obvious maintainability issues are introduced by the delta. Residual risk is low and limited to runtime semantics already described by the commit message."
+    },
+    "findings": [],
+    "checkpatch": {
+      "status": "clean",
+      "issues": []
+    },
+    "build_status": "configure_ok",
+    "am_status": "success"
+  },
+  "cover_letter": null,
+  "diff": "From git@z Thu Jan  1 00:00:00 1970\nSubject: [PATCH v1] tests/qtest/migration: Fix slow test dirty_limit\nFrom: Fabiano Rosas <farosas@suse.de>\nDate: Thu, 26 Mar 2026 13:44:05 -0300\nMessage-Id: <20260326164405.1626-1-farosas@suse.de>\nMIME-Version: 1.0\nContent-Type: text/plain; charset=\"utf-8\"\nContent-Transfer-Encoding: 7bit\n\nAfter the referenced commit, the incoming side doesn't exit\nautomatically after a failure. Tests that expect the destination to\nfail should use -incoming defer, issue QMP migrate-incoming, wait for\nthe failure event and issue QMP quit.\n\nFix the dirty_limit test which wasn't updated properly.\n\nFixes: 4e8c4dda97 (\"tests/qtest/migration: Force exit-on-error=false\")\nReported-by: Thomas Huth <thuth@redhat.com>\nSigned-off-by: Fabiano Rosas <farosas@suse.de>\n---\n tests/qtest/migration/precopy-tests.c | 4 ++--\n 1 file changed, 2 insertions(+), 2 deletions(-)\n\ndiff --git a/tests/qtest/migration/precopy-tests.c b/tests/qtest/migration/precopy-tests.c\nindex c6c8ae3004..a0e3ff0547 100644\n--- a/tests/qtest/migration/precopy-tests.c\n+++ b/tests/qtest/migration/precopy-tests.c\n@@ -1070,11 +1070,10 @@ static void test_dirty_limit(char *name, MigrateCommon *args)\n     args->start.hide_stderr = true;\n     args->start.use_dirty_ring = true;\n \n-    args->listen_uri = uri;\n     args->connect_uri = uri;\n \n     /* Start src, dst vm */\n-    if (migrate_start(&from, &to, args->listen_uri, &args->start)) {\n+    if (migrate_start(&from, &to, \"defer\", &args->start)) {\n         return;\n     }\n \n@@ -1082,6 +1081,7 @@ static void test_dirty_limit(char *name, MigrateCommon *args)\n     migrate_dirty_limit_wait_showup(from, dirtylimit_period, dirtylimit_value);\n \n     /* Start migrate */\n+    migrate_incoming_qmp(to, args->connect_uri, NULL, \"{}\");\n     migrate_qmp(from, to, args->connect_uri, NULL, \"{}\");\n \n     /* Wait for dirty limit throttle begin */\n-- \n2.51.0",
+  "patches": [],
+  "generated_at": "2026-03-27T01:51:22Z",
+  "generator": "loupe-review v1.0",
+  "disclaimer": "LLM-generated draft. Not an authoritative review."
+}

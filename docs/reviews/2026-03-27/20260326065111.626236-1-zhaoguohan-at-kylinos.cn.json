@@ -1,0 +1,53 @@
+{
+  "schema_version": "1",
+  "id": "20260326-20260326065111.626236-1-zhaoguohan-at-kylinos.cn",
+  "series": {
+    "title": "[PATCH] ui/dbus: associate add_client completion with its request",
+    "version": 1,
+    "patch_count": 1,
+    "author": {
+      "name": "GuoHan Zhao",
+      "email": "zhaoguohan@kylinos.cn"
+    },
+    "date": "2026-03-26",
+    "subsystem": "ui/dbus",
+    "message_id": "<20260326065111.626236-1-zhaoguohan@kylinos.cn>",
+    "lore_url": "https://lore.kernel.org/qemu-devel/20260326065111.626236-1-zhaoguohan%40kylinos.cn/",
+    "patchwork_url": "http://patchwork.ozlabs.org/project/qemu-devel/patch/20260326065111.626236-1-zhaoguohan@kylinos.cn/",
+    "base_branch": "master"
+  },
+  "version_history": [],
+  "ml_context": {
+    "patchwork_state": "new",
+    "reviewed_by": [],
+    "acked_by": [],
+    "ci_status": "",
+    "prior_feedback": [],
+    "maintainer_activity": ""
+  },
+  "review": {
+    "verdict": "accept",
+    "summary": "The patch correctly fixes the async request association bug in `ui/dbus.c` by binding completion state to the originating request, holding the necessary references for callback lifetime safety, and ignoring stale completions after replacement requests. I did not identify a functional regression in the proposed change.",
+    "mode": "ci-single",
+    "stages": {
+      "A": "Problem statement is valid: the previous callback used global state and could act on a newer request than the one that initiated the async operation.",
+      "B": "Lifetime handling is improved: the callback now owns references to both `DBusDisplay` and the request `GCancellable`, avoiding use-after-free of callback context.",
+      "C": "Request matching is implemented correctly: pointer equality against the referenced cancellable is sufficient here because the callback holds its own reference, preventing reuse of the same object address.",
+      "D": "Cancellation/replacement flow is sound: an existing request is cancelled and cleared before issuing a new one, and stale completions no longer clear or install state for newer requests.",
+      "E": "Error handling is improved appropriately: cancelled operations are no longer reported as failures, while real setup failures still surface via `error_printf()`. No additional blocking issues found from the patch itself."
+    },
+    "findings": [],
+    "checkpatch": {
+      "status": "clean",
+      "issues": []
+    },
+    "build_status": "configure_ok",
+    "am_status": "success"
+  },
+  "cover_letter": null,
+  "diff": "From git@z Thu Jan  1 00:00:00 1970\nSubject: [PATCH] ui/dbus: associate add_client completion with its request\nFrom: GuoHan Zhao <zhaoguohan@kylinos.cn>\nDate: Thu, 26 Mar 2026 14:51:11 +0800\nMessage-Id: <20260326065111.626236-1-zhaoguohan@kylinos.cn>\nMIME-Version: 1.0\nContent-Type: text/plain; charset=\"utf-8\"\nContent-Transfer-Encoding: 8bit\n\nCommit 99997823bbbd (\"ui/dbus: add p2p=on/off option\")\nintroduced an asynchronous D-Bus client setup path, with the completion\nhandler reaching back into the global dbus_display state.\n\nThis makes the callback effectively operate on whatever request is\ncurrent when it runs, rather than the one that created it. A completion\nfrom an older request can therefore clear a newer\nadd_client_cancellable or install its connection after a replacement\nrequest has already been issued. It also relies on the DBusDisplay\ninstance remaining alive until completion.\n\nFix this by passing the DBusDisplay and GCancellable as callback data,\ntaking references while the async setup is in flight, and only acting\non completion if it still matches the current request. Also drop the\nprevious cancellable before creating a new request.\n\nFixes: 99997823bbbd (\"ui/dbus: add p2p=on/off option\")\nSigned-off-by: GuoHan Zhao <zhaoguohan@kylinos.cn>\nReviewed-by: Marc-André Lureau <marcandre.lureau@redhat.com>\n---\n ui/dbus.c | 44 ++++++++++++++++++++++++++++++++++++++++----\n 1 file changed, 40 insertions(+), 4 deletions(-)\n\ndiff --git a/ui/dbus.c b/ui/dbus.c\nindex 4f24215555a4..7c54b6a502d2 100644\n--- a/ui/dbus.c\n+++ b/ui/dbus.c\n@@ -263,22 +263,52 @@ dbus_display_complete(UserCreatable *uc, Error **errp)\n     }\n }\n \n+typedef struct DBusDisplayAddClientData {\n+    DBusDisplay *display;\n+    GCancellable *cancellable;\n+} DBusDisplayAddClientData;\n+\n+static void dbus_display_add_client_data_free(DBusDisplayAddClientData *data)\n+{\n+    if (data->display) {\n+        object_unref(OBJECT(data->display));\n+        data->display = NULL;\n+    }\n+    g_clear_object(&data->cancellable);\n+    g_free(data);\n+}\n+\n+G_DEFINE_AUTOPTR_CLEANUP_FUNC(DBusDisplayAddClientData,\n+                              dbus_display_add_client_data_free)\n+\n static void\n dbus_display_add_client_ready(GObject *source_object,\n                               GAsyncResult *res,\n                               gpointer user_data)\n {\n+    g_autoptr(DBusDisplayAddClientData) data = user_data;\n+    DBusDisplay *display = data->display;\n+    bool current = display->add_client_cancellable == data->cancellable;\n     g_autoptr(GError) err = NULL;\n     g_autoptr(GDBusConnection) conn = NULL;\n \n-    g_clear_object(&dbus_display->add_client_cancellable);\n+    if (current) {\n+        g_clear_object(&display->add_client_cancellable);\n+    }\n \n     conn = g_dbus_connection_new_finish(res, &err);\n     if (!conn) {\n-        error_printf(\"Failed to accept D-Bus client: %s\", err->message);\n+        if (!g_error_matches(err, G_IO_ERROR, G_IO_ERROR_CANCELLED)) {\n+            error_printf(\"Failed to accept D-Bus client: %s\", err->message);\n+        }\n+        return;\n     }\n \n-    g_dbus_object_manager_server_set_connection(dbus_display->server, conn);\n+    if (!current) {\n+        return;\n+    }\n+\n+    g_dbus_object_manager_server_set_connection(display->server, conn);\n     g_dbus_connection_start_message_processing(conn);\n }\n \n@@ -290,6 +320,7 @@ dbus_display_add_client(int csock, Error **errp)\n     g_autoptr(GSocket) socket = NULL;\n     g_autoptr(GSocketConnection) conn = NULL;\n     g_autofree char *guid = g_dbus_generate_guid();\n+    DBusDisplayAddClientData *data;\n \n     if (!dbus_display) {\n         error_setg(errp, \"p2p connections not accepted in bus mode\");\n@@ -298,6 +329,7 @@ dbus_display_add_client(int csock, Error **errp)\n \n     if (dbus_display->add_client_cancellable) {\n         g_cancellable_cancel(dbus_display->add_client_cancellable);\n+        g_clear_object(&dbus_display->add_client_cancellable);\n     }\n \n #ifdef WIN32\n@@ -318,6 +350,10 @@ dbus_display_add_client(int csock, Error **errp)\n     conn = g_socket_connection_factory_create_connection(socket);\n \n     dbus_display->add_client_cancellable = g_cancellable_new();\n+    data = g_new0(DBusDisplayAddClientData, 1);\n+    data->display = DBUS_DISPLAY(object_ref(OBJECT(dbus_display)));\n+    data->cancellable = g_object_ref(dbus_display->add_client_cancellable);\n+\n     GDBusConnectionFlags flags =\n         G_DBUS_CONNECTION_FLAGS_AUTHENTICATION_SERVER |\n         G_DBUS_CONNECTION_FLAGS_DELAY_MESSAGE_PROCESSING;\n@@ -332,7 +368,7 @@ dbus_display_add_client(int csock, Error **errp)\n                           NULL,\n                           dbus_display->add_client_cancellable,\n                           dbus_display_add_client_ready,\n-                          NULL);\n+                          data);\n \n     return true;\n }\n-- \n2.43.0",
+  "patches": [],
+  "generated_at": "2026-03-27T01:31:43Z",
+  "generator": "loupe-review v1.0",
+  "disclaimer": "LLM-generated draft. Not an authoritative review."
+}

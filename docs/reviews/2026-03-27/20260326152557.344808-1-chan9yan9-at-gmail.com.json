@@ -1,0 +1,73 @@
+{
+  "schema_version": "1",
+  "id": "20260326-20260326152557.344808-1-chan9yan9-at-gmail.com",
+  "series": {
+    "title": "[PATCH] As reported in qemu-project/qemu#3324",
+    "version": 1,
+    "patch_count": 1,
+    "author": {
+      "name": "Zexiang Zhang",
+      "email": "chan9yan9@gmail.com"
+    },
+    "date": "2026-03-26",
+    "subsystem": "riscv",
+    "message_id": "<20260326152557.344808-1-chan9yan9@gmail.com>",
+    "lore_url": "https://lore.kernel.org/qemu-devel/20260326152557.344808-1-chan9yan9%40gmail.com/",
+    "patchwork_url": "http://patchwork.ozlabs.org/project/qemu-devel/patch/20260326152557.344808-1-chan9yan9@gmail.com/",
+    "base_branch": "master"
+  },
+  "version_history": [],
+  "ml_context": {
+    "patchwork_state": "new",
+    "reviewed_by": [],
+    "acked_by": [],
+    "ci_status": "",
+    "prior_feedback": [],
+    "maintainer_activity": ""
+  },
+  "review": {
+    "verdict": "needs_revision",
+    "summary": "The patch fixes the immediate invalid-server dereference path in `icp_irq()`, but the new error path likely implements the wrong recovery semantics. The commit message says invalid IVE/server values should be ignored, yet the code calls `ics_reject()`, which re-injects/requeues an interrupt rather than dropping a malformed guest routing target. That can preserve a bad state and lead to repeated delivery attempts or log spam instead of safely discarding the malformed interrupt.",
+    "mode": "ci-single",
+    "stages": {
+      "A": "The reported bug is credible: `icp_irq()` must not assume that a guest-provided server id resolves to a valid ICP target.",
+      "B": "The added `!icp` guard is in the right place to stop invalid state access before the normal priority/path logic runs.",
+      "C": "The recovery action is inconsistent with the stated fix. `ics_reject()` is a retry/backpressure path, not an 'ignore invalid value' path, so malformed routing may remain live.",
+      "D": "Static checks are clean and configure succeeds, but the patch does not demonstrate a malformed-IVE regression test or explain why requeueing invalid targets is safe.",
+      "E": "Revise the invalid-server branch to explicitly drop/quiesce the interrupt source, or document and test why `ics_reject()` is the correct semantic for permanently invalid routing data."
+    },
+    "findings": [
+      {
+        "id": "XICS-001",
+        "severity": "medium",
+        "file": "hw/intc/xics.c",
+        "line": 225,
+        "title": "Invalid-server path rejects instead of ignoring malformed routing",
+        "description": "The new guard correctly detects that `server` does not map to a valid ICP target, but the follow-up action uses `ics_reject(ics, nr)`. In XICS, reject is normally the path for temporary delivery failure and can cause the interrupt to be reconsidered later. For a malformed IVE/server field, that is not equivalent to 'ignoring invalid values' as described in the commit message, and it risks repeated retries or persistent guest-error logging against a permanently bad destination.",
+        "patch_context": [
+          "+    if (!icp) {",
+          "+        qemu_log_mask(LOG_GUEST_ERROR, \"XICS: invalid server %d for IRQ 0x%x\\n\",",
+          "+                      server, nr);",
+          "+        ics_reject(ics, nr);",
+          "+        return;",
+          "+    }"
+        ],
+        "suggestion": "Use a drop/quiesce path for malformed routing instead of `ics_reject()`, or update the implementation and commit message together with a test proving that requeueing an invalid target cannot loop or repeatedly resurface the same bad interrupt.",
+        "confidence": "0.84",
+        "confidence_reason": "The null-check itself is straightforward, but the semantic mismatch between 'ignore invalid values' and `ics_reject()` is visible directly in the patch and aligns with typical XICS reject semantics as a retry-oriented path."
+      }
+    ],
+    "checkpatch": {
+      "status": "clean",
+      "issues": []
+    },
+    "build_status": "configure_ok",
+    "am_status": "success"
+  },
+  "cover_letter": null,
+  "diff": "From git@z Thu Jan  1 00:00:00 1970\nSubject: [PATCH] As reported in qemu-project/qemu#3324\nFrom: kiki <Chan9Yan9@gmail.com>\nDate: Thu, 26 Mar 2026 23:25:57 +0800\nMessage-Id: <20260326152557.344808-1-chan9yan9@gmail.com>\nMIME-Version: 1.0\nContent-Type: text/plain; charset=\"utf-8\"\nContent-Transfer-Encoding: 7bit\n\nA malformed IVE value can result in an invalid server field being\npassed to icp_irq(). The function assumes the server id is valid and\nmay access invalid state otherwise, potentially leading to a crash.\n\nFix this by validating the server id before using it and ignoring\ninvalid values.\n\nReported-by: Zexiang Zhang <chan9yan9@gmail.com>\nSigned-off-by: Zexiang Zhang <chan9yan9@gmail.com>\n---\n hw/intc/xics.c | 7 +++++++\n 1 file changed, 7 insertions(+)\n\ndiff --git a/hw/intc/xics.c b/hw/intc/xics.c\nindex 1d40c4386d..25c7b0c8a5 100644\n--- a/hw/intc/xics.c\n+++ b/hw/intc/xics.c\n@@ -222,6 +222,13 @@ void icp_irq(ICSState *ics, int server, int nr, uint8_t priority)\n \n     trace_xics_icp_irq(server, nr, priority);\n \n+    if (!icp) {\n+        qemu_log_mask(LOG_GUEST_ERROR, \"XICS: invalid server %d for IRQ 0x%x\\n\",\n+                      server, nr);\n+        ics_reject(ics, nr);\n+        return;\n+    }\n+\n     if ((priority >= CPPR(icp))\n         || (XISR(icp) && (icp->pending_priority <= priority))) {\n         ics_reject(ics, nr);\n-- \n2.34.1",
+  "patches": [],
+  "generated_at": "2026-03-27T01:50:35Z",
+  "generator": "loupe-review v1.0",
+  "disclaimer": "LLM-generated draft. Not an authoritative review."
+}

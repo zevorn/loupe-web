@@ -1,0 +1,91 @@
+{
+  "schema_version": "1",
+  "id": "20260326-20260326160033.68318-8-kkostiuk-at-redhat.com",
+  "series": {
+    "title": "[PATCH 0/7] Misc changes to allow building with Windows Clang",
+    "version": 1,
+    "patch_count": 7,
+    "author": {
+      "name": "Kostiantyn Kostiuk",
+      "email": "kkostiuk@redhat.com"
+    },
+    "date": "2026-03-26",
+    "subsystem": "riscv",
+    "message_id": "<20260326160033.68318-8-kkostiuk@redhat.com>",
+    "lore_url": "https://lore.kernel.org/qemu-devel/20260326160033.68318-8-kkostiuk%40redhat.com/",
+    "patchwork_url": "http://patchwork.ozlabs.org/project/qemu-devel/patch/20260326160033.68318-8-kkostiuk@redhat.com/",
+    "base_branch": "master"
+  },
+  "version_history": [],
+  "ml_context": {
+    "patchwork_state": "new",
+    "reviewed_by": [],
+    "acked_by": [],
+    "ci_status": "",
+    "prior_feedback": [],
+    "maintainer_activity": ""
+  },
+  "review": {
+    "verdict": "needs_revision",
+    "summary": "The series is mostly straightforward portability cleanup, but patch 6 appears to introduce a Meson configuration regression for builds that descend into `storage-daemon/` while `have_tools` is false. The previous file handled that case by becoming a no-op; the new top-level `assert(have_tools)` would hard-fail configuration instead.",
+    "mode": "ci-single",
+    "stages": {
+      "A": "Reviewed each patch for semantic changes versus pure cleanup and focused on build-system control-flow changes.",
+      "B": "Source cleanups in patches 1-5 look low risk and consistent with the stated portability goal.",
+      "C": "Patch 7 correctly avoids generating symbol lists when modules are disabled and looks behaviorally sound.",
+      "D": "Patch 6 changes `storage-daemon/meson.build` from conditionally building the executable to asserting `have_tools`, which is a configuration-surface change rather than a refactor.",
+      "E": "Overall risk is low except for the Meson regression; that issue is sufficient to block the series until the guard logic is corrected."
+    },
+    "findings": [
+      {
+        "id": "F1",
+        "severity": "medium",
+        "file": "storage-daemon/meson.build",
+        "line": 1,
+        "title": "`assert(have_tools)` can regress `--disable-tools` configurations",
+        "description": "Before this patch, `storage-daemon/meson.build` safely handled `have_tools == false` by skipping the `qemu-storage-daemon` target while still allowing the subdir to be parsed. The patch replaces that conditional with `assert(have_tools)`. If the top-level Meson logic still enters `storage-daemon/` when tools are disabled, configuration now fails instead of cleanly skipping the target. The patch itself does not show any corresponding change to the caller side, so this is a real regression risk for non-default build configurations.",
+        "patch_context": [
+          "--- a/storage-daemon/meson.build",
+          "+++ b/storage-daemon/meson.build",
+          "+assert(have_tools)",
+          "",
+          " qsd_ss = ss.source_set()",
+          " qsd_ss.add(files('qemu-storage-daemon.c'))",
+          " qsd_ss.add(blockdev, chardev, qmp, qom, qemuutil)",
+          "",
+          " subdir('qapi')",
+          "",
+          "-if have_tools",
+          "-  qsd_ss = qsd_ss.apply({})",
+          "-  qsd = executable('qemu-storage-daemon',",
+          "-                   qsd_ss.sources(),",
+          "-                   link_args: '@block.syms', link_depends: block_syms,",
+          "-                   dependencies: qsd_ss.dependencies(),",
+          "-                   install: true)",
+          "-endif",
+          "+qsd_ss = qsd_ss.apply({})",
+          "+qsd = executable('qemu-storage-daemon',",
+          "+                 qsd_ss.sources(),",
+          "+                 link_args: tools_link_args, link_depends: block_syms,",
+          "+                 dependencies: qsd_ss.dependencies(),",
+          "+                 install: true)"
+        ],
+        "suggestion": "Keep the local `if have_tools` guard around the target creation, or move the `subdir('storage-daemon')` call itself under a `have_tools` check in the parent `meson.build` in the same series. Without one of those changes, `--disable-tools` style configurations may start failing at configure time.",
+        "confidence": "high",
+        "confidence_reason": "The regression follows directly from the shown diff: a conditional no-op becomes an unconditional assertion, and no compensating caller-side guard is included in the patch series."
+      }
+    ],
+    "checkpatch": {
+      "status": "clean",
+      "issues": []
+    },
+    "build_status": "configure_ok",
+    "am_status": "success"
+  },
+  "cover_letter": "Subject: [PATCH 0/7] Misc changes to allow building with Windows Clang\nFrom: Kostiantyn Kostiuk <kkostiuk@redhat.com>\nDate: Thu, 26 Mar 2026 18:00:26 +0200\nMessage-Id: <20260326160033.68318-1-kkostiuk@redhat.com>\nMIME-Version: 1.0\nContent-Type: text/plain; charset=\"utf-8\"\nContent-Transfer-Encoding: 7bit\n\nThis is the first set of changes to allow building qemu-ga with Microsoft Windows Clang.\nIt includes some cleanups and fixes that also make the code more portable.\nThe main goal is to be able to build qemu-ga with the MSVC toolchain\nbecause MinGW-w64 is not available for ARM64 Windows.\n\nThese changes were tested on CentOS Stream, Arch Linux, FreeBSD, NetBSD.\nFull QEMU tree was compiled without any issues on all these platforms.\n\nThe full set of changes consists of about fifteen more patches.\nOnce that is complete, I will add documentation on how to build\nqemu-ga with MSVC clang and a CI job that tests it.\n\nKostiantyn Kostiuk (6):\n  meson: Use stddef.h instead of unistd.h\n  qom: Use g_ascii_strcasecmp instead of strcasecmp\n  osdep: Remove unused strings.h\n  Remove unused dirent.h\n  Remove unused sys/param.h\n  meson: Build block_syms and qemu_syms only when enable_modules\n\nPaolo Bonzini (1):\n  storage-daemon: use same link arguments as other tools\n\n include/qemu/osdep.h       |  1 -\n meson.build                | 35 +++++++++++++++++++----------------\n qom/object.c               |  4 ++--\n storage-daemon/meson.build | 16 ++++++++--------\n util/drm.c                 |  1 -\n util/path.c                |  2 --\n 6 files changed, 29 insertions(+), 30 deletions(-)\n\n--\n2.52.0",
+  "diff": "From git@z Thu Jan  1 00:00:00 1970\nSubject: [PATCH 1/7] meson: Use stddef.h instead of unistd.h\nFrom: Kostiantyn Kostiuk <kkostiuk@redhat.com>\nDate: Thu, 26 Mar 2026 18:00:27 +0200\nMessage-Id: <20260326160033.68318-2-kkostiuk@redhat.com>\nMIME-Version: 1.0\nContent-Type: text/plain; charset=\"utf-8\"\nContent-Transfer-Encoding: 7bit\n\nThis is more cross-platform way.\n\nSigned-off-by: Kostiantyn Kostiuk <kkostiuk@redhat.com>\nReviewed-by: Peter Maydell <peter.maydell@linaro.org>\n---\n meson.build | 2 +-\n 1 file changed, 1 insertion(+), 1 deletion(-)\n\ndiff --git a/meson.build b/meson.build\nindex d7c4095b39..711dafa9ce 100644\n--- a/meson.build\n+++ b/meson.build\n@@ -1060,7 +1060,7 @@ endif\n \n if not cc.compiles('''\n   #include <glib.h>\n-  #include <unistd.h>\n+  #include <stddef.h>\n \n   #define QEMU_BUILD_BUG_ON(x) \\\n   typedef char qemu_build_bug_on[(x)?-1:1] __attribute__((unused));\n-- \n2.52.0\n\nFrom git@z Thu Jan  1 00:00:00 1970\nSubject: [PATCH 2/7] qom: Use g_ascii_strcasecmp instead of strcasecmp\nFrom: Kostiantyn Kostiuk <kkostiuk@redhat.com>\nDate: Thu, 26 Mar 2026 18:00:28 +0200\nMessage-Id: <20260326160033.68318-3-kkostiuk@redhat.com>\nMIME-Version: 1.0\nContent-Type: text/plain; charset=\"utf-8\"\nContent-Transfer-Encoding: 7bit\n\nSigned-off-by: Kostiantyn Kostiuk <kkostiuk@redhat.com>\nReviewed-by: Peter Maydell <peter.maydell@linaro.org>\n---\n qom/object.c | 4 ++--\n 1 file changed, 2 insertions(+), 2 deletions(-)\n\ndiff --git a/qom/object.c b/qom/object.c\nindex ff8ede8a32..e5c0c2f53e 100644\n--- a/qom/object.c\n+++ b/qom/object.c\n@@ -1193,8 +1193,8 @@ GSList *object_class_get_list(const char *implements_type,\n \n static gint object_class_cmp(gconstpointer a, gconstpointer b, gpointer d)\n {\n-    return strcasecmp(object_class_get_name((ObjectClass *)a),\n-                      object_class_get_name((ObjectClass *)b));\n+    return g_ascii_strcasecmp(object_class_get_name((ObjectClass *)a),\n+                              object_class_get_name((ObjectClass *)b));\n }\n \n GSList *object_class_get_list_sorted(const char *implements_type,\n-- \n2.52.0\n\nFrom git@z Thu Jan  1 00:00:00 1970\nSubject: [PATCH 3/7] osdep: Remove unused strings.h\nFrom: Kostiantyn Kostiuk <kkostiuk@redhat.com>\nDate: Thu, 26 Mar 2026 18:00:29 +0200\nMessage-Id: <20260326160033.68318-4-kkostiuk@redhat.com>\nMIME-Version: 1.0\nContent-Type: text/plain; charset=\"utf-8\"\nContent-Transfer-Encoding: 7bit\n\nSigned-off-by: Kostiantyn Kostiuk <kkostiuk@redhat.com>\n---\n include/qemu/osdep.h | 1 -\n 1 file changed, 1 deletion(-)\n\ndiff --git a/include/qemu/osdep.h b/include/qemu/osdep.h\nindex f151578b5c..2f0e61ad6b 100644\n--- a/include/qemu/osdep.h\n+++ b/include/qemu/osdep.h\n@@ -114,7 +114,6 @@ QEMU_EXTERN_C int daemon(int, int);\n #include <stdio.h>\n \n #include <string.h>\n-#include <strings.h>\n #include <inttypes.h>\n #include <limits.h>\n /* Put unistd.h before time.h as that triggers localtime_r/gmtime_r\n-- \n2.52.0\n\nFrom git@z Thu Jan  1 00:00:00 1970\nSubject: [PATCH 4/7] Remove unused dirent.h\nFrom: Kostiantyn Kostiuk <kkostiuk@redhat.com>\nDate: Thu, 26 Mar 2026 18:00:30 +0200\nMessage-Id: <20260326160033.68318-5-kkostiuk@redhat.com>\nMIME-Version: 1.0\nContent-Type: text/plain; charset=\"utf-8\"\nContent-Transfer-Encoding: 7bit\n\nSigned-off-by: Kostiantyn Kostiuk <kkostiuk@redhat.com>\n---\n util/drm.c  | 1 -\n util/path.c | 1 -\n 2 files changed, 2 deletions(-)\n\ndiff --git a/util/drm.c b/util/drm.c\nindex dae8ffebc8..afa9c400df 100644\n--- a/util/drm.c\n+++ b/util/drm.c\n@@ -18,7 +18,6 @@\n #include \"qemu/drm.h\"\n \n #include <glob.h>\n-#include <dirent.h>\n \n int qemu_drm_rendernode_open(const char *rendernode)\n {\ndiff --git a/util/path.c b/util/path.c\nindex 8e174eb436..72a255890e 100644\n--- a/util/path.c\n+++ b/util/path.c\n@@ -5,7 +5,6 @@\n */\n #include \"qemu/osdep.h\"\n #include <sys/param.h>\n-#include <dirent.h>\n #include \"qemu/cutils.h\"\n #include \"qemu/path.h\"\n #include \"qemu/thread.h\"\n-- \n2.52.0\n\nFrom git@z Thu Jan  1 00:00:00 1970\nSubject: [PATCH 5/7] Remove unused sys/param.h\nFrom: Kostiantyn Kostiuk <kkostiuk@redhat.com>\nDate: Thu, 26 Mar 2026 18:00:31 +0200\nMessage-Id: <20260326160033.68318-6-kkostiuk@redhat.com>\nMIME-Version: 1.0\nContent-Type: text/plain; charset=\"utf-8\"\nContent-Transfer-Encoding: 7bit\n\nSigned-off-by: Kostiantyn Kostiuk <kkostiuk@redhat.com>\nReviewed-by: Peter Maydell <peter.maydell@linaro.org>\n---\n util/path.c | 1 -\n 1 file changed, 1 deletion(-)\n\ndiff --git a/util/path.c b/util/path.c\nindex 72a255890e..e1565894d2 100644\n--- a/util/path.c\n+++ b/util/path.c\n@@ -4,7 +4,6 @@\n    The assumption is that this area does not change.\n */\n #include \"qemu/osdep.h\"\n-#include <sys/param.h>\n #include \"qemu/cutils.h\"\n #include \"qemu/path.h\"\n #include \"qemu/thread.h\"\n-- \n2.52.0\n\nFrom git@z Thu Jan  1 00:00:00 1970\nSubject: [PATCH 6/7] storage-daemon: use same link arguments as other tools\nFrom: Paolo Bonzini <pbonzini@redhat.com>\nDate: Thu, 26 Mar 2026 18:00:32 +0200\nMessage-Id: <20260326160033.68318-7-kkostiuk@redhat.com>\nMIME-Version: 1.0\nContent-Type: text/plain; charset=\"utf-8\"\nContent-Transfer-Encoding: 7bit\n\nSigned-off-by: Paolo Bonzini <pbonzini@redhat.com>\nReviewed-by: Kevin Wolf <kwolf@redhat.com>\n---\n meson.build                |  8 ++++----\n storage-daemon/meson.build | 16 ++++++++--------\n 2 files changed, 12 insertions(+), 12 deletions(-)\n\ndiff --git a/meson.build b/meson.build\nindex 711dafa9ce..e1baa0ea80 100644\n--- a/meson.build\n+++ b/meson.build\n@@ -4496,15 +4496,15 @@ if xkbcommon.found()\n endif\n \n if have_tools\n-  link_args = enable_modules ? ['@block.syms'] : []\n+  tools_link_args = enable_modules ? ['@block.syms'] : []\n   qemu_img = executable('qemu-img', [files('qemu-img.c'), hxdep],\n-             link_args: link_args, link_depends: block_syms,\n+             link_args: tools_link_args, link_depends: block_syms,\n              dependencies: [authz, block, crypto, io, qom, qemuutil], install: true)\n   qemu_io = executable('qemu-io', files('qemu-io.c'),\n-             link_args: link_args, link_depends: block_syms,\n+             link_args: tools_link_args, link_depends: block_syms,\n              dependencies: [block, qemuutil], install: true)\n   qemu_nbd = executable('qemu-nbd', files('qemu-nbd.c'),\n-               link_args: link_args, link_depends: block_syms,\n+               link_args: tools_link_args, link_depends: block_syms,\n                dependencies: [blockdev, qemuutil, selinux],\n                install: true)\n \ndiff --git a/storage-daemon/meson.build b/storage-daemon/meson.build\nindex 5e61a9d1bd..fc088cbea7 100644\n--- a/storage-daemon/meson.build\n+++ b/storage-daemon/meson.build\n@@ -1,14 +1,14 @@\n+assert(have_tools)\n+\n qsd_ss = ss.source_set()\n qsd_ss.add(files('qemu-storage-daemon.c'))\n qsd_ss.add(blockdev, chardev, qmp, qom, qemuutil)\n \n subdir('qapi')\n \n-if have_tools\n-  qsd_ss = qsd_ss.apply({})\n-  qsd = executable('qemu-storage-daemon',\n-                   qsd_ss.sources(),\n-                   link_args: '@block.syms', link_depends: block_syms,\n-                   dependencies: qsd_ss.dependencies(),\n-                   install: true)\n-endif\n+qsd_ss = qsd_ss.apply({})\n+qsd = executable('qemu-storage-daemon',\n+                 qsd_ss.sources(),\n+                 link_args: tools_link_args, link_depends: block_syms,\n+                 dependencies: qsd_ss.dependencies(),\n+                 install: true)\n-- \n2.52.0\n\nFrom git@z Thu Jan  1 00:00:00 1970\nSubject: [PATCH 7/7] meson: Build block_syms and qemu_syms only when\n enable_modules\nFrom: Kostiantyn Kostiuk <kkostiuk@redhat.com>\nDate: Thu, 26 Mar 2026 18:00:33 +0200\nMessage-Id: <20260326160033.68318-8-kkostiuk@redhat.com>\nMIME-Version: 1.0\nContent-Type: text/plain; charset=\"utf-8\"\nContent-Transfer-Encoding: 7bit\n\nSigned-off-by: Kostiantyn Kostiuk <kkostiuk@redhat.com>\n---\n meson.build | 25 ++++++++++++++-----------\n 1 file changed, 14 insertions(+), 11 deletions(-)\n\ndiff --git a/meson.build b/meson.build\nindex e1baa0ea80..c7ab9c47c4 100644\n--- a/meson.build\n+++ b/meson.build\n@@ -3897,6 +3897,9 @@ modinfo_generate = find_program('scripts/modinfo-generate.py')\n modinfo_files = []\n audio_modinfo_files = []\n \n+block_syms = []\n+qemu_syms = []\n+\n block_mods = []\n system_mods = []\n emulator_modules = []\n@@ -4012,18 +4015,18 @@ if enable_modules\n   if emulator_modules.length() > 0\n     alias_target('modules', emulator_modules)\n   endif\n-endif\n \n-nm = find_program('nm')\n-undefsym = find_program('scripts/undefsym.py')\n-block_syms = custom_target('block.syms', output: 'block.syms',\n-                             input: [libqemuutil, block_mods],\n-                             capture: true,\n-                             command: [undefsym, nm, '@INPUT@'])\n-qemu_syms = custom_target('qemu.syms', output: 'qemu.syms',\n-                             input: [libqemuutil, system_mods],\n-                             capture: true,\n-                             command: [undefsym, nm, '@INPUT@'])\n+  nm = find_program('nm')\n+  undefsym = find_program('scripts/undefsym.py')\n+  block_syms = custom_target('block.syms', output: 'block.syms',\n+                              input: [libqemuutil, block_mods],\n+                              capture: true,\n+                              command: [undefsym, nm, '@INPUT@'])\n+  qemu_syms = custom_target('qemu.syms', output: 'qemu.syms',\n+                              input: [libqemuutil, system_mods],\n+                              capture: true,\n+                              command: [undefsym, nm, '@INPUT@'])\n+endif\n \n authz_ss = authz_ss.apply({})\n libauthz = static_library('authz', authz_ss.sources() + genh,\n-- \n2.52.0",
+  "patches": [],
+  "generated_at": "2026-03-27T01:48:23Z",
+  "generator": "loupe-review v1.0",
+  "disclaimer": "LLM-generated draft. Not an authoritative review."
+}

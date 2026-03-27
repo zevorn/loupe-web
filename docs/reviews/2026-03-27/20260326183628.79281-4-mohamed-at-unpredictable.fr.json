@@ -1,0 +1,116 @@
+{
+  "schema_version": "1",
+  "id": "20260326-20260326183628.79281-4-mohamed-at-unpredictable.fr",
+  "series": {
+    "title": "[PATCH v3 0/3] whpx: i386: documentation and demoting some",
+    "version": 3,
+    "patch_count": 3,
+    "author": {
+      "name": "Mohamed Mediouni",
+      "email": "mohamed@unpredictable.fr"
+    },
+    "date": "2026-03-26",
+    "subsystem": "whpx",
+    "message_id": "<20260326183628.79281-4-mohamed@unpredictable.fr>",
+    "lore_url": "https://lore.kernel.org/qemu-devel/20260326183628.79281-4-mohamed%40unpredictable.fr/",
+    "patchwork_url": "http://patchwork.ozlabs.org/project/qemu-devel/patch/20260326183628.79281-4-mohamed@unpredictable.fr/",
+    "base_branch": "master"
+  },
+  "version_history": [],
+  "ml_context": {
+    "patchwork_state": "new",
+    "reviewed_by": [],
+    "acked_by": [],
+    "ci_status": "",
+    "prior_feedback": [],
+    "maintainer_activity": ""
+  },
+  "review": {
+    "verdict": "looks_good_with_nits",
+    "summary": "The functional changes look reasonable: both warning demotions preserve behavior and simply route noisy messages through tracing, and the documentation addition is useful. I did not find a clear runtime regression in the code paths touched. The remaining issues are patch hygiene and documentation polish: new files missing SPDX tags, trailing whitespace, and a typo in the new WHPX documentation.",
+    "mode": "ci-single",
+    "stages": {
+      "A": "Scope: 3-patch series adds WHPX documentation and converts two noisy warning sites into tracepoints.",
+      "B": "Correctness: No obvious functional regression found in the x86 MMU or WHPX MSR handling changes; behavior appears unchanged apart from log visibility.",
+      "C": "Integration: The Meson trace subdir additions are consistent with the new trace-events files. Only configure status was provided, so this series still needs an actual build/test pass.",
+      "D": "Docs/style: checkpatch issues are real here: trailing whitespace, missing SPDX identifiers on new files, and a typo in the docs.",
+      "E": "Recommendation: acceptable after a respin that fixes the documentation/file-metadata nits."
+    },
+    "findings": [
+      {
+        "id": "F1",
+        "severity": "low",
+        "file": "docs/system/whpx.rst",
+        "line": 1,
+        "title": "New documentation file is missing an SPDX license identifier",
+        "description": "The newly added RST file has no SPDX header. QEMU generally expects new files to carry an explicit SPDX identifier, and checkpatch flagged this file accordingly. This is not a runtime problem, but it should be fixed before merging.",
+        "patch_context": [
+          "+++ b/docs/system/whpx.rst",
+          "@@ -0,0 +1,144 @@",
+          "+Windows Hypervisor Platform",
+          "+==========================="
+        ],
+        "suggestion": "Add the appropriate SPDX header at the top of the file, using the documentation comment style used elsewhere in QEMU RST files.",
+        "confidence": "high",
+        "confidence_reason": "Directly supported by the patch content and by the reported checkpatch warning for this exact file."
+      },
+      {
+        "id": "F2",
+        "severity": "low",
+        "file": "target/i386/emulate/trace-events",
+        "line": 1,
+        "title": "New trace-events file is missing an SPDX license identifier",
+        "description": "The new trace-events file is introduced without an SPDX tag, and checkpatch reported this. The same issue also appears in the new WHPX trace-events file. This is a process/style issue rather than a functional one, but new files should normally carry explicit licensing metadata.",
+        "patch_context": [
+          "+++ b/target/i386/emulate/trace-events",
+          "@@ -0,0 +1,2 @@",
+          "+x86_unhandled_memory_read(uint64_t gpa, int bytes) \"read from unmapped mmio region gpa=0x%\" PRIx64 \" size=%i\"",
+          "+x86_unhandled_memory_write(uint64_t gpa, int bytes) \"write to unmapped mmio region gpa=0x%\" PRIx64 \" size=%i\""
+        ],
+        "suggestion": "Add an SPDX identifier comment at the top of this file, and do the same for `target/i386/whpx/trace-events`, using the license preferred for new QEMU files unless there is a reason to match an existing derived license.",
+        "confidence": "high",
+        "confidence_reason": "Directly supported by the patch and the reported checkpatch warnings for the new trace-events files."
+      },
+      {
+        "id": "F3",
+        "severity": "low",
+        "file": "docs/system/whpx.rst",
+        "line": 54,
+        "title": "Documentation patch contains whitespace noise and a typo",
+        "description": "The new WHPX documentation has multiple trailing-space lines and at least one obvious typo (`fuctionality`). These are minor, but they create avoidable churn and were already caught by checkpatch.",
+        "patch_context": [
+          "+On x86_64, QEMU's Windows Hypervisor Platform backend is tested ",
+          "+or May 2025 security updates is the minimum required release. ",
+          "+Prior releases of Windows 11 version 24H2 on ARM64 shipped ",
+          "+additional fuctionality compared to `-device ramfb`, but is",
+          "+In this release, -cpu is an ignored argument. "
+        ],
+        "suggestion": "Remove the trailing whitespace and fix `fuctionality` to `functionality` before merging.",
+        "confidence": "high",
+        "confidence_reason": "Visible directly in the diff, and consistent with the reported trailing-whitespace errors."
+      }
+    ],
+    "checkpatch": {
+      "status": "issues",
+      "issues": [
+        "ERROR: trailing whitespace",
+        "ERROR: trailing whitespace",
+        "ERROR: trailing whitespace",
+        "ERROR: trailing whitespace",
+        "WARNING: Does new file 'docs/system/whpx.rst' need 'SPDX-License-Identifier'?",
+        "WARNING: Does new file 'target/i386/emulate/trace-events' need 'SPDX-License-Identifier'?",
+        "WARNING: Saw acceptable license 'LGPL-2.1-or-later ' but note 'GPL-2.0-or-later' is preferred for new files unless the code is derived from a source file with an existing declared license that must be retained. Please explain the license choice in the commit message.",
+        "WARNING: Does new file 'target/i386/whpx/trace-events' need 'SPDX-License-Identifier'?",
+        "WARNING: line over 80 characters"
+      ]
+    },
+    "build_status": "configure_ok",
+    "am_status": "success"
+  },
+  "cover_letter": "Subject: [PATCH v3 0/3] whpx: i386: documentation and demoting some\n warnings\nFrom: Mohamed Mediouni <mohamed@unpredictable.fr>\nDate: Thu, 26 Mar 2026 19:36:25 +0100\nMessage-Id: <20260326183628.79281-1-mohamed@unpredictable.fr>\nMIME-Version: 1.0\nContent-Type: text/plain; charset=\"utf-8\"\nContent-Transfer-Encoding: 7bit\n\nDemoting some warnings that appeared too often to traces\nand adding some documentation.\n\nMohamed Mediouni (3):\n  docs: add WHPX section with initial info\n  target/i386: emulate: make unmapped GPA warnings a trace\n  whpx: i386: trace unsupported MSR accesses\n\n MAINTAINERS                      |   1 +\n docs/system/index.rst            |   1 +\n docs/system/whpx.rst             | 144 +++++++++++++++++++++++++++++++\n meson.build                      |   2 +\n target/i386/emulate/trace-events |   2 +\n target/i386/emulate/trace.h      |   2 +\n target/i386/emulate/x86_mmu.c    |   5 +-\n target/i386/whpx/trace-events    |   1 +\n target/i386/whpx/trace.h         |   2 +\n target/i386/whpx/whpx-all.c      |   5 +-\n 10 files changed, 161 insertions(+), 4 deletions(-)\n create mode 100644 docs/system/whpx.rst\n create mode 100644 target/i386/emulate/trace-events\n create mode 100644 target/i386/emulate/trace.h\n create mode 100644 target/i386/whpx/trace-events\n create mode 100644 target/i386/whpx/trace.h\n\n-- \n2.50.1 (Apple Git-155)",
+  "diff": "From git@z Thu Jan  1 00:00:00 1970\nSubject: [PATCH v3 1/3] docs: add WHPX section with initial info\nFrom: Mohamed Mediouni <mohamed@unpredictable.fr>\nDate: Thu, 26 Mar 2026 19:36:26 +0100\nMessage-Id: <20260326183628.79281-2-mohamed@unpredictable.fr>\nMIME-Version: 1.0\nContent-Type: text/plain; charset=\"utf-8\"\nContent-Transfer-Encoding: 7bit\n\nSigned-off-by: Mohamed Mediouni <mohamed@unpredictable.fr>\n---\n MAINTAINERS           |   1 +\n docs/system/index.rst |   1 +\n docs/system/whpx.rst  | 144 ++++++++++++++++++++++++++++++++++++++++++\n 3 files changed, 146 insertions(+)\n create mode 100644 docs/system/whpx.rst\n\ndiff --git a/MAINTAINERS b/MAINTAINERS\nindex cd8ba14450..eb7132e39d 100644\n--- a/MAINTAINERS\n+++ b/MAINTAINERS\n@@ -582,6 +582,7 @@ F: include/system/whpx.h\n F: include/system/whpx-accel-ops.h\n F: include/system/whpx-common.h\n F: include/system/whpx-internal.h\n+F: docs/system/whpx.rst\n \n MSHV\n M: Magnus Kulke <magnuskulke@linux.microsoft.com>\ndiff --git a/docs/system/index.rst b/docs/system/index.rst\nindex bb948e2993..4509630fa4 100644\n--- a/docs/system/index.rst\n+++ b/docs/system/index.rst\n@@ -40,6 +40,7 @@ or Hypervisor.Framework.\n    confidential-guest-support\n    igvm\n    nitro\n+   whpx\n    vm-templating\n    sriov\n    qemu-colo\ndiff --git a/docs/system/whpx.rst b/docs/system/whpx.rst\nnew file mode 100644\nindex 0000000000..60179dd336\n--- /dev/null\n+++ b/docs/system/whpx.rst\n@@ -0,0 +1,144 @@\n+Windows Hypervisor Platform\n+===========================\n+\n+Windows Hypervisor Platform is the Windows API for use of\n+third-party virtual machine monitors with hardware acceleration\n+on Hyper-V.\n+\n+It's implemented on top of `Vid`, which is itself implemented\n+on the same set of hypercalls as the `mshv` driver on Linux.\n+\n+WHPX is the name of the Windows Hypervisor Platform accelerator\n+backend in QEMU. It enables using QEMU with hardware acceleration\n+on both x86_64 and arm64 Windows machines.\n+\n+Prerequisites\n+-------------\n+\n+WHPX requires the Windows Hypervisor Platform feature to be installed.\n+\n+Installation\n+^^^^^^^^^^^^\n+On client editions of Windows, that means installation through\n+Windows Features (`optionalfeatures.exe`). On server editions,\n+feature-based installation in Server Manager can be used.\n+\n+Alternatively, command line installation is also possible through:\n+`DISM /online /Enable-Feature /FeatureName:HypervisorPlatform /All`\n+\n+Minimum OS version\n+^^^^^^^^^^^^^^^^^^\n+\n+On x86_64, QEMU's Windows Hypervisor Platform backend is tested \n+starting from Windows 10 version 2004. Earlier Windows 10 releases\n+*might* work but are not tested.\n+\n+On arm64, Windows 11 24H2 with the April 2025 optional updates\n+or May 2025 security updates is the minimum required release. \n+\n+Prior releases of Windows 11 version 24H2 on ARM64 shipped \n+with a pre-release version of the Windows Hypervisor Platform\n+API, which is not supported in QEMU.\n+\n+Quick Start\n+-----------\n+\n+Launching a virtual machine on x86_64 with WHPX acceleration::\n+\n+    $ qemu-system-x86_64.exe -accel whpx -M pc \\\n+        -smp cores=2 -m 2G -device ich9-usb-ehci1 \\\n+        -device usb-tablet -hda OS.qcow2\n+\n+Launching a virtual machine on arm64 with WHPX acceleration::\n+\n+    $ qemu-system-aarch64.exe -accel whpx -M virt \\\n+        -cpu host -smp cores=2 -m 2G \\\n+        -bios edk2-aarch64-code.fd \\\n+        -device ramfb -device nec-usb-xhci \\\n+        -device usb-kbd -device usb-tablet \\\n+        -hda OS.qcow2\n+\n+On arm64, for non-Windows guests, `-device virtio-gpu-pci` provides\n+additional fuctionality compared to `-device ramfb`, but is\n+incompatible with Windows's UEFI GOP implementation, which\n+expects a linear framebuffer to be available.\n+\n+Some tracing options\n+--------------------\n+\n+x86_64\n+^^^^^^\n+\n+`-trace whpx_unsupported_msr_access` can be used to log accesses\n+to undocumented MSRs.\n+\n+`-trace x86_unhandled_memory_*` allows to trace accesses to unmapped\n+GPAs.\n+\n+Known issues on x86_64\n+----------------------\n+\n+Guests using legacy VGA modes\n+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n+\n+In guests using VGA modes that QEMU doesn't pass through framebuffer\n+memory for, performance will be quite suboptimal.\n+\n+Workaround: for affected guests, use a more modern graphics mode.\n+Alternatively, use TCG to run those guests.\n+\n+Guests using MMX, SSE or AVX instructions for MMIO\n+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n+\n+Currently, `target/i386/emulate` does not support guests that use\n+MMX, SSE or AVX instructions for access to MMIO memory ranges.\n+\n+Attempts to run such guests will result in an `Unimplemented handler`\n+warning for MMX and a failure to decode for newer instructions.\n+\n+`-M isapc`\n+^^^^^^^^^^\n+\n+`-M isapc` doesn't disable the Hyper-V LAPIC on its own yet. To\n+be able to use that machine, use `-accel whpx,hyperv=off,kernel-irqchip=off`.\n+\n+However, in QEMU 11.0, the guest will still be a 64-bit x86\n+ISA machine with all the corresponding CPUID leaves exposed.\n+\n+gdbstub\n+^^^^^^^\n+\n+As save/restore of xsave state is not currently present, state\n+exposed through GDB will be incomplete.\n+\n+The same also applies to `info registers`.\n+\n+-cpu `type` ignored\n+^^^^^^^^^^^^^^^^^^^\n+\n+In this release, -cpu is an ignored argument. \n+\n+PIC interrupts on Windows 10\n+^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n+\n+On Windows 10, a legacy PIC interrupt injected does not wake the guest\n+from an HLT when using the Hyper-V provided interrupt controller.\n+\n+This has been addressed in QEMU 11.0 on Windows 11 platforms but\n+functionality to make it available on Windows 10 isn't present.\n+\n+Workaround: for affected use cases, use `-M kernel-irqchip=off`.\n+\n+Known issues on Windows 11\n+^^^^^^^^^^^^^^^^^^^^^^^^^^\n+\n+Nested virtualisation-specific Hyper-V enlightenments are not\n+currently exposed.\n+\n+arm64\n+-----\n+\n+ISA feature support\n+^^^^^^^^^^^^^^^^^^^\n+\n+SVE and SME are not currently supported.\n-- \n2.50.1 (Apple Git-155)\n\nFrom git@z Thu Jan  1 00:00:00 1970\nSubject: [PATCH v3 2/3] target/i386: emulate: make unmapped GPA warnings a\n trace\nFrom: Mohamed Mediouni <mohamed@unpredictable.fr>\nDate: Thu, 26 Mar 2026 19:36:27 +0100\nMessage-Id: <20260326183628.79281-3-mohamed@unpredictable.fr>\nMIME-Version: 1.0\nContent-Type: text/plain; charset=\"utf-8\"\nContent-Transfer-Encoding: 7bit\n\nSome guest OSes trigger them way too often.\n\nSigned-off-by: Mohamed Mediouni <mohamed@unpredictable.fr>\n---\n meson.build                      | 1 +\n target/i386/emulate/trace-events | 2 ++\n target/i386/emulate/trace.h      | 2 ++\n target/i386/emulate/x86_mmu.c    | 5 +++--\n 4 files changed, 8 insertions(+), 2 deletions(-)\n create mode 100644 target/i386/emulate/trace-events\n create mode 100644 target/i386/emulate/trace.h\n\ndiff --git a/meson.build b/meson.build\nindex e6f17dd5f7..5a2e7a491d 100644\n--- a/meson.build\n+++ b/meson.build\n@@ -3691,6 +3691,7 @@ if have_system or have_user\n     'target/arm/hvf',\n     'target/hppa',\n     'target/i386',\n+    'target/i386/emulate',\n     'target/i386/kvm',\n     'target/loongarch',\n     'target/mips/tcg',\ndiff --git a/target/i386/emulate/trace-events b/target/i386/emulate/trace-events\nnew file mode 100644\nindex 0000000000..e353969661\n--- /dev/null\n+++ b/target/i386/emulate/trace-events\n@@ -0,0 +1,2 @@\n+x86_unhandled_memory_read(uint64_t gpa, int bytes) \"read from unmapped mmio region gpa=0x%\" PRIx64 \" size=%i\"\n+x86_unhandled_memory_write(uint64_t gpa, int bytes) \"write to unmapped mmio region gpa=0x%\" PRIx64 \" size=%i\"\ndiff --git a/target/i386/emulate/trace.h b/target/i386/emulate/trace.h\nnew file mode 100644\nindex 0000000000..8c2317b152\n--- /dev/null\n+++ b/target/i386/emulate/trace.h\n@@ -0,0 +1,2 @@\n+/* SPDX-License-Identifier: LGPL-2.1-or-later */\n+#include \"trace/trace-target_i386_emulate.h\"\ndiff --git a/target/i386/emulate/x86_mmu.c b/target/i386/emulate/x86_mmu.c\nindex c69ae96acb..e5f4dd8a65 100644\n--- a/target/i386/emulate/x86_mmu.c\n+++ b/target/i386/emulate/x86_mmu.c\n@@ -25,6 +25,7 @@\n #include \"emulate/x86.h\"\n #include \"emulate/x86_emu.h\"\n #include \"emulate/x86_mmu.h\"\n+#include \"trace.h\"\n \n #define pte_present(pte) (pte & PT_PRESENT)\n #define pte_write_access(pte) (pte & PT_WRITE)\n@@ -287,7 +288,7 @@ static MMUTranslateResult x86_write_mem_ex(CPUState *cpu, void *data, target_ulo\n                             MEMTXATTRS_UNSPECIFIED, data, copy);\n \n         if (mem_tx_res == MEMTX_DECODE_ERROR) {\n-            warn_report(\"write to unmapped mmio region gpa=0x%\" PRIx64 \" size=%i\", gpa, bytes);\n+            trace_x86_unhandled_memory_write(gpa, bytes);\n             return MMU_TRANSLATE_GPA_UNMAPPED;\n         } else if (mem_tx_res == MEMTX_ACCESS_ERROR) {\n             return MMU_TRANSLATE_GPA_NO_WRITE_ACCESS;\n@@ -339,7 +340,7 @@ static MMUTranslateResult x86_read_mem_ex(CPUState *cpu, void *data, target_ulon\n                            data, copy);\n \n         if (mem_tx_res == MEMTX_DECODE_ERROR) {\n-            warn_report(\"read from unmapped mmio region gpa=0x%\" PRIx64 \" size=%i\", gpa, bytes);\n+            trace_x86_unhandled_memory_read(gpa, bytes);\n             return MMU_TRANSLATE_GPA_UNMAPPED;\n         } else if (mem_tx_res == MEMTX_ACCESS_ERROR) {\n             return MMU_TRANSLATE_GPA_NO_READ_ACCESS;\n-- \n2.50.1 (Apple Git-155)\n\nFrom git@z Thu Jan  1 00:00:00 1970\nSubject: [PATCH v3 3/3] whpx: i386: trace unsupported MSR accesses\nFrom: Mohamed Mediouni <mohamed@unpredictable.fr>\nDate: Thu, 26 Mar 2026 19:36:28 +0100\nMessage-Id: <20260326183628.79281-4-mohamed@unpredictable.fr>\nMIME-Version: 1.0\nContent-Type: text/plain; charset=\"utf-8\"\nContent-Transfer-Encoding: 7bit\n\nNot actionable information for users, so stop\nhaving it displayed unconditionally.\n\nSigned-off-by: Mohamed Mediouni <mohamed@unpredictable.fr>\nReviewed-by: Pierrick Bouvier <pierrick.bouvier@linaro.org>\n---\n meson.build                   | 1 +\n target/i386/whpx/trace-events | 1 +\n target/i386/whpx/trace.h      | 2 ++\n target/i386/whpx/whpx-all.c   | 5 +++--\n 4 files changed, 7 insertions(+), 2 deletions(-)\n create mode 100644 target/i386/whpx/trace-events\n create mode 100644 target/i386/whpx/trace.h\n\ndiff --git a/meson.build b/meson.build\nindex 5a2e7a491d..3f167c6efa 100644\n--- a/meson.build\n+++ b/meson.build\n@@ -3693,6 +3693,7 @@ if have_system or have_user\n     'target/i386',\n     'target/i386/emulate',\n     'target/i386/kvm',\n+    'target/i386/whpx',\n     'target/loongarch',\n     'target/mips/tcg',\n     'target/ppc',\ndiff --git a/target/i386/whpx/trace-events b/target/i386/whpx/trace-events\nnew file mode 100644\nindex 0000000000..ebdfa34b28\n--- /dev/null\n+++ b/target/i386/whpx/trace-events\n@@ -0,0 +1 @@\n+whpx_unsupported_msr_access(uint32_t msr, int is_write) \"WHPX: Unsupported MSR access (0x%x), IsWrite=%i\"\ndiff --git a/target/i386/whpx/trace.h b/target/i386/whpx/trace.h\nnew file mode 100644\nindex 0000000000..b7c090deff\n--- /dev/null\n+++ b/target/i386/whpx/trace.h\n@@ -0,0 +1,2 @@\n+/* SPDX-License-Identifier: GPL-2.0-or-later */\n+#include \"trace/trace-target_i386_whpx.h\"\ndiff --git a/target/i386/whpx/whpx-all.c b/target/i386/whpx/whpx-all.c\nindex acae61e089..e56ae2b343 100644\n--- a/target/i386/whpx/whpx-all.c\n+++ b/target/i386/whpx/whpx-all.c\n@@ -41,6 +41,7 @@\n #include \"emulate/x86_emu.h\"\n #include \"emulate/x86_flags.h\"\n #include \"emulate/x86_mmu.h\"\n+#include \"trace.h\"\n \n #include <winhvplatform.h>\n \n@@ -1921,8 +1922,8 @@ int whpx_vcpu_run(CPUState *cpu)\n                         1 : 3;\n \n             if (!is_known_msr) {\n-                warn_report(\"WHPX: Unsupported MSR access (0x%x), IsWrite=%i\", \n-                vcpu->exit_ctx.MsrAccess.MsrNumber, vcpu->exit_ctx.MsrAccess.AccessInfo.IsWrite);\n+                trace_whpx_unsupported_msr_access(vcpu->exit_ctx.MsrAccess.MsrNumber,\n+                    vcpu->exit_ctx.MsrAccess.AccessInfo.IsWrite);\n             }\n \n             hr = whp_dispatch.WHvSetVirtualProcessorRegisters(\n-- \n2.50.1 (Apple Git-155)",
+  "patches": [],
+  "generated_at": "2026-03-27T01:53:53Z",
+  "generator": "loupe-review v1.0",
+  "disclaimer": "LLM-generated draft. Not an authoritative review."
+}

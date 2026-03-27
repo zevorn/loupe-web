@@ -1,0 +1,106 @@
+{
+  "schema_version": "1",
+  "id": "20260326-20260326144000.492037-1-magnuskulke-at-linux.microsoft.com",
+  "series": {
+    "title": "[PATCH] accel/mshv: skip double unmap of mem regions",
+    "version": 1,
+    "patch_count": 1,
+    "author": {
+      "name": "Magnus Kulke",
+      "email": "magnuskulke@linux.microsoft.com"
+    },
+    "date": "2026-03-26",
+    "subsystem": "accel/mshv",
+    "message_id": "<20260326144000.492037-1-magnuskulke@linux.microsoft.com>",
+    "lore_url": "https://lore.kernel.org/qemu-devel/20260326144000.492037-1-magnuskulke%40linux.microsoft.com/",
+    "patchwork_url": "http://patchwork.ozlabs.org/project/qemu-devel/patch/20260326144000.492037-1-magnuskulke@linux.microsoft.com/",
+    "base_branch": "master"
+  },
+  "version_history": [],
+  "ml_context": {
+    "patchwork_state": "new",
+    "reviewed_by": [],
+    "acked_by": [],
+    "ci_status": "",
+    "prior_feedback": [],
+    "maintainer_activity": ""
+  },
+  "review": {
+    "verdict": "reject",
+    "summary": "The fix addresses the reported double-unmap regression in principle, but the implementation is not safe as merged. The new tracking table keys `hwaddr` through `GINT_TO_POINTER()`, which truncates high guest physical addresses on 64-bit machines and can cause incorrect map/unmap suppression for regions above 4 GiB. There is also a listener-lifetime leak because the newly allocated hash table is never destroyed.",
+    "mode": "ci-single",
+    "stages": {
+      "A": "Intent is clear and matches the regression description: track currently mapped regions so ROM-device transitions do not issue duplicate unmaps after the dynamic mapping handler removal.",
+      "B": "Correctness is not sufficient. The chosen key representation is not 64-bit safe for `hwaddr`, so the table can alias distinct guest physical addresses and silently skip required updates.",
+      "C": "Regression risk is high for guests that place RAM/ROM or pflash above 4 GiB, because map state can be corrupted by address truncation. There is also a smaller teardown leak from the missing hash-table destruction.",
+      "D": "Validation is incomplete. The patch should be exercised with ROM-device / OVMF mappings above 4 GiB and with listener teardown paths to confirm both functional behavior and lifecycle cleanup.",
+      "E": "Not ready to merge as-is. Use a 64-bit-safe keying strategy for `mapped_regions` and add corresponding cleanup when the memory listener is unregistered or destroyed."
+    },
+    "findings": [
+      {
+        "id": "MSHV-001",
+        "severity": "high",
+        "file": "accel/mshv/mem.c",
+        "line": 171,
+        "title": "`hwaddr` is truncated when used as a hash-table key",
+        "description": "The tracking table stores `start_addr` via `GINT_TO_POINTER()`. `hwaddr` is 64-bit on common QEMU targets, while `GINT_TO_POINTER()` only preserves an integer-sized GLib `gint` payload. Guest physical addresses above 32 bits will alias in `mapped_regions`, so `uaddr_is_mapped()` can return true for the wrong region and suppress required map/unmap operations. This directly undermines the intended fix for OVMF and is especially risky because firmware and RAM are frequently placed above 4 GiB.",
+        "patch_context": [
+          "+static bool uaddr_is_mapped(MshvMemoryListener *mml, hwaddr start_addr)",
+          "+{",
+          "+    assert(bql_locked());",
+          "+",
+          "+    return g_hash_table_contains(mml->mapped_regions,",
+          "+                                 GINT_TO_POINTER(start_addr));",
+          "+}",
+          "+",
+          "+static void track_region(MshvMemoryListener *mml, hwaddr start_addr, bool add)",
+          "+{",
+          "+    assert(bql_locked());",
+          "+",
+          "+    if (add) {",
+          "+        g_hash_table_add(mml->mapped_regions, GINT_TO_POINTER(start_addr));",
+          "+    } else {",
+          "+        g_hash_table_remove(mml->mapped_regions, GINT_TO_POINTER(start_addr));",
+          "+    }",
+          "+}"
+        ],
+        "suggestion": "Do not encode `hwaddr` with `GINT_TO_POINTER()`. Use a 64-bit-safe key, for example a hash table created with `g_int64_hash`/`g_int64_equal` and heap-allocated `uint64_t` keys, or another QEMU/GLib container that preserves full `hwaddr` width.",
+        "confidence": "high",
+        "confidence_reason": "This is a direct type-width mismatch visible in the patch. `hwaddr` is wider than the GLib integer-to-pointer helper used here, and the failure mode is straightforward key aliasing."
+      },
+      {
+        "id": "MSHV-002",
+        "severity": "medium",
+        "file": "accel/mshv/mshv-all.c",
+        "line": 374,
+        "title": "New `mapped_regions` table is allocated but never freed",
+        "description": "`register_mshv_memory_listener()` now allocates a `GHashTable` for every `MshvMemoryListener`, but the patch does not add any corresponding destruction in the listener unregister or accelerator teardown path. Even if this is not fatal during a normal process lifetime, it is still a resource leak introduced by the change and should be fixed alongside the new state.",
+        "patch_context": [
+          " static void register_mshv_memory_listener(MshvState *s, MshvMemoryListener *mml,",
+          "                                           MemoryRegion *as, const char *name)",
+          " {",
+          "     mml->listener = mshv_memory_listener;",
+          "     mml->listener.name = name;",
+          "+    mml->mapped_regions = g_hash_table_new(g_direct_hash, g_direct_equal);",
+          "     memory_listener_register(&mml->listener, as);",
+          "     for (i = 0; i < s->nr_as; ++i) {"
+        ],
+        "suggestion": "Destroy `mml->mapped_regions` in the matching unregister/destruction path and null the field after free. If the keying strategy changes to allocated 64-bit keys, ensure the hash table is created with appropriate key destroy notifications as well.",
+        "confidence": "medium",
+        "confidence_reason": "The allocation is explicit in the patch and no matching cleanup is shown. The exact teardown function is outside the provided diff, but the new ownership introduced here still needs a corresponding free path."
+      }
+    ],
+    "checkpatch": {
+      "status": "clean",
+      "issues": []
+    },
+    "build_status": "configure_ok",
+    "am_status": "success"
+  },
+  "cover_letter": null,
+  "diff": "From git@z Thu Jan  1 00:00:00 1970\nSubject: [PATCH] accel/mshv: skip double unmap of mem regions\nFrom: Magnus Kulke <magnuskulke@linux.microsoft.com>\nDate: Thu, 26 Mar 2026 15:40:00 +0100\nMessage-Id: <20260326144000.492037-1-magnuskulke@linux.microsoft.com>\nMIME-Version: 1.0\nContent-Type: text/plain; charset=\"utf-8\"\nContent-Transfer-Encoding: 7bit\n\nThis change addresses a regression that was introduced when the dynamic\nmapping handler was removed, from the MSHV controller, breaking OVMF\nsupport.\n\nWe introduce a small uaddr-indexed table to track mapped regions. The\ncurrent logic turns an add into a remove op if a rom-device region is\ncurrently not in romd_mode.\n\nWe could ignore both map + unmap for this condition, but this misses a\nthe case of a region transitioning from romd_mode=true => false. In this\ncase we still do want to unmap a region.\n\nFixes: 626e5dc999 (Remove remap overlapping mappings code)\n\nSigned-off-by: Magnus Kulke <magnuskulke@linux.microsoft.com>\n---\n accel/mshv/mem.c          | 41 ++++++++++++++++++++++++++++++++++++---\n accel/mshv/mshv-all.c     |  1 +\n include/system/mshv_int.h |  1 +\n 3 files changed, 40 insertions(+), 3 deletions(-)\n\ndiff --git a/accel/mshv/mem.c b/accel/mshv/mem.c\nindex e55c38d4db..db28dcd83c 100644\n--- a/accel/mshv/mem.c\n+++ b/accel/mshv/mem.c\n@@ -12,6 +12,7 @@\n \n #include \"qemu/osdep.h\"\n #include \"qemu/error-report.h\"\n+#include \"qemu/main-loop.h\"\n #include \"linux/mshv.h\"\n #include \"system/address-spaces.h\"\n #include \"system/mshv.h\"\n@@ -165,6 +166,25 @@ static hwaddr align_section(MemoryRegionSection *section, hwaddr *start)\n     return (size - delta) & qemu_real_host_page_mask();\n }\n \n+static bool uaddr_is_mapped(MshvMemoryListener *mml, hwaddr start_addr)\n+{\n+    assert(bql_locked());\n+\n+    return g_hash_table_contains(mml->mapped_regions,\n+                                 GINT_TO_POINTER(start_addr));\n+}\n+\n+static void track_region(MshvMemoryListener *mml, hwaddr start_addr, bool add)\n+{\n+    assert(bql_locked());\n+\n+    if (add) {\n+        g_hash_table_add(mml->mapped_regions, GINT_TO_POINTER(start_addr));\n+    } else {\n+        g_hash_table_remove(mml->mapped_regions, GINT_TO_POINTER(start_addr));\n+    }\n+}\n+\n void mshv_set_phys_mem(MshvMemoryListener *mml, MemoryRegionSection *section,\n                        bool add)\n {\n@@ -173,15 +193,19 @@ void mshv_set_phys_mem(MshvMemoryListener *mml, MemoryRegionSection *section,\n     bool writable = !area->readonly && !area->rom_device;\n     hwaddr start_addr, mr_offset, size;\n     void *ram;\n+    bool is_mapped;\n     MshvMemoryRegion mshv_mr = {0};\n \n     size = align_section(section, &start_addr);\n     trace_mshv_set_phys_mem(add, section->mr->name, start_addr);\n \n     /*\n-     * If the memory device is a writable non-ram area, we do not\n-     * want to map it into the guest memory. If it is not a ROM device,\n-     * we want to remove mshv memory mapping, so accesses will trap.\n+     * ROM devices (e.g. pflash) have ram=false, rom_device=true.\n+     * In romd_mode, they behave like RAM and should be mapped.\n+     * Outside romd_mode, accesses should trap to QEMU for emulation.\n+     *\n+     * For non-RAM, non-rom_device regions (writable MMIO), we never map.\n+     * For rom_device regions not in romd_mode, we want them unmapped.\n      */\n     if (!memory_region_is_ram(area)) {\n         if (writable) {\n@@ -195,6 +219,15 @@ void mshv_set_phys_mem(MshvMemoryListener *mml, MemoryRegionSection *section,\n         return;\n     }\n \n+    is_mapped = uaddr_is_mapped(mml, start_addr);\n+\n+    if (add && is_mapped) {\n+        return;\n+    }\n+    if (!add && !is_mapped) {\n+        return;\n+    }\n+\n     mr_offset = section->offset_within_region + start_addr -\n                 section->offset_within_address_space;\n \n@@ -210,4 +243,6 @@ void mshv_set_phys_mem(MshvMemoryListener *mml, MemoryRegionSection *section,\n         error_report(\"Failed to set memory region\");\n         abort();\n     }\n+\n+    track_region(mml, start_addr, add);\n }\ndiff --git a/accel/mshv/mshv-all.c b/accel/mshv/mshv-all.c\nindex d4cc7f5371..0a30149030 100644\n--- a/accel/mshv/mshv-all.c\n+++ b/accel/mshv/mshv-all.c\n@@ -371,6 +371,7 @@ static void register_mshv_memory_listener(MshvState *s, MshvMemoryListener *mml,\n \n     mml->listener = mshv_memory_listener;\n     mml->listener.name = name;\n+    mml->mapped_regions = g_hash_table_new(g_direct_hash, g_direct_equal);\n     memory_listener_register(&mml->listener, as);\n     for (i = 0; i < s->nr_as; ++i) {\n         if (!s->as[i].as) {\ndiff --git a/include/system/mshv_int.h b/include/system/mshv_int.h\nindex 35386c422f..4aa1b6962d 100644\n--- a/include/system/mshv_int.h\n+++ b/include/system/mshv_int.h\n@@ -32,6 +32,7 @@ struct AccelCPUState {\n \n typedef struct MshvMemoryListener {\n     MemoryListener listener;\n+    GHashTable *mapped_regions;\n     int as_id;\n } MshvMemoryListener;\n \n-- \n2.34.1",
+  "patches": [],
+  "generated_at": "2026-03-27T01:43:22Z",
+  "generator": "loupe-review v1.0",
+  "disclaimer": "LLM-generated draft. Not an authoritative review."
+}

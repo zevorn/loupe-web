@@ -1,0 +1,68 @@
+{
+  "schema_version": "1",
+  "id": "20260326-20260326082350.17374-3-its-at-irrelevant.dk",
+  "series": {
+    "title": "[PATCH 0/2] hw/nvme fixes",
+    "version": 1,
+    "patch_count": 2,
+    "author": {
+      "name": "Klaus Jensen",
+      "email": "its@irrelevant.dk"
+    },
+    "date": "2026-03-26",
+    "subsystem": "hw/nvme",
+    "message_id": "<20260326082350.17374-3-its@irrelevant.dk>",
+    "lore_url": "https://lore.kernel.org/qemu-devel/20260326082350.17374-3-its%40irrelevant.dk/",
+    "patchwork_url": "http://patchwork.ozlabs.org/project/qemu-devel/patch/20260326082350.17374-3-its@irrelevant.dk/",
+    "base_branch": "master"
+  },
+  "version_history": [],
+  "ml_context": {
+    "patchwork_state": "new",
+    "reviewed_by": [],
+    "acked_by": [],
+    "ci_status": "",
+    "prior_feedback": [],
+    "maintainer_activity": ""
+  },
+  "review": {
+    "verdict": "accept",
+    "summary": "Both patches appear correct. Patch 2 fixes a real guest-triggerable out-of-bounds access in nvme_abort by validating sqid before indexing n->sq[]. Patch 1 restores the WZDS advertisement in dlfeat and its rationale is consistent with NVMe semantics because DEAC is advisory and QEMU may still physically zero blocks when unmap is unavailable. No correctness regressions were identified from the provided diffs alone.",
+    "mode": "ci-single",
+    "stages": {
+      "A": {
+        "status": "pass",
+        "summary": "Problem statements, commit messages, and diffs are internally consistent."
+      },
+      "B": {
+        "status": "pass",
+        "summary": "Patch 2 is a clear bounds-check fix for a guest-controlled index. Patch 1 changes only identify-data capability reporting and matches the described backend behavior."
+      },
+      "C": {
+        "status": "pass",
+        "summary": "No obvious build issues are introduced by either change; both are minimal edits with no API churn."
+      },
+      "D": {
+        "status": "not_run",
+        "summary": "No build or runtime validation was available in this review context."
+      },
+      "E": {
+        "status": "pass",
+        "summary": "No additional blocking risks or missing follow-up changes were identified from the supplied patch text."
+      }
+    },
+    "findings": [],
+    "checkpatch": {
+      "status": "clean",
+      "issues": []
+    },
+    "build_status": "not_run",
+    "am_status": "failed"
+  },
+  "cover_letter": "Subject: [PATCH 0/2] hw/nvme fixes\nFrom: Klaus Jensen <its@irrelevant.dk>\nDate: Thu, 26 Mar 2026 09:23:47 +0100\nMessage-Id: <20260326082350.17374-1-its@irrelevant.dk>\nMIME-Version: 1.0\nContent-Type: text/plain; charset=\"utf-8\"\nContent-Transfer-Encoding: 7bit\n\nHi,\n\nThe following changes since commit 007b29752ed06e467d3c830bc2c17a8851f8bcd3:\n\n  Merge tag 'for-upstream' of https://gitlab.com/kmwolf/qemu into staging (2026-03-25 09:16:13 +0000)\n\nare available in the Git repository at:\n\n  https://gitlab.com/birkelund/qemu.git tags/pull-nvme-20260326\n\nfor you to fetch changes up to eb5cc99aff17cbfdad16b18d3503c6f22233eeb5:\n\n  hw/nvme: fix heap-buffer-overflow in nvme_abort (2026-03-26 09:14:35 +0100)\n\n----------------------------------------------------------------\nnvme queue\n\n----------------------------------------------------------------\nKaixuan Li (1):\n      hw/nvme: fix heap-buffer-overflow in nvme_abort\n\nPankaj Raghav (1):\n      hw/nvme: re-enable wzds bit in namespace dlfeat\n\n hw/nvme/ctrl.c | 4 +++-\n hw/nvme/ns.c   | 2 +-\n 2 files changed, 4 insertions(+), 2 deletions(-)",
+  "diff": "From git@z Thu Jan  1 00:00:00 1970\nSubject: [PATCH 1/2] hw/nvme: re-enable wzds bit in namespace dlfeat\nFrom: Pankaj Raghav <p.raghav@samsung.com>\nDate: Thu, 26 Mar 2026 09:23:48 +0100\nMessage-Id: <20260326082350.17374-2-its@irrelevant.dk>\nMIME-Version: 1.0\nContent-Type: text/plain; charset=\"utf-8\"\nContent-Transfer-Encoding: 7bit\n\ndlfeat was changed from 0x9 to 0x1 when PI support was added.\nIt was removed because we can't rely on unmap and have to physically\nclear it to get the checksums right but that doesnt mean that we do not\nsupport the bit.\n\nThe spec says that if wzds is enabled, then the controller supports\ndeallocate (DEAC) on write zeroes. But DEAC bit in write zeroes command\nis only a hint, the controller might choose to physically write zeroes in\nthose areas.\n\nAs we are sending write zeroes command with BDRV_REQ_MAY_UNMAP to the\nunderlying block device anyway (if the unmap operation is supported),\nchange the dlfeat value back to 0x9.\n\nA new flag FALLOC_FL_WRITE_ZEROES has been introduced in linux for\nfallocate which will use the wzds bit in dlfeat to quickly zeroout extents\nusing unmap operation whenever possible[1].\n\n[1] https://lore.kernel.org/linux-fsdevel/20250619111806.3546162-1-yi.zhang@huaweicloud.com/\n\nFixes: 146f720c55 (\"hw/block/nvme: end-to-end data protection\")\nSuggested-by: Klaus Jensen <k.jensen@samsung.com>\nSigned-off-by: Pankaj Raghav <p.raghav@samsung.com>\nSigned-off-by: Klaus Jensen <k.jensen@samsung.com>\n---\n hw/nvme/ns.c | 2 +-\n 1 file changed, 1 insertion(+), 1 deletion(-)\n\ndiff --git a/hw/nvme/ns.c b/hw/nvme/ns.c\nindex 38f86a17268f..b0106eaa5c8f 100644\n--- a/hw/nvme/ns.c\n+++ b/hw/nvme/ns.c\n@@ -75,7 +75,7 @@ static int nvme_ns_init(NvmeNamespace *ns, Error **errp)\n     ns->csi = NVME_CSI_NVM;\n     ns->status = 0x0;\n \n-    ns->id_ns.dlfeat = 0x1;\n+    ns->id_ns.dlfeat = 0x9;\n \n     /* support DULBE and I/O optimization fields */\n     id_ns->nsfeat |= (NVME_ID_NS_NSFEAT_DAE | NVME_ID_NS_NSFEAT_OPTPERF_ALL);\n-- \n2.53.0\n\nFrom git@z Thu Jan  1 00:00:00 1970\nSubject: [PATCH 2/2] hw/nvme: fix heap-buffer-overflow in nvme_abort\nFrom: Kaixuan Li <kaixuanli@ntu.edu.sg>\nDate: Thu, 26 Mar 2026 09:23:49 +0100\nMessage-Id: <20260326082350.17374-3-its@irrelevant.dk>\nMIME-Version: 1.0\nContent-Type: text/plain; charset=\"utf-8\"\nContent-Transfer-Encoding: 7bit\n\nIn nvme_abort(), the submission queue pointer is dereferenced from the\nguest-controlled sqid before validating it with nvme_check_sqid():\n\n    NvmeSQueue *sq = n->sq[sqid];\n\nSince sqid is a 16-bit value (range 0-65535) taken directly from CDW10,\nand n->sq[] is typically only max_ioqpairs+1 (65) entries, a malicious\nguest can trigger an out-of-bounds heap read by sending an Abort command\nwith a large sqid.\n\nASan reports this as heap-buffer-overflow in nvme_abort.\n\nFix this by moving the array dereference to after the nvme_check_sqid()\nbounds validation.\n\nResolves: https://gitlab.com/qemu-project/qemu/-/issues/3348\nFixes: 75209c071a (\"hw/nvme: actually implement abort\")\nCc: qemu-stable@nongnu.org\nSigned-off-by: Kaixuan Li <kaixuanli@ntu.edu.sg>\nSigned-off-by: Klaus Jensen <k.jensen@samsung.com>\n---\n hw/nvme/ctrl.c | 4 +++-\n 1 file changed, 3 insertions(+), 1 deletion(-)\n\ndiff --git a/hw/nvme/ctrl.c b/hw/nvme/ctrl.c\nindex cc4593cd427a..be6c7028cb58 100644\n--- a/hw/nvme/ctrl.c\n+++ b/hw/nvme/ctrl.c\n@@ -6111,7 +6111,7 @@ static uint16_t nvme_abort(NvmeCtrl *n, NvmeRequest *req)\n {\n     uint16_t sqid = le32_to_cpu(req->cmd.cdw10) & 0xffff;\n     uint16_t cid  = (le32_to_cpu(req->cmd.cdw10) >> 16) & 0xffff;\n-    NvmeSQueue *sq = n->sq[sqid];\n+    NvmeSQueue *sq;\n     NvmeRequest *r, *next;\n     int i;\n \n@@ -6120,6 +6120,8 @@ static uint16_t nvme_abort(NvmeCtrl *n, NvmeRequest *req)\n         return NVME_INVALID_FIELD | NVME_DNR;\n     }\n \n+    sq = n->sq[sqid];\n+\n     if (sqid == 0) {\n         for (i = 0; i < n->outstanding_aers; i++) {\n             NvmeRequest *re = n->aer_reqs[i];\n-- \n2.53.0",
+  "patches": [],
+  "generated_at": "2026-03-27T01:33:33Z",
+  "generator": "loupe-review v1.0",
+  "disclaimer": "LLM-generated draft. Not an authoritative review."
+}

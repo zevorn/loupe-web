@@ -1,0 +1,78 @@
+{
+  "schema_version": "1",
+  "id": "20260326-20260326190438.734239-3-adityag-at-linux.ibm.com",
+  "series": {
+    "title": "[PATCH 0/2] Replace assert with bound checks in PnvPHB3",
+    "version": 1,
+    "patch_count": 2,
+    "author": {
+      "name": "Aditya Gupta",
+      "email": "adityag@linux.ibm.com"
+    },
+    "date": "2026-03-26",
+    "subsystem": "riscv",
+    "message_id": "<20260326190438.734239-3-adityag@linux.ibm.com>",
+    "lore_url": "https://lore.kernel.org/qemu-devel/20260326190438.734239-3-adityag%40linux.ibm.com/",
+    "patchwork_url": "http://patchwork.ozlabs.org/project/qemu-devel/patch/20260326190438.734239-3-adityag@linux.ibm.com/",
+    "base_branch": "master"
+  },
+  "version_history": [],
+  "ml_context": {
+    "patchwork_state": "new",
+    "reviewed_by": [],
+    "acked_by": [],
+    "ci_status": "",
+    "prior_feedback": [],
+    "maintainer_activity": ""
+  },
+  "review": {
+    "verdict": "reject",
+    "summary": "Patch 2 introduces a build-breaking error in `pci_host_config_read_common()`: the new debug path references `val`, but that variable does not exist in the read helper. The series should not be merged until that is fixed.",
+    "mode": "ci-single",
+    "stages": {
+      "A": "Patch intent is sound: patch 1 prevents PHB3 from issuing invalid >4-byte config accesses, and patch 2 aims to harden the generic PCI host helpers against invalid lengths.",
+      "B": "Static review found a compile-time failure in patch 2. `pci_host_config_read_common()` logs `val` in the new `len > 4` path, but the function has no such local or parameter.",
+      "C": "Patch 1 behavior looks reasonable: invalid PHB3 config accesses are rejected early, with writes ignored and reads returning all-ones.",
+      "D": "The provided testing does not cover a full build, and `BUILD STATUS: configure_ok` would not catch the compile error introduced in patch 2.",
+      "E": "Overall assessment: reject as-is. After fixing the read-side debug statement, the hardening approach appears directionally correct."
+    },
+    "findings": [
+      {
+        "id": "F1",
+        "severity": "high",
+        "file": "hw/pci/pci_host.c",
+        "line": 115,
+        "title": "Undefined `val` in read-side invalid-length path breaks the build",
+        "description": "The new `len > 4` branch in `pci_host_config_read_common()` passes `val` to `PCI_DPRINTF`, but the read helper does not define a `val` variable. This causes a compile failure, so the series is not mergeable in its current form.",
+        "patch_context": [
+          "@@ -106,7 +111,12 @@ uint32_t pci_host_config_read_common(PCIDevice *pci_dev, uint32_t addr,",
+          "-    assert(len <= 4);",
+          "+    if (len > 4) {",
+          "+        PCI_DPRINTF(\"%s: invalid length access: addr \" HWADDR_FMT_plx \" \\\\",
+          "+            len %d val %\"PRIx32\"",
+          "+\", __func__, addr, len, val);",
+          "+        return ~0x0;",
+          "+    }"
+        ],
+        "suggestion": "Remove `val` from the read-side debug message, or replace it with data that actually exists in this function. For example, log only `addr` and `len` before returning `~0x0`.",
+        "confidence": "high",
+        "confidence_reason": "The function shown in the patch is the read helper, and the added call site explicitly references `val` despite no such symbol being present in that scope."
+      }
+    ],
+    "checkpatch": {
+      "status": "issues",
+      "issues": [
+        "WARNING: line over 80 characters",
+        "WARNING: line over 80 characters"
+      ]
+    },
+    "build_status": "configure_ok",
+    "am_status": "success"
+  },
+  "cover_letter": "Subject: [PATCH 0/2] Replace assert with bound checks in PnvPHB3\nFrom: Aditya Gupta <adityag@linux.ibm.com>\nDate: Fri, 27 Mar 2026 00:34:36 +0530\nMessage-Id: <20260326190438.734239-1-adityag@linux.ibm.com>\nMIME-Version: 1.0\nContent-Type: text/plain; charset=\"utf-8\"\nContent-Transfer-Encoding: 7bit\n\nOverview\n========\n\nPHB in Power8 supports 8 byte registers, and hence the ops structure\nallows accessing of 8 bytes in 'pnv_phb3_reg_ops'\n\nBoth 'pnv_phb3_reg_read' & 'pnv_phb3_reg_write' pass the arguments as is\nto 'pnv_phb3_config_{read,write}', if offset is PHB_CONFIG_DATA.\n\nThis when called with size as 8, causes following assert failure in\n'pci_host_config_read_common' & 'pci_host_config_write_common':\n\n    assert(len <= 4);\n\nThis patch series splits it into two patches:\n1. Fix PnvPHB3 code so that it never calls pci_host_config_{read,write}_common\n   with read/write size of >4, thus fixing the assert problem\n2. Replace the assert with bounds checking\n\nPatch #2 should not have any functional change, since the issue is\nalready fixed by patch #1\n\nTesting\n=======\n\n1. Git repo with the patches: https://gitlab.com/adi-g15-ibm/qemu/tree/fix_assert_phb3\n\n2. Gitlab pipeline: https://gitlab.com/adi-g15-ibm/qemu/-/pipelines/2410981612\n\n> Note: One test is failing in the pipeline, but the log shows some cargo error,\n> unrelated to the patch series\n\n3. Testcase provided by Zexiang Zhang, this will fail without the patches:\n\n  cat << \"EOF\" | ./qemu-system-ppc64 \\\n    -M powernv8 -accel tcg -cpu POWER8 \\\n    -display none \\\n    -serial none -monitor none \\\n    -qtest stdio -S \\\n    -d guest_errors -D /tmp/pci_len_pnv.log\n  writeq 0x3fc009013c000 0x140\n  writeq 0x3fc009013c010 0x8000000000000000\n  writeq 0x3fc009013c000 0x130\n  readq 0x3fc009013c010\n  EOF\n\nAditya Gupta (2):\n  ppc/pnv_phb3: Error out on invalid config access\n  hw/pci: Replace assert with bounds check and return\n\n hw/pci-host/pnv_phb3.c | 10 ++++++++++\n hw/pci/pci_host.c      | 14 ++++++++++++--\n 2 files changed, 22 insertions(+), 2 deletions(-)\n\n-- \n2.53.0",
+  "diff": "From git@z Thu Jan  1 00:00:00 1970\nSubject: [PATCH 1/2] ppc/pnv_phb3: Error out on invalid config access\nFrom: Aditya Gupta <adityag@linux.ibm.com>\nDate: Fri, 27 Mar 2026 00:34:37 +0530\nMessage-Id: <20260326190438.734239-2-adityag@linux.ibm.com>\nMIME-Version: 1.0\nContent-Type: text/plain; charset=\"utf-8\"\nContent-Transfer-Encoding: 7bit\n\nPHB in Power8 supports 8 byte registers, and hence the ops structure\nallows accessing of 8 bytes in 'pnv_phb3_reg_ops'\n\nBoth 'pnv_phb3_reg_read' & 'pnv_phb3_reg_write' pass the arguments as is\nto 'pnv_phb3_config_{read,write}', if offset is PHB_CONFIG_DATA.\n\nThis when called with size as 8, causes following assert failure in\n'pci_host_config_read_common' & 'pci_host_config_write_common':\n\n    assert(len <= 4);\n\nValidate that size is <=4, before jumping to pci_host_config_{read,write}_common\n\nResolves: https://gitlab.com/qemu-project/qemu/-/work_items/3334\nReported-by: Zexiang Zhang <chan9yan9@gmail.com>\nFixes: 9ae1329ee2fe (\"ppc/pnv: Add models for POWER8 PHB3 PCIe Host bridge\")\nSigned-off-by: Aditya Gupta <adityag@linux.ibm.com>\n---\n hw/pci-host/pnv_phb3.c | 10 ++++++++++\n 1 file changed, 10 insertions(+)\n\ndiff --git a/hw/pci-host/pnv_phb3.c b/hw/pci-host/pnv_phb3.c\nindex d6ab5153374f..4ffdb4ce31ae 100644\n--- a/hw/pci-host/pnv_phb3.c\n+++ b/hw/pci-host/pnv_phb3.c\n@@ -475,6 +475,11 @@ void pnv_phb3_reg_write(void *opaque, hwaddr off, uint64_t val, unsigned size)\n \n     /* Special case configuration data */\n     if ((off & 0xfffc) == PHB_CONFIG_DATA) {\n+        if (size > 4) {\n+            phb3_error(phb, \"Invalid config access, offset: 0x%\"PRIx64\" size: %d\",\n+                      off, size);\n+            return;\n+        }\n         pnv_phb3_config_write(phb, off & 0x3, size, val);\n         return;\n     }\n@@ -597,6 +602,11 @@ uint64_t pnv_phb3_reg_read(void *opaque, hwaddr off, unsigned size)\n     uint64_t val;\n \n     if ((off & 0xfffc) == PHB_CONFIG_DATA) {\n+        if (size > 4) {\n+            phb3_error(phb, \"Invalid config access, offset: 0x%\"PRIx64\" size: %d\",\n+                      off, size);\n+            return ~0ull;\n+        }\n         return pnv_phb3_config_read(phb, off & 0x3, size);\n     }\n \n-- \n2.53.0\n\nFrom git@z Thu Jan  1 00:00:00 1970\nSubject: [PATCH 2/2] hw/pci: Replace assert with bounds check and return\nFrom: Aditya Gupta <adityag@linux.ibm.com>\nDate: Fri, 27 Mar 2026 00:34:38 +0530\nMessage-Id: <20260326190438.734239-3-adityag@linux.ibm.com>\nMIME-Version: 1.0\nContent-Type: text/plain; charset=\"utf-8\"\nContent-Transfer-Encoding: 7bit\n\nAs reported in https://gitlab.com/qemu-project/qemu/-/work_items/3334,\ncallers of 'pci_host_config_{read,write}_common' can pass length as 8,\ncausing an assert failure\n\nThe original issue with pnv_phb3 triggering the assert was fixed in a\nprevious commit\n\nInstead of asserting on invalid length, check if the length is valid\n(<=4), otherwise return (with the failure error code in read)\n\nReported-by: Zexiang Zhang <chan9yan9@gmail.com>\nSigned-off-by: Aditya Gupta <adityag@linux.ibm.com>\n---\n hw/pci/pci_host.c | 14 ++++++++++++--\n 1 file changed, 12 insertions(+), 2 deletions(-)\n\ndiff --git a/hw/pci/pci_host.c b/hw/pci/pci_host.c\nindex 91e3885c7f62..2a7fdfa5636e 100644\n--- a/hw/pci/pci_host.c\n+++ b/hw/pci/pci_host.c\n@@ -81,7 +81,12 @@ void pci_host_config_write_common(PCIDevice *pci_dev, uint32_t addr,\n         return;\n     }\n \n-    assert(len <= 4);\n+    if (len > 4) {\n+        PCI_DPRINTF(\"%s: invalid length access: addr \" HWADDR_FMT_plx \" \\\n+            len %d val %\"PRIx32\"\\n\", __func__, addr, len, val);\n+        return;\n+    }\n+\n     /* non-zero functions are only exposed when function 0 is present,\n      * allowing direct removal of unexposed functions.\n      */\n@@ -106,7 +111,12 @@ uint32_t pci_host_config_read_common(PCIDevice *pci_dev, uint32_t addr,\n         return ~0x0;\n     }\n \n-    assert(len <= 4);\n+    if (len > 4) {\n+        PCI_DPRINTF(\"%s: invalid length access: addr \" HWADDR_FMT_plx \" \\\n+            len %d val %\"PRIx32\"\\n\", __func__, addr, len, val);\n+        return ~0x0;\n+    }\n+\n     /* non-zero functions are only exposed when function 0 is present,\n      * allowing direct removal of unexposed functions.\n      */\n-- \n2.53.0",
+  "patches": [],
+  "generated_at": "2026-03-27T01:54:52Z",
+  "generator": "loupe-review v1.0",
+  "disclaimer": "LLM-generated draft. Not an authoritative review."
+}

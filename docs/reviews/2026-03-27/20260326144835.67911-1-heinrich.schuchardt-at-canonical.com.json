@@ -1,0 +1,53 @@
+{
+  "schema_version": "1",
+  "id": "20260326-20260326144835.67911-1-heinrich.schuchardt-at-canonical.com",
+  "series": {
+    "title": "[PATCH v2] hw/acpi: correct field sequence in SPCR table",
+    "version": 2,
+    "patch_count": 1,
+    "author": {
+      "name": "Heinrich Schuchardt",
+      "email": "heinrich.schuchardt@canonical.com"
+    },
+    "date": "2026-03-26",
+    "subsystem": "hw/acpi",
+    "message_id": "<20260326144835.67911-1-heinrich.schuchardt@canonical.com>",
+    "lore_url": "https://lore.kernel.org/qemu-devel/20260326144835.67911-1-heinrich.schuchardt%40canonical.com/",
+    "patchwork_url": "http://patchwork.ozlabs.org/project/qemu-devel/patch/20260326144835.67911-1-heinrich.schuchardt@canonical.com/",
+    "base_branch": "master"
+  },
+  "version_history": [],
+  "ml_context": {
+    "patchwork_state": "new",
+    "reviewed_by": [],
+    "acked_by": [],
+    "ci_status": "",
+    "prior_feedback": [],
+    "maintainer_activity": ""
+  },
+  "review": {
+    "verdict": "accept",
+    "summary": "The patch fixes a real SPCR serialization bug by restoring the ACPI-defined byte order of Terminal Type followed by Language in `build_spcr()`. The change is minimal, matches the reported regression source, and has low regression risk because it only corrects field emission order in the table builder.",
+    "mode": "ci-single",
+    "stages": {
+      "A": "Problem statement is coherent. The reported symptom (Terminal Type and Language values appearing swapped in generated SPCR tables) matches the diff exactly.",
+      "B": "Code change is correct at the serialization level. `build_spcr()` previously emitted `language` before `terminal_type`; this patch restores `terminal_type` then `language`, which is the expected SPCR field sequence.",
+      "C": "Regression risk is low. The patch does not change structure sizes, offsets outside the affected bytes, callers, or platform-specific selection logic; it only fixes two adjacent one-byte fields in table generation.",
+      "D": "Validation signals are sufficient for this scope: checkpatch is clean, `git am` succeeded, and configure passed. Full runtime ACPI/SPCR table inspection would be ideal but is not required to justify this fix.",
+      "E": "No blocking issues found. The patch is suitable for merging as a targeted fix for malformed SPCR tables on affected machines."
+    },
+    "findings": [],
+    "checkpatch": {
+      "status": "clean",
+      "issues": []
+    },
+    "build_status": "configure_ok",
+    "am_status": "success"
+  },
+  "cover_letter": null,
+  "diff": "From git@z Thu Jan  1 00:00:00 1970\nSubject: [PATCH v2] hw/acpi: correct field sequence in SPCR table\nFrom: Heinrich Schuchardt <heinrich.schuchardt@canonical.com>\nDate: Thu, 26 Mar 2026 15:48:35 +0100\nMessage-Id: <20260326144835.67911-1-heinrich.schuchardt@canonical.com>\nMIME-Version: 1.0\nContent-Type: text/plain; charset=\"utf-8\"\nContent-Transfer-Encoding: 7bit\n\nOn LoongArch and RISC-V invalid SPCR tables are created:\n\nTerrminal Type : 00\nLanguage : 03\n\nThe correct values are:\n\nTerrminal Type : 03\nLanguage : 00\n\nThis is due to commit 7dd0b070fa09 (\"hw/arm/virt-acpi-build.c: Migrate\nSPCR creation to common location\") that swapped the fields.\n\nSee the specification of the table in\nhttps://learn.microsoft.com/en-us/windows-hardware/drivers/bringup/serial-port-console-redirection-table\n\nThis page shows version 1.10. But the sequence of the fields was not changed\nsince version 1.0.\n\nOur LoongArch and ARM code uses version 1.07 of the specification.\nOur RISC-V code uses version 1.10 of the specification.\n\nFixes: 7dd0b070fa09 (\"hw/arm/virt-acpi-build.c: Migrate SPCR creation to common location\")\nSigned-off-by: Heinrich Schuchardt <heinrich.schuchardt@canonical.com>\nOrigin: https://lore.kernel.org/qemu-devel/20260326121947.51200-1-heinrich.schuchardt@canonical.com/T/#u\nBug-Ubuntu: https://bugs.launchpad.net/ubuntu/+source/qemu/+bug/2146419\n---\nv2:\n\tMention the different specification versions used by our code.\nv1:\n\thttps://lore.kernel.org/qemu-devel/20260326121947.51200-1-heinrich.schuchardt@canonical.com/T/#u\n---\n hw/acpi/aml-build.c | 4 ++--\n 1 file changed, 2 insertions(+), 2 deletions(-)\n\ndiff --git a/hw/acpi/aml-build.c b/hw/acpi/aml-build.c\nindex 4b37405088..a999320e61 100644\n--- a/hw/acpi/aml-build.c\n+++ b/hw/acpi/aml-build.c\n@@ -2115,10 +2115,10 @@ void build_spcr(GArray *table_data, BIOSLinker *linker,\n     build_append_int_noprefix(table_data, f->stop_bits, 1);\n     /* Flow Control */\n     build_append_int_noprefix(table_data, f->flow_control, 1);\n-    /* Language */\n-    build_append_int_noprefix(table_data, f->language, 1);\n     /* Terminal Type */\n     build_append_int_noprefix(table_data, f->terminal_type, 1);\n+    /* Language */\n+    build_append_int_noprefix(table_data, f->language, 1);\n     /* PCI Device ID  */\n     build_append_int_noprefix(table_data, f->pci_device_id, 2);\n     /* PCI Vendor ID */\n-- \n2.53.0",
+  "patches": [],
+  "generated_at": "2026-03-27T01:44:11Z",
+  "generator": "loupe-review v1.0",
+  "disclaimer": "LLM-generated draft. Not an authoritative review."
+}

@@ -1,0 +1,53 @@
+{
+  "schema_version": "1",
+  "id": "20260326-20260325-fix-name-to-handle-at-v1-1-49fb922e6fd3-at-craftygu",
+  "series": {
+    "title": "[PATCH] linux-user: fix name_to_handle_at when",
+    "version": 1,
+    "patch_count": 1,
+    "author": {
+      "name": "Clayton Craft",
+      "email": "craftyguy@postmarketos.org"
+    },
+    "date": "2026-03-26",
+    "subsystem": "linux-user",
+    "message_id": "<20260325-fix-name-to-handle-at-v1-1-49fb922e6fd3@craftyguy.net>",
+    "lore_url": "https://lore.kernel.org/qemu-devel/20260325-fix-name-to-handle-at-v1-1-49fb922e6fd3%40craftyguy.net/",
+    "patchwork_url": "http://patchwork.ozlabs.org/project/qemu-devel/patch/20260325-fix-name-to-handle-at-v1-1-49fb922e6fd3@craftyguy.net/",
+    "base_branch": "master"
+  },
+  "version_history": [],
+  "ml_context": {
+    "patchwork_state": "new",
+    "reviewed_by": [],
+    "acked_by": [],
+    "ci_status": "",
+    "prior_feedback": [],
+    "maintainer_activity": ""
+  },
+  "review": {
+    "verdict": "accept",
+    "summary": "The change addresses the reported linux-user crash by using 64-bit storage for mount_id when AT_HANDLE_MNT_ID_UNIQUE is requested, while preserving the existing 32-bit path for older semantics. I did not identify a functional regression in the patch itself.",
+    "mode": "ci-single",
+    "stages": {
+      "A": "Patch intent is correct: Linux 6.12 allows name_to_handle_at() to return a 64-bit mount ID when AT_HANDLE_MNT_ID_UNIQUE is set, and the old qemu code only provided 32-bit storage.",
+      "B": "Implementation matches that intent: the host syscall receives 64-bit backing storage on the unique-ID path, and the guest writeback also uses a 64-bit store in that case.",
+      "C": "Target ABI handling remains coherent: the legacy path still writes a 32-bit mount_id, and the new path only changes behavior when the guest explicitly sets the new flag.",
+      "D": "No build or style issues are evident from the diff, and the added fallback define is a reasonable compatibility measure for environments whose headers do not yet expose the new flag.",
+      "E": "Residual risk is low. The cast used to satisfy the libc prototype is slightly awkward, but it does not present a clear correctness issue in this context."
+    },
+    "findings": [],
+    "checkpatch": {
+      "status": "clean",
+      "issues": []
+    },
+    "build_status": "configure_ok",
+    "am_status": "success"
+  },
+  "cover_letter": null,
+  "diff": "From git@z Thu Jan  1 00:00:00 1970\nSubject: [PATCH] linux-user: fix name_to_handle_at when\n AT_HANDLE_MNT_ID_UNIQUE flag is set\nFrom: Clayton Craft <craftyguy@postmarketos.org>\nDate: Wed, 25 Mar 2026 22:59:36 -0700\nMessage-Id: <20260325-fix-name-to-handle-at-v1-1-49fb922e6fd3@craftyguy.net>\nMIME-Version: 1.0\nContent-Type: text/plain; charset=\"utf-8\"\nContent-Transfer-Encoding: 7bit\n\nLinux 6.12 added AT_HANDLE_MNT_ID_UNIQUE, which indicates that mount_id\nis 64-bits. If name_to_handle_at is called with this flag set then qemu\npasses a 4 byte int to the kernel, which then tries to store 8 bytes in\na 4 byte variable, causing a SIGSEGV[1][2].\n\nThis stores mount_id in a 64-bit var if the flag is set.\n\n1. https://gitlab.postmarketos.org/postmarketOS/pmaports/-/work_items/4431\n2. https://github.com/systemd/systemd/issues/41279\n\nSigned-off-by: Clayton Craft <craftyguy@postmarketos.org>\nReviewed-by: Helge Deller <deller@gmx.de>\n---\nThis fixes a crash experienced recently while running qemu user mode\nwith e.g. systemd which set AT_HANDLE_MNT_ID_UNIQUE when calling\nname_to_handle_at. AT_HANDLE_MNT_ID_UNIQUE was added in Linux 6.12.\n\nI'm a bit unsure of defining AT_HANDLE_MNT_ID_UNIQUE like this,\nit's part of linux/fcntl.h but this header isn't included in\nqemu/linux-headers.\n\n1. https://gitlab.postmarketos.org/postmarketOS/pmaports/-/work_items/4431\n2. https://github.com/systemd/systemd/issues/41279\n---\n linux-user/syscall.c | 21 ++++++++++++++++++---\n 1 file changed, 18 insertions(+), 3 deletions(-)\n\ndiff --git a/linux-user/syscall.c b/linux-user/syscall.c\nindex 7832a1aba5..3cb00c643e 100644\n--- a/linux-user/syscall.c\n+++ b/linux-user/syscall.c\n@@ -8166,6 +8166,9 @@ static int do_futex(CPUState *cpu, bool time64, target_ulong uaddr,\n #endif\n \n #if defined(TARGET_NR_name_to_handle_at) && defined(CONFIG_OPEN_BY_HANDLE)\n+#ifndef AT_HANDLE_MNT_ID_UNIQUE\n+#define AT_HANDLE_MNT_ID_UNIQUE 0x001\n+#endif\n static abi_long do_name_to_handle_at(abi_long dirfd, abi_long pathname,\n                                      abi_long handle, abi_long mount_id,\n                                      abi_long flags)\n@@ -8173,6 +8176,7 @@ static abi_long do_name_to_handle_at(abi_long dirfd, abi_long pathname,\n     struct file_handle *target_fh;\n     struct file_handle *fh;\n     int mid = 0;\n+    uint64_t mid64 = 0;\n     abi_long ret;\n     char *name;\n     unsigned int size, total_size;\n@@ -8196,7 +8200,12 @@ static abi_long do_name_to_handle_at(abi_long dirfd, abi_long pathname,\n     fh = g_malloc0(total_size);\n     fh->handle_bytes = size;\n \n-    ret = get_errno(name_to_handle_at(dirfd, path(name), fh, &mid, flags));\n+    if (flags & AT_HANDLE_MNT_ID_UNIQUE) {\n+        ret = get_errno(name_to_handle_at(dirfd, path(name), fh,\n+                                          (int *)&mid64, flags));\n+    } else {\n+        ret = get_errno(name_to_handle_at(dirfd, path(name), fh, &mid, flags));\n+    }\n     unlock_user(name, pathname, 0);\n \n     /* man name_to_handle_at(2):\n@@ -8210,8 +8219,14 @@ static abi_long do_name_to_handle_at(abi_long dirfd, abi_long pathname,\n     g_free(fh);\n     unlock_user(target_fh, handle, total_size);\n \n-    if (put_user_s32(mid, mount_id)) {\n-        return -TARGET_EFAULT;\n+    if (flags & AT_HANDLE_MNT_ID_UNIQUE) {\n+        if (put_user_u64(mid64, mount_id)) {\n+            return -TARGET_EFAULT;\n+        }\n+    } else {\n+        if (put_user_s32(mid, mount_id)) {\n+            return -TARGET_EFAULT;\n+        }\n     }\n \n     return ret;\n\n---\nbase-commit: 007b29752ed06e467d3c830bc2c17a8851f8bcd3\nchange-id: 20260325-fix-name-to-handle-at-02208f294e88\n\nBest regards,\n-- \nClayton Craft <clayton@craftyguy.net>",
+  "patches": [],
+  "generated_at": "2026-03-27T01:40:30Z",
+  "generator": "loupe-review v1.0",
+  "disclaimer": "LLM-generated draft. Not an authoritative review."
+}
