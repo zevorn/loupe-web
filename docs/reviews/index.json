@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-03-27T20:53:44Z",
+  "updated_at": "2026-03-27T21:51:29Z",
   "reviews": [
     {
       "id": "20260327-DB8P190MB07142E1BA8DEEA8B2E41D5B2DB57A-at-DB8P190MB0714.EURP",
@@ -15,6 +15,24 @@
       "findings": {
         "critical": 0,
         "major": 0,
+        "minor": 0,
+        "nit": 0
+      }
+    },
+    {
+      "id": "20260327-20260327212547.460420-17-pbonzini-at-redhat.com",
+      "path": "reviews/2026-03-27/20260327212547.460420-17-pbonzini-at-redhat.com.json",
+      "title": "[PATCH 0/16] Reentrancy fixes for lsi53c895a, and cleanups to",
+      "author": "Paolo Bonzini",
+      "date": "2026-03-27",
+      "subsystem": "riscv",
+      "version": 1,
+      "patch_count": 16,
+      "message_id": "<20260327212547.460420-17-pbonzini@redhat.com>",
+      "verdict": "reject",
+      "findings": {
+        "critical": 0,
+        "major": 1,
         "minor": 0,
         "nit": 0
       }
