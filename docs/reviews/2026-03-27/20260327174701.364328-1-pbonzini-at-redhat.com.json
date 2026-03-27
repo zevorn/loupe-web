@@ -1,0 +1,53 @@
+{
+  "schema_version": "1",
+  "id": "20260327-20260327174701.364328-1-pbonzini-at-redhat.com",
+  "series": {
+    "title": "[PATCH] hpet: fix bounds check for s->timer[]",
+    "version": 1,
+    "patch_count": 1,
+    "author": {
+      "name": "Paolo Bonzini",
+      "email": "pbonzini@redhat.com"
+    },
+    "date": "2026-03-27",
+    "subsystem": "hpet",
+    "message_id": "<20260327174701.364328-1-pbonzini@redhat.com>",
+    "lore_url": "https://lore.kernel.org/qemu-devel/20260327174701.364328-1-pbonzini%40redhat.com/",
+    "patchwork_url": "http://patchwork.ozlabs.org/project/qemu-devel/patch/20260327174701.364328-1-pbonzini@redhat.com/",
+    "base_branch": "master"
+  },
+  "version_history": [],
+  "ml_context": {
+    "patchwork_state": "new",
+    "reviewed_by": [],
+    "acked_by": [],
+    "ci_status": "",
+    "prior_feedback": [],
+    "maintainer_activity": ""
+  },
+  "review": {
+    "verdict": "accept",
+    "summary": "The patch correctly fixes the off-by-one bounds check in both HPET MMIO timer access paths and also moves the `s->timer[timer_id]` dereference until after validation, eliminating the out-of-range array access. I found no functional regressions or missing companion changes in the modified code.",
+    "mode": "ci-single",
+    "stages": {
+      "A": "Problem statement matches the diff: `timer_id == s->num_timers` was incorrectly accepted in both read and write handlers.",
+      "B": "The fix is mechanically correct: changing `>` to `>=` enforces the valid index range `[0, s->num_timers - 1]`.",
+      "C": "The pointer dereference was moved after the bounds check in both handlers, which is necessary to fully remove the OOB access.",
+      "D": "The change is minimal and localized; it does not alter valid timer register behavior or tracing for in-range accesses.",
+      "E": "No additional issues identified from the patch context. With checkpatch clean and configure succeeding, this is ready to merge."
+    },
+    "findings": [],
+    "checkpatch": {
+      "status": "clean",
+      "issues": []
+    },
+    "build_status": "configure_ok",
+    "am_status": "success"
+  },
+  "cover_letter": null,
+  "diff": "From git@z Thu Jan  1 00:00:00 1970\nSubject: [PATCH] hpet: fix bounds check for s->timer[]\nFrom: Paolo Bonzini <pbonzini@redhat.com>\nDate: Fri, 27 Mar 2026 18:47:01 +0100\nMessage-Id: <20260327174701.364328-1-pbonzini@redhat.com>\nMIME-Version: 1.0\nContent-Type: text/plain; charset=\"utf-8\"\nContent-Transfer-Encoding: 7bit\n\nFix an off-by-one issue in QEMU's HPET read and write MMIO handlers.\nBoth handlers check timer_id > s->num_timers instead of timer_id >=\ns->num_timers, allowing a guest to access one timer beyond the valid\nrange.\n\nThe affected slot is initialized properly in hpet_realize, which goes\nthrough all HPET_MAX_TIMERS elements of the array, so even though\nit is not reset in hpet_reset() the bug does not cause any use of\nuninitialized host memory.  Because of this, and also because (even\nthough HPET_MAX_TIMERS is 32) the HPET only has room for 24 timers in\nits MMIO region, the bug has no security implications.\n\nCommit 869b0afa4fa (\"rust/hpet: Drop BqlCell wrapper for num_timers\",\n2025-06-06) silently fixed the same bug in rust/hw/timer/hpet/src/device.rs.\n\nReported-by: \nSigned-off-by: Paolo Bonzini <pbonzini@redhat.com>\n---\n hw/timer/hpet.c | 11 +++++++----\n 1 file changed, 7 insertions(+), 4 deletions(-)\n\ndiff --git a/hw/timer/hpet.c b/hw/timer/hpet.c\nindex 767093c431a..42285cff762 100644\n--- a/hw/timer/hpet.c\n+++ b/hw/timer/hpet.c\n@@ -464,13 +464,14 @@ static uint64_t hpet_ram_read(void *opaque, hwaddr addr,\n         }\n     } else {\n         uint8_t timer_id = (addr - 0x100) / 0x20;\n-        HPETTimer *timer = &s->timer[timer_id];\n+        HPETTimer *timer;\n \n-        if (timer_id > s->num_timers) {\n+        if (timer_id >= s->num_timers) {\n             trace_hpet_timer_id_out_of_range(timer_id);\n             return 0;\n         }\n \n+        timer = &s->timer[timer_id];\n         switch (addr & 0x1f) {\n         case HPET_TN_CFG: // including interrupt capabilities\n             return timer->config >> shift;\n@@ -564,13 +565,15 @@ static void hpet_ram_write(void *opaque, hwaddr addr,\n         }\n     } else {\n         uint8_t timer_id = (addr - 0x100) / 0x20;\n-        HPETTimer *timer = &s->timer[timer_id];\n+        HPETTimer *timer;\n \n         trace_hpet_ram_write_timer_id(timer_id);\n-        if (timer_id > s->num_timers) {\n+        if (timer_id >= s->num_timers) {\n             trace_hpet_timer_id_out_of_range(timer_id);\n             return;\n         }\n+\n+        timer = &s->timer[timer_id];\n         switch (addr & 0x18) {\n         case HPET_TN_CFG:\n             trace_hpet_ram_write_tn_cfg(addr & 4);\n-- \n2.53.0",
+  "patches": [],
+  "generated_at": "2026-03-27T18:02:51Z",
+  "generator": "loupe-review v1.0",
+  "disclaimer": "LLM-generated draft. Not an authoritative review."
+}

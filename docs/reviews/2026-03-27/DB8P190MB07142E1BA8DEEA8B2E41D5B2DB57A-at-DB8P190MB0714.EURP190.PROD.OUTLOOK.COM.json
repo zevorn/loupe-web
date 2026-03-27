@@ -1,0 +1,55 @@
+{
+  "schema_version": "1",
+  "id": "20260327-DB8P190MB07142E1BA8DEEA8B2E41D5B2DB57A-at-DB8P190MB0714.EURP",
+  "series": {
+    "title": "[PATCH] tests: don't build audio tests when no audio drivers are",
+    "version": 1,
+    "patch_count": 1,
+    "author": {
+      "name": "Anton Kuchin",
+      "email": "antonkuchin@nebius.com"
+    },
+    "date": "2026-03-27",
+    "subsystem": "tests",
+    "message_id": "<DB8P190MB07142E1BA8DEEA8B2E41D5B2DB57A@DB8P190MB0714.EURP190.PROD.OUTLOOK.COM>",
+    "lore_url": "https://lore.kernel.org/qemu-devel/DB8P190MB07142E1BA8DEEA8B2E41D5B2DB57A%40DB8P190MB0714.EURP190.PROD.OUTLOOK.COM/",
+    "patchwork_url": "http://patchwork.ozlabs.org/project/qemu-devel/patch/DB8P190MB07142E1BA8DEEA8B2E41D5B2DB57A@DB8P190MB0714.EURP190.PROD.OUTLOOK.COM/",
+    "base_branch": "master"
+  },
+  "version_history": [],
+  "ml_context": {
+    "patchwork_state": "new",
+    "reviewed_by": [],
+    "acked_by": [],
+    "ci_status": "",
+    "prior_feedback": [],
+    "maintainer_activity": ""
+  },
+  "review": {
+    "verdict": "accept",
+    "summary": "The change is correct on its face: it avoids descending into tests/audio when audio drivers are disabled, which matches the reported Meson failure caused by an empty @INPUT@ expansion. I did not identify a functional regression from the diff alone. Validation is limited because the patch did not apply cleanly in the provided state and no build was run.",
+    "mode": "ci-single",
+    "stages": {
+      "A": "Patch intent is clear and narrowly scoped: skip audio test build setup when there are no audio drivers.",
+      "B": "Code-path review of the shown hunk did not reveal logic errors; the added condition matches the failure mode described in the commit message.",
+      "C": "Regression risk appears low because the change only broadens an existing early-exit guard for tests/audio.",
+      "D": "Tooling signals are incomplete: checkpatch reported corruption/wrapping and git am failed, so exact application context could not be verified.",
+      "E": "Given the diff content, the patch is suitable as-is; follow-up should be limited to ensuring the mail transport preserves line formatting so the series applies cleanly."
+    },
+    "findings": [],
+    "checkpatch": {
+      "status": "issues",
+      "issues": [
+        "ERROR: patch seems to be corrupt (line wrapped?)"
+      ]
+    },
+    "build_status": "not_run",
+    "am_status": "failed"
+  },
+  "cover_letter": null,
+  "diff": "From git@z Thu Jan  1 00:00:00 1970\nSubject: [PATCH] tests: don't build audio tests when no audio drivers are\n enabled\nFrom: Anton Kuchin <antonkuchin@nebius.com>\nDate: Fri, 27 Mar 2026 16:45:51 +0000\nMessage-Id: <DB8P190MB07142E1BA8DEEA8B2E41D5B2DB57A@DB8P190MB0714.EURP190.PROD.OUTLOOK.COM>\nMIME-Version: 1.0\nContent-Type: text/plain; charset=\"utf-8\"\nContent-Transfer-Encoding: 7bit\n\nWhen there are no audio drivers configure fails with \"ERROR: Command\ncannot have '@INPUT@', since no input files were specified\".\n\nFixes: 3220b38a8d (\"tests: start manual audio backend test\")\nSigned-off-by: Anton Kuchin <antonkuchin@nebius.com>\n---\n tests/audio/meson.build | 2 +-\n 1 file changed, 1 insertion(+), 1 deletion(-)\n\ndiff --git a/tests/audio/meson.build b/tests/audio/meson.build\nindex 84754bde22..322755b880 100644\n--- a/tests/audio/meson.build\n+++ b/tests/audio/meson.build\n@@ -1,6 +1,6 @@\n # SPDX-License-Identifier: GPL-2.0-or-later\n\n-if not have_system\n+if not have_system or audio_modinfo_files.length() == 0\n   subdir_done()\n endif\n-- \n2.34.1",
+  "patches": [],
+  "generated_at": "2026-03-27T17:59:32Z",
+  "generator": "loupe-review v1.0",
+  "disclaimer": "LLM-generated draft. Not an authoritative review."
+}
