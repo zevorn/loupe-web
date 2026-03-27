@@ -1,0 +1,76 @@
+{
+  "schema_version": "1",
+  "id": "20260327-20260327164705.1990226-1-hayatake396-at-gmail.com",
+  "series": {
+    "title": "[PATCH v2] tests/qtest/migration: Add mapped-ram/postcopy",
+    "version": 2,
+    "patch_count": 1,
+    "author": {
+      "name": "Takeru Hayasaka",
+      "email": "hayatake396@gmail.com"
+    },
+    "date": "2026-03-27",
+    "subsystem": "tests/qtest/migration",
+    "message_id": "<20260327164705.1990226-1-hayatake396@gmail.com>",
+    "lore_url": "https://lore.kernel.org/qemu-devel/20260327164705.1990226-1-hayatake396%40gmail.com/",
+    "patchwork_url": "http://patchwork.ozlabs.org/project/qemu-devel/patch/20260327164705.1990226-1-hayatake396@gmail.com/",
+    "base_branch": "master"
+  },
+  "version_history": [],
+  "ml_context": {
+    "patchwork_state": "new",
+    "reviewed_by": [],
+    "acked_by": [],
+    "ci_status": "",
+    "prior_feedback": [],
+    "maintainer_activity": ""
+  },
+  "review": {
+    "verdict": "needs_revision",
+    "summary": "The added qtest coverage is directionally useful, but the new assertion likely reads the QMP error description from the wrong dictionary level. If `qtest_qmp_assert_failure_ref()` returns the full QMP reply, this test will abort on a missing top-level `desc` key instead of validating the intended incompatibility error.",
+    "mode": "ci-single",
+    "stages": {
+      "A": "Patch intent is clear and appropriate: add a qtest for the existing mapped-ram/postcopy incompatibility in both capability-order permutations.",
+      "B": "Registration and VM setup look consistent with lightweight source-only validation testing, and reusing a single source VM is reasonable here.",
+      "C": "The helper structure is generally fine, but the new failure-path inspection appears to assume a different return shape from `qtest_qmp_assert_failure_ref()` than qtest code commonly uses.",
+      "D": "This is blocking because it can make the new test fail for the wrong reason or become fragile to QMP reply structure rather than the migration validation being tested.",
+      "E": "No additional functional regressions are evident from the patch alone beyond the reply-parsing concern."
+    },
+    "findings": [
+      {
+        "id": "F1",
+        "severity": "medium",
+        "file": "tests/qtest/migration/misc-tests.c",
+        "line": 233,
+        "title": "QMP failure description is likely read from the wrong dict",
+        "description": "`qtest_qmp_assert_failure_ref()` commonly returns the full QMP reply object, with the actual error payload nested under the `error` key. The new code reads `desc` directly from `rsp`, which would assert on a missing key instead of checking the expected migration error text. That would make the test fail for the reply layout rather than for the mapped-ram/postcopy validation behavior.",
+        "patch_context": [
+          "+    rsp = qtest_qmp_assert_failure_ref(",
+          "+        from,",
+          "+        \"{ 'execute': 'migrate-set-capabilities',\"",
+          "+        \"  'arguments': { 'capabilities': [ { \"",
+          "+        \"      'capability': %s, 'state': true } ] } }\",",
+          "+        second_capability);",
+          "+",
+          "+    error_desc = qdict_get_str(rsp, \"desc\");",
+          "+    g_assert_cmpstr(error_desc, ==, expected_error);"
+        ],
+        "suggestion": "Fetch the nested error object before reading the description, for example by using `QDict *err = qdict_get_qdict(rsp, \"error\");` and then `qdict_get_str(err, \"desc\")`, unless this helper is explicitly documented to return the nested error dict already.",
+        "confidence": "medium",
+        "confidence_reason": "The concern depends on the exact contract of `qtest_qmp_assert_failure_ref()`, but in QEMU qtest code the failure reply is typically a top-level QMP object containing an `error` sub-dictionary rather than a flat dict with `desc` at the top level."
+      }
+    ],
+    "checkpatch": {
+      "status": "clean",
+      "issues": []
+    },
+    "build_status": "configure_ok",
+    "am_status": "success"
+  },
+  "cover_letter": null,
+  "diff": "From git@z Thu Jan  1 00:00:00 1970\nSubject: [PATCH v2] tests/qtest/migration: Add mapped-ram/postcopy\n validation test\nFrom: Takeru Hayasaka <hayatake396@gmail.com>\nDate: Fri, 27 Mar 2026 16:46:58 +0000\nMessage-Id: <20260327164705.1990226-1-hayatake396@gmail.com>\nMIME-Version: 1.0\nContent-Type: text/plain; charset=\"utf-8\"\nContent-Transfer-Encoding: 7bit\n\nThe migration capability checks reject enabling postcopy-ram together\nwith mapped-ram, but there is no qtest covering this incompatibility.\n\nAdd a validation test that verifies QMP rejects the combination in\nboth capability ordering cases and returns the expected error.\n\nThis keeps the existing capability boundary covered without changing\nmigration behavior.\n\nSigned-off-by: Takeru Hayasaka <hayatake396@gmail.com>\n---\nBuilt with:\n  ./configure --target-list=x86_64-softmmu --disable-werror\n  ninja -C build tests/qtest/migration-test qemu-system-x86_64\n\nTested with:\n  QTEST_QEMU_BINARY=./build/qemu-system-x86_64 \\\n  ./build/tests/qtest/migration-test --full \\\n  -p /x86_64/migration/validate_caps/mapped_ram_postcopy\n\n v2:\n   - Rename do_test_validate_capability_pair to validate_caps_pair\n   - Move migrate_start/migrate_end to caller for VM reuse\n   - Set only_source to skip target VM\n   - Generalize test using migration_test_add_suffix pattern\n---\n tests/qtest/migration/misc-tests.c | 50 ++++++++++++++++++++++++++++++\n 1 file changed, 50 insertions(+)\n\ndiff --git a/tests/qtest/migration/misc-tests.c b/tests/qtest/migration/misc-tests.c\nindex 196f1ca84287..4131e7b0614d 100644\n--- a/tests/qtest/migration/misc-tests.c\n+++ b/tests/qtest/migration/misc-tests.c\n@@ -215,6 +215,53 @@ static void do_test_validate_uri_channel(MigrateCommon *args)\n     migrate_end(from, to, false);\n }\n \n+static void validate_caps_pair(QTestState *from,\n+                               const char *first_capability,\n+                               const char *second_capability,\n+                               const char *expected_error)\n+{\n+    QDict *rsp;\n+    const char *error_desc;\n+\n+    migrate_set_capability(from, first_capability, true);\n+\n+    rsp = qtest_qmp_assert_failure_ref(\n+        from,\n+        \"{ 'execute': 'migrate-set-capabilities',\"\n+        \"  'arguments': { 'capabilities': [ { \"\n+        \"      'capability': %s, 'state': true } ] } }\",\n+        second_capability);\n+\n+    error_desc = qdict_get_str(rsp, \"desc\");\n+    g_assert_cmpstr(error_desc, ==, expected_error);\n+    qobject_unref(rsp);\n+\n+    migrate_set_capability(from, first_capability, false);\n+}\n+\n+static void test_validate_caps_pair(char *test_path, MigrateCommon *args)\n+{\n+    g_autofree char *cap_pair = g_path_get_basename(test_path);\n+    QTestState *from, *to;\n+\n+    args->start.hide_stderr = true;\n+    args->start.only_source = true;\n+\n+    if (migrate_start(&from, &to, \"defer\", &args->start)) {\n+        return;\n+    }\n+\n+    if (g_str_equal(cap_pair, \"mapped_ram_postcopy\")) {\n+        const char *error =\n+            \"Mapped-ram migration is incompatible with postcopy\";\n+\n+        validate_caps_pair(from, \"mapped-ram\", \"postcopy-ram\", error);\n+        validate_caps_pair(from, \"postcopy-ram\", \"mapped-ram\", error);\n+    }\n+\n+    qtest_quit(from);\n+}\n+\n static void test_validate_uri_channels_both_set(char *name, MigrateCommon *args)\n {\n     args->listen_uri = \"defer\",\n@@ -276,4 +323,7 @@ void migration_test_add_misc(MigrationTestEnv *env)\n                        test_validate_uri_channels_both_set);\n     migration_test_add(\"/migration/validate_uri/channels/none_set\",\n                        test_validate_uri_channels_none_set);\n+    migration_test_add_suffix(\"/migration/validate_caps/\",\n+                              \"mapped_ram_postcopy\",\n+                              test_validate_caps_pair);\n }\n-- \n2.43.0",
+  "patches": [],
+  "generated_at": "2026-03-27T17:10:11Z",
+  "generator": "loupe-review v1.0",
+  "disclaimer": "LLM-generated draft. Not an authoritative review."
+}

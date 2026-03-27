@@ -1,0 +1,94 @@
+{
+  "schema_version": "1",
+  "id": "20260327-20260327160446.330583-1-pbonzini-at-redhat.com",
+  "series": {
+    "title": "[PATCH] target/i386/tcg: svm: implement GMET",
+    "version": 1,
+    "patch_count": 1,
+    "author": {
+      "name": "Paolo Bonzini",
+      "email": "pbonzini@redhat.com"
+    },
+    "date": "2026-03-27",
+    "subsystem": "target/i386/tcg",
+    "message_id": "<20260327160446.330583-1-pbonzini@redhat.com>",
+    "lore_url": "https://lore.kernel.org/qemu-devel/20260327160446.330583-1-pbonzini%40redhat.com/",
+    "patchwork_url": "http://patchwork.ozlabs.org/project/qemu-devel/patch/20260327160446.330583-1-pbonzini@redhat.com/",
+    "base_branch": "master"
+  },
+  "version_history": [],
+  "ml_context": {
+    "patchwork_state": "new",
+    "reviewed_by": [],
+    "acked_by": [],
+    "ci_status": "",
+    "prior_feedback": [],
+    "maintainer_activity": ""
+  },
+  "review": {
+    "verdict": "changes_requested",
+    "summary": "The series has a correctness issue in the new SVM MMU-index helper: it derives 32-bit MMU indices by adding 1 to a 64-bit base index. QEMU's x86 MMU index constants are not guaranteed to be laid out that way, and the surrounding code previously selected `MMU_USER64_IDX` vs `MMU_USER32_IDX` explicitly. That can route 32-bit nested translations through the wrong access mode and break GMET behavior for 32-bit guests.",
+    "mode": "ci-single",
+    "stages": {
+      "A": {
+        "status": "pass",
+        "summary": "Feature exposure and VMCB control plumbing are straightforward."
+      },
+      "B": {
+        "status": "fail",
+        "summary": "The new MMU-index computation introduces an index-selection bug for 32-bit nested translation."
+      },
+      "C": {
+        "status": "pass",
+        "summary": "The U-bit/SMEP permission changes are internally consistent with the commit message."
+      },
+      "D": {
+        "status": "pass",
+        "summary": "No build or configure regressions are indicated by the supplied metadata."
+      },
+      "E": {
+        "status": "fail",
+        "summary": "Patch should not land until MMU index selection is made explicit and verified for 32-bit guest modes."
+      }
+    },
+    "findings": [
+      {
+        "id": "F1",
+        "severity": "high",
+        "file": "target/i386/tcg/system/excp_helper.c",
+        "line": 551,
+        "title": "32-bit SVM MMU index is derived from 64-bit index by arithmetic",
+        "description": "`cpu_mmu_index_svm()` computes the 32-bit MMU index by adding 1 to either `MMU_USER64_IDX` or `MMU_KNOSMAP64_IDX`. That is fragile and very likely wrong because x86 MMU index constants are distinct named values, not a documented contiguous sequence across 64-bit and 32-bit variants. The old code explicitly chose `MMU_USER64_IDX` or `MMU_USER32_IDX`, which strongly suggests the layout must not be inferred arithmetically. In 32-bit guests, this can select the wrong access profile for nested translation and mis-handle GMET permission checks.",
+        "patch_context": [
+          "+static int cpu_mmu_index_svm(CPUX86State *env)",
+          " +{",
+          " +    unsigned pl = env->hflags & HF_CPL_MASK;",
+          " +    int mmu_index_32 = (env->nested_pg_mode & PG_MODE_LMA) ? 0 : 1;",
+          " +    int mmu_index_base =",
+          " +        pl < 3 && (env->nested_pg_mode & PG_MODE_SVM_GMET)",
+          " +        ? MMU_KNOSMAP64_IDX : MMU_USER64_IDX;",
+          " +",
+          " +    return mmu_index_base + mmu_index_32;",
+          " +}"
+        ],
+        "suggestion": "Select each MMU index explicitly instead of using `base + 1`. For example, return `MMU_USER64_IDX`/`MMU_USER32_IDX` for user-mode accesses and `MMU_KNOSMAP64_IDX`/the corresponding 32-bit kernel-nosmap index for kernel-mode GMET accesses via explicit ternaries or a small switch.",
+        "confidence": "high",
+        "confidence_reason": "The previous code already used an explicit `MMU_USER64_IDX` vs `MMU_USER32_IDX` selection, and QEMU's x86 MMU indices are named constants rather than a documented arithmetic sequence. Using `+ 1` here is therefore not a safe assumption and is very likely to mis-select the 32-bit index."
+      }
+    ],
+    "checkpatch": {
+      "status": "issues",
+      "issues": [
+        "WARNING: line over 80 characters"
+      ]
+    },
+    "build_status": "configure_ok",
+    "am_status": "success"
+  },
+  "cover_letter": null,
+  "diff": "From git@z Thu Jan  1 00:00:00 1970\nSubject: [PATCH] target/i386/tcg: svm: implement GMET\nFrom: Paolo Bonzini <pbonzini@redhat.com>\nDate: Fri, 27 Mar 2026 17:04:46 +0100\nMessage-Id: <20260327160446.330583-1-pbonzini@redhat.com>\nMIME-Version: 1.0\nContent-Type: text/plain; charset=\"utf-8\"\nContent-Transfer-Encoding: 7bit\n\nGMET (Guest Mode Execution Trap) has two effects: it disables\nthe U bit check when the guest is in user mode, and enables\nthe SMEP check when the guest is in kernel mode.\n\nSigned-off-by: Paolo Bonzini <pbonzini@redhat.com>\n---\n target/i386/cpu.h                    |  2 ++\n target/i386/svm.h                    |  1 +\n target/i386/cpu.c                    |  2 +-\n target/i386/tcg/system/excp_helper.c | 20 ++++++++++++++++----\n target/i386/tcg/system/svm_helper.c  |  4 ++++\n 5 files changed, 24 insertions(+), 5 deletions(-)\n\ndiff --git a/target/i386/cpu.h b/target/i386/cpu.h\nindex 0b539155c40..82b7d1a52e4 100644\n--- a/target/i386/cpu.h\n+++ b/target/i386/cpu.h\n@@ -354,6 +354,7 @@ typedef enum X86Seg {\n #define PG_MODE_NXE      (1 << 2)\n #define PG_MODE_PSE      (1 << 3)\n #define PG_MODE_LA57     (1 << 4)\n+#define PG_MODE_SVM_GMET (1 << 5)\n #define PG_MODE_SVM_MASK MAKE_64BIT_MASK(0, 15)\n \n /* Bits of CR4 that do not affect the NPT page format.  */\n@@ -879,6 +880,7 @@ uint64_t x86_cpu_get_supported_feature_word(X86CPU *cpu, FeatureWord w);\n #define CPUID_SVM_AVIC            (1U << 13)\n #define CPUID_SVM_V_VMSAVE_VMLOAD (1U << 15)\n #define CPUID_SVM_VGIF            (1U << 16)\n+#define CPUID_SVM_GMET            (1U << 17)\n #define CPUID_SVM_VNMI            (1U << 25)\n #define CPUID_SVM_SVME_ADDR_CHK   (1U << 28)\n \ndiff --git a/target/i386/svm.h b/target/i386/svm.h\nindex 1bd78447306..e05a66ecc43 100644\n--- a/target/i386/svm.h\n+++ b/target/i386/svm.h\n@@ -140,6 +140,7 @@\n #define SVM_CR0_SELECTIVE_MASK (1 << 3 | 1) /* TS and MP */\n \n #define SVM_NPT_ENABLED     (1 << 0)\n+#define SVM_GMET_ENABLED    (1 << 3)\n \n #define SVM_NPTEXIT_GPA     (1ULL << 32)\n #define SVM_NPTEXIT_GPT     (1ULL << 33)\ndiff --git a/target/i386/cpu.c b/target/i386/cpu.c\nindex d02f6f0653e..ec80649658c 100644\n--- a/target/i386/cpu.c\n+++ b/target/i386/cpu.c\n@@ -960,7 +960,7 @@ void x86_cpu_vendor_words2str(char *dst, uint32_t vendor1,\n #else\n #define CPUID_SVM_KERNEL_FEATURES 0\n #endif\n-#define TCG_SVM_FEATURES (CPUID_SVM_NPT | CPUID_SVM_VGIF | \\\n+#define TCG_SVM_FEATURES (CPUID_SVM_NPT | CPUID_SVM_VGIF | CPUID_SVM_GMET | \\\n           CPUID_SVM_SVME_ADDR_CHK | CPUID_SVM_KERNEL_FEATURES)\n \n #define TCG_KVM_FEATURES 0\ndiff --git a/target/i386/tcg/system/excp_helper.c b/target/i386/tcg/system/excp_helper.c\nindex d7ea77c8558..bd99e8416f5 100644\n--- a/target/i386/tcg/system/excp_helper.c\n+++ b/target/i386/tcg/system/excp_helper.c\n@@ -371,7 +371,9 @@ do_check_protect_pse36:\n     ptep ^= PG_NX_MASK;\n \n     /* can the page can be put in the TLB?  prot will tell us */\n-    if (is_user && !(ptep & PG_USER_MASK)) {\n+\n+    /* GMET disables checks to the U bit other than the SMEP check below.  */\n+    if (is_user && !(ptep & PG_USER_MASK) && !(pg_mode & PG_MODE_SVM_GMET)) {\n         goto do_fault_protect;\n     }\n \n@@ -384,7 +386,7 @@ do_check_protect_pse36:\n     }\n     if (!(ptep & PG_NX_MASK) &&\n         (is_user ||\n-         !((pg_mode & PG_MODE_SMEP) && (ptep & PG_USER_MASK)))) {\n+         !((pg_mode & (PG_MODE_SMEP | PG_MODE_SVM_GMET)) && (ptep & PG_USER_MASK)))) {\n         prot |= PAGE_EXEC;\n     }\n \n@@ -543,6 +545,17 @@ static G_NORETURN void raise_stage2(CPUX86State *env, TranslateFault *err,\n     cpu_vmexit(env, SVM_EXIT_NPF, exit_info_1, retaddr);\n }\n \n+static int cpu_mmu_index_svm(CPUX86State *env)\n+{\n+    unsigned pl = env->hflags & HF_CPL_MASK;\n+    int mmu_index_32 = (env->nested_pg_mode & PG_MODE_LMA) ? 0 : 1;\n+    int mmu_index_base =\n+        pl < 3 && (env->nested_pg_mode & PG_MODE_SVM_GMET)\n+        ? MMU_KNOSMAP64_IDX : MMU_USER64_IDX;\n+\n+    return mmu_index_base + mmu_index_32;\n+}\n+\n static bool get_physical_address(CPUX86State *env, vaddr addr,\n                                  MMUAccessType access_type, int mmu_idx,\n                                  TranslateResult *out, TranslateFault *err,\n@@ -562,8 +575,7 @@ static bool get_physical_address(CPUX86State *env, vaddr addr,\n         if (likely(use_stage2)) {\n             in.cr3 = env->nested_cr3;\n             in.pg_mode = env->nested_pg_mode;\n-            in.mmu_idx =\n-                env->nested_pg_mode & PG_MODE_LMA ? MMU_USER64_IDX : MMU_USER32_IDX;\n+            in.mmu_idx = cpu_mmu_index_svm(env);\n             in.ptw_idx = MMU_PHYS_IDX;\n \n             if (!mmu_translate(env, &in, out, err, ra)) {\ndiff --git a/target/i386/tcg/system/svm_helper.c b/target/i386/tcg/system/svm_helper.c\nindex d5ffabc2f4d..14e46f00bb6 100644\n--- a/target/i386/tcg/system/svm_helper.c\n+++ b/target/i386/tcg/system/svm_helper.c\n@@ -296,6 +296,10 @@ void helper_vmrun(CPUX86State *env, int aflag, int next_eip_addend)\n         env->hflags2 |= HF2_NPT_MASK;\n \n         env->nested_pg_mode = get_pg_mode(env) & PG_MODE_SVM_MASK;\n+        if ((nested_ctl & SVM_GMET_ENABLED) &&\n+            (env->features[FEAT_SVM] & CPUID_SVM_GMET)) {\n+            env->nested_pg_mode |= PG_MODE_SVM_GMET;\n+        }\n \n         tlb_flush_by_mmuidx(cs, 1 << MMU_NESTED_IDX);\n     }\n-- \n2.53.0",
+  "patches": [],
+  "generated_at": "2026-03-27T17:07:21Z",
+  "generator": "loupe-review v1.0",
+  "disclaimer": "LLM-generated draft. Not an authoritative review."
+}
