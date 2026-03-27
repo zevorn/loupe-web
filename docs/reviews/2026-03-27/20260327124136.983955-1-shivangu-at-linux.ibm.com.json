@@ -1,0 +1,55 @@
+{
+  "schema_version": "1",
+  "id": "20260327-20260327124136.983955-1-shivangu-at-linux.ibm.com",
+  "series": {
+    "title": "[PATCH v2] ppc/pnv: generate dtb after machine initialization is",
+    "version": 2,
+    "patch_count": 1,
+    "author": {
+      "name": "Shivang Upadhyay",
+      "email": "shivangu@linux.ibm.com"
+    },
+    "date": "2026-03-27",
+    "subsystem": "ppc/pnv",
+    "message_id": "<20260327124136.983955-1-shivangu@linux.ibm.com>",
+    "lore_url": "https://lore.kernel.org/qemu-devel/20260327124136.983955-1-shivangu%40linux.ibm.com/",
+    "patchwork_url": "http://patchwork.ozlabs.org/project/qemu-devel/patch/20260327124136.983955-1-shivangu@linux.ibm.com/",
+    "base_branch": "master"
+  },
+  "version_history": [],
+  "ml_context": {
+    "patchwork_state": "new",
+    "reviewed_by": [],
+    "acked_by": [],
+    "ci_status": "",
+    "prior_feedback": [],
+    "maintainer_activity": ""
+  },
+  "review": {
+    "verdict": "accept",
+    "summary": "The change correctly defers POWERNV DTB generation until machine initialization is complete, which matches the problem statement and avoids building an incomplete DTB before late-created devices exist. Moving the BMC discovery/setup alongside DTB generation is also coherent because the BMC affects the generated tree. I did not identify a functional regression in the reset path from the patch itself.",
+    "mode": "ci-single",
+    "stages": {
+      "A": "Problem statement and fix direction are aligned: generating the DTB from pnv_init() is too early, and machine-init-done is the right synchronization point for a complete device tree.",
+      "B": "Code movement is internally consistent. DTB creation is removed from pnv_init(), the reset path still consumes machine->fdt, and the new notifier creates/ packs the DTB once initialization is complete.",
+      "C": "Risk appears low. The main behavior change is timing of DTB creation and BMC hookup; both are intentionally delayed until all machine devices exist. No obvious lifetime or ownership issue is introduced by embedding the notifier in PnvMachineState.",
+      "D": "Available validation is limited to the provided metadata: git am succeeded and configure completed. No runtime or functional test results were provided, so boot-time coverage of dumpdtb and POWERNV guests remains an unverified area.",
+      "E": "No blocking issues found. The patch is suitable to take as-is based on the provided diff."
+    },
+    "findings": [],
+    "checkpatch": {
+      "status": "issues",
+      "issues": [
+        "WARNING: line over 80 characters"
+      ]
+    },
+    "build_status": "configure_ok",
+    "am_status": "success"
+  },
+  "cover_letter": null,
+  "diff": "From git@z Thu Jan  1 00:00:00 1970\nSubject: [PATCH v2] ppc/pnv: generate dtb after machine initialization is\n complete\nFrom: Shivang Upadhyay <shivangu@linux.ibm.com>\nDate: Fri, 27 Mar 2026 18:11:36 +0530\nMessage-Id: <20260327124136.983955-1-shivangu@linux.ibm.com>\nMIME-Version: 1.0\nContent-Type: text/plain; charset=\"utf-8\"\nContent-Transfer-Encoding: 7bit\n\nCurrently, the machine dtb is generated in pnv_init(), before all devices\nare fully initialized. This can result in an incomplete dtb for the system,\nas seen in bug [1].\n\nFix this by deferring dtb generation until machine initialization is complete,\nusing the machine_init_done_notifier hook.\n\n[1] https://lore.kernel.org/all/20260323231612.GA2637687@ax162/\n\nCc: Aditya Gupta <adityag@linux.ibm.com>\nCc: Harsh Prateek Bora <harshpb@linux.ibm.com>\nCc: BALATON Zoltan <balaton@eik.bme.hu>\nCc: qemu-stable@nongnu.org\nReported-by: Nathan Chancellor <nathan@kernel.org>\nSuggested-by: Peter Maydell <peter.maydell@linaro.org>\nFixes: a16d4c2f162a86d (\"ppc/pnv: fix dumpdtb option\")\nSigned-off-by: Shivang Upadhyay <shivangu@linux.ibm.com>\nReviewed-by: Peter Maydell <peter.maydell@linaro.org>\n---\nChanges:\n\nv2:\n* moved pnv->bmc initialization to pnv_machine_init_done.\n\nv1:\n* https://lore.kernel.org/all/20260324135026.247418-1-shivangu@linux.ibm.com/\n---\n hw/ppc/pnv.c         | 58 +++++++++++++++++++++++++-------------------\n include/hw/ppc/pnv.h |  2 ++\n 2 files changed, 35 insertions(+), 25 deletions(-)\n\ndiff --git a/hw/ppc/pnv.c b/hw/ppc/pnv.c\nindex 7e54b6bc60..524563dcfc 100644\n--- a/hw/ppc/pnv.c\n+++ b/hw/ppc/pnv.c\n@@ -748,31 +748,10 @@ static void pnv_powerdown_notify(Notifier *n, void *opaque)\n \n static void pnv_reset(MachineState *machine, ResetType type)\n {\n-    PnvMachineState *pnv = PNV_MACHINE(machine);\n-    IPMIBmc *bmc;\n     void *fdt;\n \n     qemu_devices_reset(type);\n \n-    /*\n-     * The machine should provide by default an internal BMC simulator.\n-     * If not, try to use the BMC device that was provided on the command\n-     * line.\n-     */\n-    bmc = pnv_bmc_find(&error_fatal);\n-    if (!pnv->bmc) {\n-        if (!bmc) {\n-            if (!qtest_enabled()) {\n-                warn_report(\"machine has no BMC device. Use '-device \"\n-                            \"ipmi-bmc-sim,id=bmc0 -device isa-ipmi-bt,bmc=bmc0,irq=10' \"\n-                            \"to define one\");\n-            }\n-        } else {\n-            pnv_bmc_set_pnor(bmc, pnv->pnor);\n-            pnv->bmc = bmc;\n-        }\n-    }\n-\n     fdt = machine->fdt;\n     cpu_physical_memory_write(PNV_FDT_ADDR, fdt, fdt_totalsize(fdt));\n }\n@@ -984,6 +963,37 @@ static uint64_t pnv_chip_get_ram_size(PnvMachineState *pnv, int chip_id)\n     return chip_id == 0 ? 1 * GiB : QEMU_ALIGN_DOWN(ram_per_chip, 1 * MiB);\n }\n \n+static void pnv_machine_init_done(Notifier *notifier, void *data)\n+{\n+    PnvMachineState *pnv = container_of(notifier, PnvMachineState, machine_init_done);\n+    MachineState *machine = MACHINE(pnv);\n+    IPMIBmc *bmc;\n+\n+    /*\n+     * The machine should provide by default an internal BMC simulator.\n+     * If not, try to use the BMC device that was provided on the command\n+     * line.\n+     */\n+    bmc = pnv_bmc_find(&error_fatal);\n+    if (!pnv->bmc) {\n+        if (!bmc) {\n+            if (!qtest_enabled()) {\n+                warn_report(\"machine has no BMC device. Use '-device \"\n+                            \"ipmi-bmc-sim,id=bmc0 -device isa-ipmi-bt,bmc=bmc0,irq=10' \"\n+                            \"to define one\");\n+            }\n+        } else {\n+            pnv_bmc_set_pnor(bmc, pnv->pnor);\n+            pnv->bmc = bmc;\n+        }\n+    }\n+\n+    if (!machine->fdt) {\n+        machine->fdt = pnv_dt_create(machine);\n+        _FDT((fdt_pack(machine->fdt)));\n+    }\n+}\n+\n static void pnv_init(MachineState *machine)\n {\n     const char *bios_name = machine->firmware ?: FW_FILE_NAME;\n@@ -1244,10 +1254,8 @@ static void pnv_init(MachineState *machine)\n         pmc->i2c_init(pnv);\n     }\n \n-    if (!machine->fdt) {\n-        machine->fdt = pnv_dt_create(machine);\n-        _FDT((fdt_pack(machine->fdt)));\n-    }\n+    pnv->machine_init_done.notify = pnv_machine_init_done;\n+    qemu_add_machine_init_done_notifier(&pnv->machine_init_done);\n }\n \n /*\ndiff --git a/include/hw/ppc/pnv.h b/include/hw/ppc/pnv.h\nindex 24f8843a40..90028f974d 100644\n--- a/include/hw/ppc/pnv.h\n+++ b/include/hw/ppc/pnv.h\n@@ -111,6 +111,8 @@ struct PnvMachineState {\n \n     bool         big_core;\n     bool         lpar_per_core;\n+\n+    Notifier     machine_init_done;\n };\n \n PnvChip *pnv_get_chip(PnvMachineState *pnv, uint32_t chip_id);\n-- \n2.53.0",
+  "patches": [],
+  "generated_at": "2026-03-27T13:29:24Z",
+  "generator": "loupe-review v1.0",
+  "disclaimer": "LLM-generated draft. Not an authoritative review."
+}
