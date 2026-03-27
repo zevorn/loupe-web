@@ -1,0 +1,68 @@
+{
+  "schema_version": "1",
+  "id": "20260327-20260327180905.378560-4-kkostiuk-at-redhat.com",
+  "series": {
+    "title": "[PATCH 0/3] QEMU Guest Agent: Fix fsfreeze-hook script",
+    "version": 1,
+    "patch_count": 3,
+    "author": {
+      "name": "Kostiantyn Kostiuk",
+      "email": "kkostiuk@redhat.com"
+    },
+    "date": "2026-03-27",
+    "subsystem": "scripts/qemu-guest-agent/fsfreeze-hook",
+    "message_id": "<20260327180905.378560-4-kkostiuk@redhat.com>",
+    "lore_url": "https://lore.kernel.org/qemu-devel/20260327180905.378560-4-kkostiuk%40redhat.com/",
+    "patchwork_url": "http://patchwork.ozlabs.org/project/qemu-devel/patch/20260327180905.378560-4-kkostiuk@redhat.com/",
+    "base_branch": "master"
+  },
+  "version_history": [],
+  "ml_context": {
+    "patchwork_state": "new",
+    "reviewed_by": [],
+    "acked_by": [],
+    "ci_status": "",
+    "prior_feedback": [],
+    "maintainer_activity": ""
+  },
+  "review": {
+    "verdict": "accept",
+    "summary": "The series fixes real POSIX-shell portability bugs in `scripts/qemu-guest-agent/fsfreeze-hook` and corrects the logfile/syslog fallback behavior without introducing an obvious regression. The PIPESTATUS replacement is intricate but functionally sound for POSIX `/bin/sh` and preserves the intended exit-status handling.",
+    "mode": "ci-single",
+    "stages": {
+      "A": {
+        "status": "ok",
+        "summary": "Scope is narrow and coherent: all three patches address the same script and the same regression family introduced by `85978dfb6b1c133`. Patch ordering is sensible, with simpler bash-ism fixes first, PIPESTATUS removal second, and fallback-logic correction last."
+      },
+      "B": {
+        "status": "ok",
+        "summary": "Patch 1 fixes non-POSIX constructs (`&>`, `local`, unquoted status test) and also corrects the logging call so all hook arguments are included in one message. Patch 2 preserves hook output logging while recovering the hook exit status in a POSIX-compatible way. Patch 3 fixes the one-shot syslog-then-file behavior when the logfile is initially absent but creatable."
+      },
+      "C": {
+        "status": "ok",
+        "summary": "The resulting script is materially closer to valid POSIX `sh`. The replacements avoid bash-only syntax, and the command-group pipeline pattern used instead of `PIPESTATUS` is a known POSIX-compatible technique."
+      },
+      "D": {
+        "status": "ok",
+        "summary": "Regression risk is low. The only subtle area is the fd choreography in patch 2, but the redirections are internally consistent: hook output still goes to syslog, while the hook exit code is tunneled back through the pipeline for `STATUS=$?`."
+      },
+      "E": {
+        "status": "ok",
+        "summary": "No blocking issues found. The series is suitable for merge and appropriate for stable backporting given the explicit `Fixes` tags and the user-visible misbehavior it resolves."
+      }
+    },
+    "findings": [],
+    "checkpatch": {
+      "status": "clean",
+      "issues": []
+    },
+    "build_status": "configure_ok",
+    "am_status": "success"
+  },
+  "cover_letter": "Subject: [PATCH 0/3] QEMU Guest Agent: Fix fsfreeze-hook script\nFrom: Kostiantyn Kostiuk <kkostiuk@redhat.com>\nDate: Fri, 27 Mar 2026 20:09:02 +0200\nMessage-Id: <20260327180905.378560-1-kkostiuk@redhat.com>\nMIME-Version: 1.0\nContent-Type: text/plain; charset=\"utf-8\"\nContent-Transfer-Encoding: 7bit\n\nThe following changes since commit 770f50c14f098717fd40ae6e826a495681152447:\n\n  Merge tag 'pull-nvme-20260326' of https://gitlab.com/birkelund/qemu into staging (2026-03-26 10:26:39 +0000)\n\nare available in the Git repository at:\n\n  https://github.com/kostyanf14/qemu.git tags/qga-pull-2026-03-27\n\nfor you to fetch changes up to 08497afcb2a737794991f17a37f0a0971fca411e:\n\n  scripts/qemu-guest-agent/fsfreeze-hook: Fix syslog-fallback logic (2026-03-27 19:55:01 +0200)\n\n----------------------------------------------------------------\nqga-pull-2026-03-27\n\n----------------------------------------------------------------\nPeter Maydell (3):\n      scripts/qemu-guest-agent/fsfreeze-hook: Avoid bash-isms\n      scripts/qemu-guest-agent/fsfreeze-hook: Avoid use of PIPESTATUS\n      scripts/qemu-guest-agent/fsfreeze-hook: Fix syslog-fallback logic\n\n scripts/qemu-guest-agent/fsfreeze-hook | 34 ++++++++++++++++++++++++----------\n 1 file changed, 24 insertions(+), 10 deletions(-)",
+  "diff": "From git@z Thu Jan  1 00:00:00 1970\nSubject: [PATCH 1/3] scripts/qemu-guest-agent/fsfreeze-hook: Avoid\n bash-isms\nFrom: Peter Maydell <peter.maydell@linaro.org>\nDate: Fri, 27 Mar 2026 20:09:03 +0200\nMessage-Id: <20260327180905.378560-2-kkostiuk@redhat.com>\nMIME-Version: 1.0\nContent-Type: text/plain; charset=\"utf-8\"\nContent-Transfer-Encoding: 7bit\n\nThe fsfreeze-hook script starts with #!/bin/sh, but it uses\nseveral bash-specific constructs, resulting in misbehaviour\non guest systems where /bin/sh is some other POSIX shell.\n\nFix the simple ones reported by shellcheck:\n\nIn scripts/qemu-guest-agent/fsfreeze-hook line 27:\ntouch \"$LOGFILE\" &>/dev/null || USE_SYSLOG=1\n                 ^---------^ SC3020 (warning): In POSIX sh, &> is undefined.\n\nIn scripts/qemu-guest-agent/fsfreeze-hook line 31:\n    local message=\"$1\"\n    ^-----------^ SC3043 (warning): In POSIX sh, 'local' is undefined.\n\nIn scripts/qemu-guest-agent/fsfreeze-hook line 46:\n    log_message \"Executing $file $@\"\n                                 ^-- SC2145 (error): Argument mixes string and array. Use * or separate argument.\n\nIn scripts/qemu-guest-agent/fsfreeze-hook line 55:\n    if [ $STATUS -ne 0 ]; then\n         ^-----^ SC2086 (info): Double quote to prevent globbing and word splitting.\n\nThere is also a use of PIPESTATUS that is more complex to fix;\nthat will be dealt with in a separate commit.\n\nCc: qemu-stable@nongnu.org\nFixes: 85978dfb6b1c133 (\"qemu-ga: Optimize freeze-hook script logic of logging error\")\nSigned-off-by: Peter Maydell <peter.maydell@linaro.org>\nReviewed-by: Kostiantyn Kostiuk <kkostiuk@redhat.com>\nLink: https://lore.kernel.org/qemu-devel/20260317094806.1944053-2-peter.maydell@linaro.org\nSigned-off-by: Kostiantyn Kostiuk <kkostiuk@redhat.com>\n---\n scripts/qemu-guest-agent/fsfreeze-hook | 11 +++++------\n 1 file changed, 5 insertions(+), 6 deletions(-)\n\ndiff --git a/scripts/qemu-guest-agent/fsfreeze-hook b/scripts/qemu-guest-agent/fsfreeze-hook\nindex 5b915af017..6e2d7588af 100755\n--- a/scripts/qemu-guest-agent/fsfreeze-hook\n+++ b/scripts/qemu-guest-agent/fsfreeze-hook\n@@ -24,15 +24,14 @@ USE_SYSLOG=0\n # if log file is not writable, fallback to syslog\n [ ! -w \"$LOGFILE\" ] && USE_SYSLOG=1\n # try to update log file and fallback to syslog if it fails\n-touch \"$LOGFILE\" &>/dev/null || USE_SYSLOG=1\n+touch \"$LOGFILE\" >/dev/null 2>&1 || USE_SYSLOG=1\n \n # Ensure the log file is writable, fallback to syslog if not\n log_message() {\n-    local message=\"$1\"\n     if [ \"$USE_SYSLOG\" -eq 0 ]; then\n-        printf \"%s: %s\\n\" \"$(date)\" \"$message\" >>\"$LOGFILE\"\n+        printf \"%s: %s\\n\" \"$(date)\" \"$1\" >>\"$LOGFILE\"\n     else\n-        logger -t qemu-ga-freeze-hook \"$message\"\n+        logger -t qemu-ga-freeze-hook \"$1\"\n     fi\n }\n \n@@ -43,7 +42,7 @@ for file in \"$FSFREEZE_D\"/* ; do\n     is_ignored_file \"$file\" && continue\n     [ -x \"$file\" ] || continue\n \n-    log_message \"Executing $file $@\"\n+    log_message \"Executing $file $*\"\n     if [ \"$USE_SYSLOG\" -eq 0 ]; then\n         \"$file\" \"$@\" >>\"$LOGFILE\" 2>&1\n         STATUS=$?\n@@ -52,7 +51,7 @@ for file in \"$FSFREEZE_D\"/* ; do\n         STATUS=${PIPESTATUS[0]}\n     fi\n \n-    if [ $STATUS -ne 0 ]; then\n+    if [ \"$STATUS\" -ne 0 ]; then\n         log_message \"Error: $file finished with status=$STATUS\"\n     else\n         log_message \"$file finished successfully\"\n-- \n2.52.0\n\nFrom git@z Thu Jan  1 00:00:00 1970\nSubject: [PATCH 2/3] scripts/qemu-guest-agent/fsfreeze-hook: Avoid use of\n PIPESTATUS\nFrom: Peter Maydell <peter.maydell@linaro.org>\nDate: Fri, 27 Mar 2026 20:09:04 +0200\nMessage-Id: <20260327180905.378560-3-kkostiuk@redhat.com>\nMIME-Version: 1.0\nContent-Type: text/plain; charset=\"utf-8\"\nContent-Transfer-Encoding: 7bit\n\nPIPESTATUS is a bash-specific construct, and this script is supposed\nto be POSIX shell. We only use it in one place, to capture the exit\nstatus of a command whose output we are piping to 'logger'.\n\nReplace the PIPESTATUS usage with the trick described in\nhttps://unix.stackexchange.com/questions/14270/get-exit-status-of-process-thats-piped-to-another/70675#70675\nwhich uses a command-group to capture the status of the\nfirst process in the pipeline.\n\nCc: qemu-stable@nongnu.org\nFixes: 85978dfb6b1c133 (\"qemu-ga: Optimize freeze-hook script logic of logging error\")\nResolves: https://gitlab.com/qemu-project/qemu/-/work_items/3339\nSigned-off-by: Peter Maydell <peter.maydell@linaro.org>\nReviewed-by: Kostiantyn Kostiuk <kkostiuk@redhat.com>\nLink: https://lore.kernel.org/qemu-devel/20260317094806.1944053-3-peter.maydell@linaro.org\nSigned-off-by: Kostiantyn Kostiuk <kkostiuk@redhat.com>\n---\n scripts/qemu-guest-agent/fsfreeze-hook | 19 +++++++++++++++++--\n 1 file changed, 17 insertions(+), 2 deletions(-)\n\ndiff --git a/scripts/qemu-guest-agent/fsfreeze-hook b/scripts/qemu-guest-agent/fsfreeze-hook\nindex 6e2d7588af..21eb5c5145 100755\n--- a/scripts/qemu-guest-agent/fsfreeze-hook\n+++ b/scripts/qemu-guest-agent/fsfreeze-hook\n@@ -47,8 +47,23 @@ for file in \"$FSFREEZE_D\"/* ; do\n         \"$file\" \"$@\" >>\"$LOGFILE\" 2>&1\n         STATUS=$?\n     else\n-        \"$file\" \"$@\" 2>&1 | logger -t qemu-ga-freeze-hook\n-        STATUS=${PIPESTATUS[0]}\n+        # We want to pipe the output of $file through 'logger' and also\n+        # capture its exit status. Since we are a POSIX script we can't\n+        # use PIPESTATUS, so instead this is a trick borrowed from\n+        # https://unix.stackexchange.com/questions/14270/get-exit-status-of-process-thats-piped-to-another/70675#70675\n+        # which uses command-groups and redirection to get the exit status.\n+        # This is equivalent to\n+        #   \"$file\" \"$@\" 2>&1 | logger -t qemu-ga-freeze-hook\n+        # plus setting the exit status of the pipe to the exit\n+        # status of the first command rather than the last one.\n+        { { { {\n+                \"$file\" \"$@\" 2>&1 3>&- 4>&-\n+                echo $? >&3\n+            } | logger -t qemu-ga-freeze-hook >&4\n+            } 3>&1\n+          } | { read -r xs ; exit \"$xs\"; }\n+        } 4>&1\n+        STATUS=$?\n     fi\n \n     if [ \"$STATUS\" -ne 0 ]; then\n-- \n2.52.0\n\nFrom git@z Thu Jan  1 00:00:00 1970\nSubject: [PATCH 3/3] scripts/qemu-guest-agent/fsfreeze-hook: Fix\n syslog-fallback logic\nFrom: Peter Maydell <peter.maydell@linaro.org>\nDate: Fri, 27 Mar 2026 20:09:05 +0200\nMessage-Id: <20260327180905.378560-4-kkostiuk@redhat.com>\nMIME-Version: 1.0\nContent-Type: text/plain; charset=\"utf-8\"\nContent-Transfer-Encoding: 8bit\n\nIn the fsfreeze script we attempt to implement \"log to a file if we\ncan, and fall back to syslog if we cannot\".  We do this with:\n\n  [ ! -w \"$LOGFILE\" ] && USE_SYSLOG=1\n  touch \"$LOGFILE\" >/dev/null 2>&1 || USE_SYSLOG=1\n\nThis has a weird behaviour if it is run in a setup where we have\npermissions that would allow us to write to $LOGFILE but it does not\ncurrently exist.  On the first execution, the '-w' fails and so we\nset USE_SYSLOG=1.  But since we also do the \"touch $LOGFILE\" step we\ncreate an empty logfile.  Then on the second time the script is\nexecuted, we see a writeable logfile and will use it.  The effect is\n\"log to syslog once, then to the logfile thereafter\", which is not\nlikely to be what anybody wants.\n\nUpdate the condition of the first check to only pick syslog if\nthe logfile exists but is not writable. This means that:\n * if the logfile doesn't exist but we are able to create it,\n   we will create it and use it\n * if the logfile already exists and we can write to it,\n   we will use it\n * if the logfile already exists but we can't write to it,\n   we will fall back to syslog\n * if the logfile doesn't exist and we can't create it,\n   we will fall back to syslog\n\nCc: qemu-stable@nongnu.org\nFixes: 85978dfb6b1c133 (\"qemu-ga: Optimize freeze-hook script logic of logging error\")\nSigned-off-by: Peter Maydell <peter.maydell@linaro.org>\nReviewed-by: Kostiantyn Kostiuk <kkostiuk@redhat.com>\nReviewed-by: Philippe Mathieu-Daudé <philmd@linaro.org>\nLink: https://lore.kernel.org/qemu-devel/20260317094806.1944053-4-peter.maydell@linaro.org\nSigned-off-by: Kostiantyn Kostiuk <kkostiuk@redhat.com>\n---\n scripts/qemu-guest-agent/fsfreeze-hook | 4 ++--\n 1 file changed, 2 insertions(+), 2 deletions(-)\n\ndiff --git a/scripts/qemu-guest-agent/fsfreeze-hook b/scripts/qemu-guest-agent/fsfreeze-hook\nindex 21eb5c5145..76669f5caf 100755\n--- a/scripts/qemu-guest-agent/fsfreeze-hook\n+++ b/scripts/qemu-guest-agent/fsfreeze-hook\n@@ -21,8 +21,8 @@ is_ignored_file() {\n }\n \n USE_SYSLOG=0\n-# if log file is not writable, fallback to syslog\n-[ ! -w \"$LOGFILE\" ] && USE_SYSLOG=1\n+# if log file exists but is not writable, fallback to syslog\n+[ -e \"$LOGFILE\" ] && [ ! -w \"$LOGFILE\" ] && USE_SYSLOG=1\n # try to update log file and fallback to syslog if it fails\n touch \"$LOGFILE\" >/dev/null 2>&1 || USE_SYSLOG=1\n \n-- \n2.52.0",
+  "patches": [],
+  "generated_at": "2026-03-27T19:20:44Z",
+  "generator": "loupe-review v1.0",
+  "disclaimer": "LLM-generated draft. Not an authoritative review."
+}
