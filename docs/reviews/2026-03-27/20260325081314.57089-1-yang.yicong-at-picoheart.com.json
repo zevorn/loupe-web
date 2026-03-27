@@ -1,0 +1,70 @@
+{
+  "schema_version": "1",
+  "id": "20260325-20260325081314.57089-1-yang.yicong-at-picoheart.com",
+  "series": {
+    "title": "[PATCH] hw/riscv/virt-acpi-build.c: Use kvm timer frequency when",
+    "version": 1,
+    "patch_count": 1,
+    "author": {
+      "name": "Yicong Yang",
+      "email": "yang.yicong@picoheart.com"
+    },
+    "date": "2026-03-25",
+    "subsystem": "hw/riscv/virt-acpi-build.c",
+    "message_id": "<20260325081314.57089-1-yang.yicong@picoheart.com>",
+    "lore_url": "https://lore.kernel.org/qemu-devel/20260325081314.57089-1-yang.yicong%40picoheart.com/",
+    "patchwork_url": "http://patchwork.ozlabs.org/project/qemu-devel/patch/20260325081314.57089-1-yang.yicong@picoheart.com/",
+    "base_branch": "master"
+  },
+  "version_history": [],
+  "ml_context": {
+    "patchwork_state": "new",
+    "reviewed_by": [],
+    "acked_by": [],
+    "ci_status": "",
+    "prior_feedback": [],
+    "maintainer_activity": ""
+  },
+  "review": {
+    "verdict": "accept",
+    "summary": "Patch is a straightforward correctness fix: RHCT time base frequency now follows the KVM-provided value when KVM is enabled, matching the existing DT behavior. The change is localized, build-neutral for the reported configuration, and I did not identify a functional regression in the diff provided.",
+    "mode": "ci-single",
+    "stages": {
+      "A": {
+        "status": "pass",
+        "details": "Problem statement and fix rationale are coherent. RHCT currently hardcodes RISCV_ACLINT_DEFAULT_TIMEBASE_FREQ, which is incorrect for KVM guests whose timer frequency is host-defined."
+      },
+      "B": {
+        "status": "pass",
+        "details": "Code change is minimal and targeted. The new logic selects KVM timebase only when kvm_enabled() is true and otherwise preserves the previous default behavior."
+      },
+      "C": {
+        "status": "pass",
+        "details": "Interface usage appears consistent with existing RISC-V KVM timer handling. The added headers and helper call are appropriate for obtaining the guest-visible timer frequency."
+      },
+      "D": {
+        "status": "pass",
+        "details": "Risk is low. The patch only changes the value emitted into RHCT and does not alter non-KVM behavior. Reported build status is configure_ok, and no obvious compile-time issue is visible in the patch."
+      },
+      "E": {
+        "status": "pass",
+        "details": "No blocking issues found. The only reported checkpatch warning is line length, which is non-functional and does not affect review outcome."
+      }
+    },
+    "findings": [],
+    "checkpatch": {
+      "status": "issues",
+      "issues": [
+        "WARNING: line over 80 characters"
+      ]
+    },
+    "build_status": "configure_ok",
+    "am_status": "success"
+  },
+  "cover_letter": null,
+  "diff": "From git@z Thu Jan  1 00:00:00 1970\nSubject: [PATCH] hw/riscv/virt-acpi-build.c: Use kvm timer frequency when\n kvm enabled\nFrom: Yicong Yang <yang.yicong@picoheart.com>\nDate: Wed, 25 Mar 2026 16:13:14 +0800\nMessage-Id: <20260325081314.57089-1-yang.yicong@picoheart.com>\nMIME-Version: 1.0\nContent-Type: text/plain; charset=\"utf-8\"\nContent-Transfer-Encoding: 7bit\n\nThe timer frequency is decided by the host(kvm) rather than a fixed\nRISCV_ACLINT_DEFAULT_TIMEBASE_FREQ on kvm accelerated VM. So build\nRCHT with KVM provided timer frequency if KVM is enabled, just like\nhow we build the timer node on DT based VM.\n\nFixes: ebfd39289370 (\"hw/riscv/virt: virt-acpi-build.c: Add RHCT Table\")\nSigned-off-by: Yicong Yang <yang.yicong@picoheart.com>\n---\n hw/riscv/virt-acpi-build.c | 7 ++++++-\n 1 file changed, 6 insertions(+), 1 deletion(-)\n\ndiff --git a/hw/riscv/virt-acpi-build.c b/hw/riscv/virt-acpi-build.c\nindex f1406cb68339..fd6ca5dbc4ff 100644\n--- a/hw/riscv/virt-acpi-build.c\n+++ b/hw/riscv/virt-acpi-build.c\n@@ -35,9 +35,11 @@\n #include \"hw/riscv/virt.h\"\n #include \"hw/riscv/numa.h\"\n #include \"hw/virtio/virtio-acpi.h\"\n+#include \"kvm/kvm_riscv.h\"\n #include \"migration/vmstate.h\"\n #include \"qapi/error.h\"\n #include \"qemu/error-report.h\"\n+#include \"system/kvm.h\"\n #include \"system/reset.h\"\n \n #define ACPI_BUILD_TABLE_SIZE             0x20000\n@@ -296,7 +298,10 @@ static void build_rhct(GArray *table_data,\n \n     /* Time Base Frequency */\n     build_append_int_noprefix(table_data,\n-                              RISCV_ACLINT_DEFAULT_TIMEBASE_FREQ, 8);\n+                              kvm_enabled() ?\n+                              kvm_riscv_get_timebase_frequency(&s->soc->harts[0]) :\n+                              RISCV_ACLINT_DEFAULT_TIMEBASE_FREQ,\n+                              8);\n \n     /* ISA + N hart info */\n     num_rhct_nodes = 1 + ms->smp.cpus;\n-- \n2.34.1",
+  "patches": [],
+  "generated_at": "2026-03-27T00:58:33Z",
+  "generator": "loupe-review v1.0",
+  "disclaimer": "LLM-generated draft. Not an authoritative review."
+}
