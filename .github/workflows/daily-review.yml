@@ -6,7 +6,7 @@ on:
     paths-ignore:
       - 'docs/reviews/**'
   schedule:
-    - cron: '0 8 * * *'
+    - cron: '7 * * * *'
   workflow_dispatch:
 
 permissions:
