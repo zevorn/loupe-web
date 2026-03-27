@@ -431,6 +431,9 @@ header nav {
     margin: 0;
     white-space: pre-wrap;
     word-break: break-word;
+    font-family: inherit;
+    font-size: 12px;
+    line-height: 1.5;
 }
 
 /* ── Finding Card ──────────────────────────────────────────────────── */
@@ -699,7 +702,7 @@ kbd {
     </div>
     <table class="data-table" id="patchsets-table">
         <thead><tr>
-            <th>Date</th><th>Subsystem</th><th>Series</th><th>Author</th><th>#</th><th>Verdict</th><th>Findings</th>
+            <th>Date</th><th>Series</th><th>Author</th><th>#</th><th>Verdict</th><th>Findings</th>
         </tr></thead>
         <tbody id="patchsets-body"></tbody>
     </table>
@@ -1044,7 +1047,6 @@ function renderPatchsetsList() {
         const sel = idx === state.selectedRow ? ' class="selected"' : '';
         return '<tr data-path="' + esc(r.path) + '" data-idx="' + idx + '"' + sel + '>' +
             '<td>' + esc((r.date || '').slice(5)) + '</td>' +
-            '<td style="color:var(--text-muted);">' + esc(r.subsystem || '') + '</td>' +
             '<td><a href="#/review/' + encodeURIComponent(r.path) + '">' + esc(r.title || '') + '</a></td>' +
             '<td>' + esc(r.author || '') + '</td>' +
             '<td>' + (r.patch_count || 0) + '</td>' +
