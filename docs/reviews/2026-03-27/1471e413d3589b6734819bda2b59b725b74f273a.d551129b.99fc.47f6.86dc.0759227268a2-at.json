@@ -1,0 +1,90 @@
+{
+  "schema_version": "1",
+  "id": "20260327-1471e413d3589b6734819bda2b59b725b74f273a.d551129b.99fc.47f6.",
+  "series": {
+    "title": "[PATCH] net/ftgmac100: preserve full VLAN TCI in TX tag insertion",
+    "version": 1,
+    "patch_count": 1,
+    "author": {
+      "name": "linhuang",
+      "email": "linhuang@ruijie.com.cn"
+    },
+    "date": "2026-03-27",
+    "subsystem": "net/ftgmac100",
+    "message_id": "<1471e413d3589b6734819bda2b59b725b74f273a.d551129b.99fc.47f6.86dc.0759227268a2@feishu.cn>",
+    "lore_url": "https://lore.kernel.org/qemu-devel/1471e413d3589b6734819bda2b59b725b74f273a.d551129b.99fc.47f6.86dc.0759227268a2%40feishu.cn/",
+    "patchwork_url": "http://patchwork.ozlabs.org/project/qemu-devel/patch/1471e413d3589b6734819bda2b59b725b74f273a.d551129b.99fc.47f6.86dc.0759227268a2@feishu.cn/",
+    "base_branch": "master"
+  },
+  "version_history": [],
+  "ml_context": {
+    "patchwork_state": "new",
+    "reviewed_by": [],
+    "acked_by": [],
+    "ci_status": "",
+    "prior_feedback": [],
+    "maintainer_activity": ""
+  },
+  "review": {
+    "verdict": "reject",
+    "summary": "The code change itself is plausible, but the submitted patch is malformed and not applyable. The mail body contains corrupted whitespace/encoding in the diff, which matches the reported checkpatch failure (\"patch seems to be corrupt\") and the failed `git am` status. This needs to be resent in clean `git format-patch`/`git send-email` form before functional review can proceed.",
+    "mode": "ci-single",
+    "stages": {
+      "A": {
+        "status": "fail",
+        "details": "Patch format is broken: checkpatch reports corruption and `git am` failed."
+      },
+      "B": {
+        "status": "tentative_pass",
+        "details": "Changing the TX VLAN TCI parameter from `uint8_t` to `uint16_t` is consistent with the bug description and is likely the intended fix."
+      },
+      "C": {
+        "status": "not_run",
+        "details": "Build/test validation could not start because the patch did not apply."
+      },
+      "D": {
+        "status": "unknown",
+        "details": "Runtime and regression risk cannot be assessed from an unapplied patch."
+      },
+      "E": {
+        "status": "reject",
+        "details": "Resend the patch with clean ASCII whitespace and unwrapped diff lines, then rerun review."
+      }
+    },
+    "findings": [
+      {
+        "id": "FTGMAC100-001",
+        "severity": "error",
+        "file": "hw/net/ftgmac100.c",
+        "line": 498,
+        "title": "Patch is corrupted in transit and cannot be applied",
+        "description": "The diff contains corrupted whitespace/encoding (visible non-ASCII spacing and altered indentation), which is consistent with the provided checkpatch error and the failed `git am` status. As submitted, maintainers cannot apply, build, or test this change, so it must be resent in a clean mail-ready format.",
+        "patch_context": [
+          "--- a/hw/net/ftgmac100.c",
+          "+++ b/hw/net/ftgmac100.c",
+          "@@ -498,7 +498,7 @@ static int ftgmac100_write_bd(FTGMAC100Desc *bd, dma_addr_t addr)",
+          " static int ftgmac100_insert_vlan(FTGMAC100State *s, int frame_size,",
+          "-                                  uint8_t vlan_tci)",
+          "+                                 uint16_t vlan_tci)"
+        ],
+        "suggestion": "Regenerate and resend the patch using `git format-patch` and `git send-email` (or attach the raw `.patch` file without any editor/mail-client reformatting). Ensure the message body and diff use plain ASCII spaces only, with no wrapped lines or UTF-8 non-breaking spaces.",
+        "confidence": "high",
+        "confidence_reason": "The submission explicitly reports checkpatch corruption and failed `git am`, and the patch text visibly shows spacing/encoding damage in headers and hunk context."
+      }
+    ],
+    "checkpatch": {
+      "status": "issues",
+      "issues": [
+        "ERROR: patch seems to be corrupt (line wrapped?)"
+      ]
+    },
+    "build_status": "not_run",
+    "am_status": "failed"
+  },
+  "cover_letter": null,
+  "diff": "From git@z Thu Jan  1 00:00:00 1970\nSubject: [PATCH] net/ftgmac100: preserve full VLAN TCI in TX tag insertion\nFrom: linhuang <linhuang@ruijie.com.cn>\nDate: Fri, 27 Mar 2026 15:39:35 +0800\nMessage-Id: <1471e413d3589b6734819bda2b59b725b74f273a.d551129b.99fc.47f6.86dc.0759227268a2@feishu.cn>\nMIME-Version: 1.0\nContent-Type: text/plain; charset=\"utf-8\"\nContent-Transfer-Encoding: 8bit\n\nThe VLAN tag insertion helper took vlan_tci as an 8-bit value, while\nthe descriptor provides a 16-bit VLAN TCI. This truncated egress tags\nand caused VLAN ID corruption (for example, 4088/0x0ff8 became\n248/0x00f8 at the receiver).\n\nChange vlan_tci to uint16_t in the TX VLAN insertion path so the full\n802.1Q TCI is preserved and transmitted correctly.\n\nSigned-off-by: linhuang <linhuang@ruijie.com.cn>\n---\n hw/net/ftgmac100.c | 2 +-\n 1 file changed, 1 insertion(+), 1 deletion(-)\n\ndiff --git a/hw/net/ftgmac100.c b/hw/net/ftgmac100.c\nindex 2f05bba11d..b3da48c343 100644\n--- a/hw/net/ftgmac100.c\n+++ b/hw/net/ftgmac100.c\n@@ -498,7 +498,7 @@ static int ftgmac100_write_bd(FTGMAC100Desc *bd, dma_addr_t addr)\n }\n\n static int ftgmac100_insert_vlan(FTGMAC100State *s, int frame_size,\n-                                  uint8_t vlan_tci)\n+                                 uint16_t vlan_tci)\n {\n     uint8_t *vlan_hdr = s->frame + (ETH_ALEN * 2);\n     uint8_t *payload = vlan_hdr + sizeof(struct vlan_header);\n--\n2.34.1",
+  "patches": [],
+  "generated_at": "2026-03-27T15:07:29Z",
+  "generator": "loupe-review v1.0",
+  "disclaimer": "LLM-generated draft. Not an authoritative review."
+}

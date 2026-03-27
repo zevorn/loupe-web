@@ -1,0 +1,53 @@
+{
+  "schema_version": "1",
+  "id": "20260327-20260327145012.907264-1-peter.maydell-at-linaro.org",
+  "series": {
+    "title": "[PATCH] hw/arm/xilinx_zynq: Use strcasecmp to parse boot-mode",
+    "version": 1,
+    "patch_count": 1,
+    "author": {
+      "name": "Peter Maydell",
+      "email": "peter.maydell@linaro.org"
+    },
+    "date": "2026-03-27",
+    "subsystem": "hw/arm/xilinx_zynq",
+    "message_id": "<20260327145012.907264-1-peter.maydell@linaro.org>",
+    "lore_url": "https://lore.kernel.org/qemu-devel/20260327145012.907264-1-peter.maydell%40linaro.org/",
+    "patchwork_url": "http://patchwork.ozlabs.org/project/qemu-devel/patch/20260327145012.907264-1-peter.maydell@linaro.org/",
+    "base_branch": "master"
+  },
+  "version_history": [],
+  "ml_context": {
+    "patchwork_state": "new",
+    "reviewed_by": [],
+    "acked_by": [],
+    "ci_status": "",
+    "prior_feedback": [],
+    "maintainer_activity": ""
+  },
+  "review": {
+    "verdict": "accept",
+    "summary": "The patch fixes an input-validation bug in `boot-mode` parsing by rejecting values with trailing junk while preserving case-insensitive handling. The change is narrowly scoped, matches the documented interface, and does not introduce an obvious regression.",
+    "mode": "ci-single",
+    "stages": {
+      "A": "Patch intent is clear and correct: switch from prefix matching to exact case-insensitive matching for documented `boot-mode` values.",
+      "B": "Code-path review finds the behavior change desirable: previously invalid values like `sdXYZZY` were silently accepted; after this patch they are rejected via `error_setg()`.",
+      "C": "API/library choice is appropriate: `g_ascii_strcasecmp()` avoids locale-sensitive `strcasecmp()` behavior and is consistent with ASCII option parsing.",
+      "D": "Compatibility/regression risk is low. Accepted values remain `qspi`, `sd`, `nor`, and `jtag`, with existing case-insensitive behavior preserved.",
+      "E": "No blocking issues found. Given `checkpatch`, `git am`, and `configure` are clean, this patch is suitable to merge."
+    },
+    "findings": [],
+    "checkpatch": {
+      "status": "clean",
+      "issues": []
+    },
+    "build_status": "configure_ok",
+    "am_status": "success"
+  },
+  "cover_letter": null,
+  "diff": "From git@z Thu Jan  1 00:00:00 1970\nSubject: [PATCH] hw/arm/xilinx_zynq: Use strcasecmp to parse boot-mode\n option values\nFrom: Peter Maydell <peter.maydell@linaro.org>\nDate: Fri, 27 Mar 2026 14:50:12 +0000\nMessage-Id: <20260327145012.907264-1-peter.maydell@linaro.org>\nMIME-Version: 1.0\nContent-Type: text/plain; charset=\"utf-8\"\nContent-Transfer-Encoding: 7bit\n\nIn zynq_set_boot_mode() where we parse the string the user has set\nthe boot-mode option to, we use strncasecmp(str, \"qspi\", 4) and so\non.  This is wrong, because it means that we will ignore any trailing\njunk on the end of the option string, and handle\n -machine boot-mode=sdXYZZY\nthe same as\n -machine boot-mode=sd\n\nIn the documentation we say:\n Supported values are ``jtag``, ``sd``, ``qspi`` and ``nor``.\nand that's obviously what we meant to implement.\n\nThe correct tool for this job is a simple strcasecmp operation.\nSwitch to that.\n\nWe use the g_ascii_strcasecmp() rather than plain strcasecmp()\nbecause we're comparing ASCII strings here and don't want the\npotentially locale-specific behaviour that strcasecmp() implies (and\nwe're trying to standardize on the glib function for this kind of\nstring comparison).\n\nFixes: 7df3747c92d13 (\"hw/arm/xilinx_zynq: Add boot-mode property\")\nSigned-off-by: Peter Maydell <peter.maydell@linaro.org>\n---\nKostiantyn: I sent this patch out while it was on my mind, but\ndon't worry about conflicts with your series -- assuming your\npatchset goes in first I'll fix this one up later.\n---\n hw/arm/xilinx_zynq.c | 8 ++++----\n 1 file changed, 4 insertions(+), 4 deletions(-)\n\ndiff --git a/hw/arm/xilinx_zynq.c b/hw/arm/xilinx_zynq.c\nindex d43f36b718..9dcded9219 100644\n--- a/hw/arm/xilinx_zynq.c\n+++ b/hw/arm/xilinx_zynq.c\n@@ -186,13 +186,13 @@ static void zynq_set_boot_mode(Object *obj, const char *str,\n     ZynqMachineState *m = ZYNQ_MACHINE(obj);\n     uint8_t mode = 0;\n \n-    if (!strncasecmp(str, \"qspi\", 4)) {\n+    if (!g_ascii_strcasecmp(str, \"qspi\")) {\n         mode = 1;\n-    } else if (!strncasecmp(str, \"sd\", 2)) {\n+    } else if (!g_ascii_strcasecmp(str, \"sd\")) {\n         mode = 5;\n-    } else if (!strncasecmp(str, \"nor\", 3)) {\n+    } else if (!g_ascii_strcasecmp(str, \"nor\")) {\n         mode = 2;\n-    } else if (!strncasecmp(str, \"jtag\", 4)) {\n+    } else if (!g_ascii_strcasecmp(str, \"jtag\")) {\n         mode = 0;\n     } else {\n         error_setg(errp, \"%s boot mode not supported\", str);\n-- \n2.43.0",
+  "patches": [],
+  "generated_at": "2026-03-27T15:09:01Z",
+  "generator": "loupe-review v1.0",
+  "disclaimer": "LLM-generated draft. Not an authoritative review."
+}

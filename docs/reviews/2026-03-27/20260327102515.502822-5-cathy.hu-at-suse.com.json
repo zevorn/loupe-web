@@ -1,0 +1,136 @@
+{
+  "schema_version": "1",
+  "id": "20260327-20260327102515.502822-5-cathy.hu-at-suse.com",
+  "series": {
+    "title": "[PATCH RFC] qga: Add selinux-helper for guest-exec subcommand",
+    "version": 1,
+    "patch_count": 1,
+    "author": {
+      "name": "Cathy Hu",
+      "email": "cathy.hu@suse.com"
+    },
+    "date": "2026-03-27",
+    "subsystem": "qga",
+    "message_id": "<20260327102515.502822-5-cathy.hu@suse.com>",
+    "lore_url": "https://lore.kernel.org/qemu-devel/20260327102515.502822-5-cathy.hu%40suse.com/",
+    "patchwork_url": "http://patchwork.ozlabs.org/project/qemu-devel/patch/20260327102515.502822-5-cathy.hu@suse.com/",
+    "base_branch": "master"
+  },
+  "version_history": [],
+  "ml_context": {
+    "patchwork_state": "new",
+    "reviewed_by": [],
+    "acked_by": [],
+    "ci_status": "",
+    "prior_feedback": [],
+    "maintainer_activity": ""
+  },
+  "review": {
+    "verdict": "needs_revision",
+    "summary": "The series has two compile-blocking problems in the new helper and one likely runtime integration bug: the helper source is missing required headers, the error-printing string literal is malformed, and the helper is installed to `libexecdir` while `commands.c` looks it up via `CONFIG_QEMU_HELPERDIR`, which in QEMU convention is a different helper subdirectory.",
+    "mode": "ci-single",
+    "stages": {
+      "A": {
+        "status": "ok",
+        "summary": "Problem statement is coherent: route `guest-exec` through a labeled helper so SELinux policy can gate execution via transition/boolean."
+      },
+      "B": {
+        "status": "fail",
+        "summary": "The new helper does not compile as posted because it uses `execvp`, `errno`, `strerror`, `exit`, and `EXIT_FAILURE` without the required headers, and the `fprintf` string literal is syntactically broken."
+      },
+      "C": {
+        "status": "concern",
+        "summary": "`guest-exec` behavior is intentionally redirected through a wrapper on SELinux builds; that part is conceptually fine, but it depends on the helper being found in the exact runtime helper directory."
+      },
+      "D": {
+        "status": "fail",
+        "summary": "The Meson install path appears inconsistent with the lookup path in `commands.c`, which can make every `guest-exec` fail at runtime on SELinux-enabled builds because the wrapper binary is installed in the wrong directory."
+      },
+      "E": {
+        "status": "needs_revision",
+        "summary": "Do not merge until the helper builds cleanly and the install path matches the runtime lookup path."
+      }
+    },
+    "findings": [
+      {
+        "id": "QGA-SElinux-helper-compile-headers",
+        "severity": "high",
+        "file": "qga/qemu-ga-selinux-helper.c",
+        "line": 2,
+        "title": "New helper uses libc/POSIX APIs without including their headers",
+        "description": "The helper calls `execvp`, reads `errno`, formats `strerror(err)`, and exits via `exit(EXIT_FAILURE)`, but it only includes `<stdio.h>` and `<glib.h>`. In QEMU builds this is likely to fail under the compiler warning policy because these identifiers require `<unistd.h>`, `<errno.h>`, `<string.h>`, and `<stdlib.h>` (or `qemu/osdep.h`).",
+        "patch_context": [
+          "+++ b/qga/qemu-ga-selinux-helper.c",
+          "+/* SPDX-License-Identifier: GPL-2.0-or-later */",
+          "+#include <stdio.h>",
+          "+#include <glib.h>",
+          "+",
+          "+int main(int argc, char **argv)",
+          "+",
+          "+    execvp(argv[1], argv + 1);",
+          "+",
+          "+    int err = errno;",
+          "+",
+          "+    exit(EXIT_FAILURE);"
+        ],
+        "suggestion": "Include `qemu/osdep.h` first, or add the required standard headers explicitly: `<unistd.h>`, `<errno.h>`, `<string.h>`, and `<stdlib.h>`.",
+        "confidence": "high",
+        "confidence_reason": "The referenced symbols are not declared by the headers currently present in the patch, and QEMU commonly treats implicit declarations as build failures."
+      },
+      {
+        "id": "QGA-SElinux-helper-broken-string-literal",
+        "severity": "high",
+        "file": "qga/qemu-ga-selinux-helper.c",
+        "line": 14,
+        "title": "Malformed `fprintf` string literal breaks compilation",
+        "description": "The error path contains a newline embedded directly inside the string literal in the patch text, which leaves the literal unterminated and makes the helper source syntactically invalid.",
+        "patch_context": [
+          "+    int err = errno;",
+          "+    fprintf(stderr, \"%s: %s",
+          "+\", argv[1], strerror(err));",
+          "+",
+          "+    exit(EXIT_FAILURE);"
+        ],
+        "suggestion": "Write the diagnostic as a single valid C string, for example `fprintf(stderr, \"%s: %s\\n\", argv[1], strerror(err));`.",
+        "confidence": "high",
+        "confidence_reason": "As shown in the diff, the string is split across lines without escaping, which is a direct C syntax error."
+      },
+      {
+        "id": "QGA-SElinux-helper-install-path-mismatch",
+        "severity": "high",
+        "file": "qga/meson.build",
+        "line": 129,
+        "title": "Helper is installed to a different directory than the runtime lookup path",
+        "description": "`commands.c` resolves the wrapper via `CONFIG_QEMU_HELPERDIR \"/qemu-ga-selinux-helper\"`, but the new Meson rule installs the binary into plain `get_option('libexecdir')`. In QEMU, `CONFIG_QEMU_HELPERDIR` typically points to the dedicated helper directory (for example `libexecdir/qemu`), so this patch likely installs the helper where `guest-exec` will never find it.",
+        "patch_context": [
+          "diff --git a/qga/commands.c b/qga/commands.c",
+          "+#define GUEST_EXEC_SELINUX_HELPER CONFIG_QEMU_HELPERDIR \"/qemu-ga-selinux-helper\"",
+          "diff --git a/qga/meson.build b/qga/meson.build",
+          "+if selinux.found()",
+          "+  qga_selinux_helper = executable('qemu-ga-selinux-helper', files('qemu-ga-selinux-helper.c'),",
+          "+             install: true,",
+          "+             install_dir: get_option('libexecdir'))",
+          "+endif"
+        ],
+        "suggestion": "Install the helper into the same helper directory used to populate `CONFIG_QEMU_HELPERDIR` rather than raw `libexecdir`, so the runtime path and install path are identical.",
+        "confidence": "medium",
+        "confidence_reason": "This depends on the existing Meson definition of `CONFIG_QEMU_HELPERDIR`, but in QEMU that macro conventionally names a helper subdirectory rather than bare `libexecdir`."
+      }
+    ],
+    "checkpatch": {
+      "status": "issues",
+      "issues": [
+        "WARNING: line over 80 characters",
+        "WARNING: added, moved or deleted file(s), does MAINTAINERS need updating?"
+      ]
+    },
+    "build_status": "configure_ok",
+    "am_status": "success"
+  },
+  "cover_letter": null,
+  "diff": "From git@z Thu Jan  1 00:00:00 1970\nSubject: [PATCH RFC] qga: Add selinux-helper for guest-exec subcommand\n (bsc#1237450)\nFrom: Cathy Hu <cahu@suse.de>\nDate: Fri, 27 Mar 2026 11:25:19 +0100\nMessage-Id: <20260327102515.502822-5-cathy.hu@suse.com>\nMIME-Version: 1.0\nContent-Type: text/plain; charset=\"utf-8\"\nContent-Transfer-Encoding: 7bit\n\nProblem:\n\nATM the QEMU Guest Agent and SELinux are not working together properly.\nThe fedora (and therefor also the openSUSE) policy confine the qemu-guest-agent\nservice in the domain `qemu_ga_t`. That means, qemu-guest-agent\nis only allowed to do what the policy says.\n\nHowever, the `guest-exec` command allows arbitrary execution\nof code from a privileged service, which conflicts with the\nnotion of SELinux confinement.\n\nATM, the policy allows only some accesses that are used\nby other qemu-guest-agent commands.\nThat means, the qemu-guest-agent fails sporadically, depending\non what is allowed for other commands.\nHowever, `guest-exec` would need to allow everything.\n\nsee https://bugzilla.suse.com/show_bug.cgi?id=1237450\n\nSolution:\n\nThis is not an great solution, but it works like this:\nWe add a \"wrapper\" which is executed instead of the program\nthat is called via `guest-exec`. The \"wrapper\" just\nre-executes the command given by `guest-exec`.\nThis way, on the SELinux policy side we can give that\nwrapper executable a label on the file system.\nWith that label, we can transition into a more broader\nunconfined domain _and_ toggle that transition with a\nSELinux boolean. That would make `guest-exec`\nconsistently allowed to execute or not by policy.\n\nThis needs a change on the SELinux policy side to\naccompany this with:\nhttps://github.com/fedora-selinux/selinux-policy/pull/3122\n\nWhat other options have been tried unsuccessfully:\n\n- Fixing via SELinux policy: It is not possible for\n  one domain to have different permissions depending on\n  code path. It is also not possible to toggle the permissive\n  state via a SELinux boolean, so users would need\n  to add it via semanage.\n- Setting the domain of the executed commands directly\n  to a broader domain with setcon/setexeccon.\n  The SELinux kernel does not allow to spawn a process\n  directly with those that has broader privileges than the parent.\n\nWhat other options are there to solve this issue:\n\n- Making the qemu-guest-agent unconfined by default\n- Document the workaround to use semanage to make the domain permissive\n  if `exec-guest` is needed as works as intended and ignore the problem\n\nSigned-off-by: Cathy Hu <cahu@suse.de>\n---\n qga/commands.c               | 13 +++++++++++++\n qga/meson.build              |  7 +++++++\n qga/qemu-ga-selinux-helper.c | 17 +++++++++++++++++\n 3 files changed, 37 insertions(+)\n create mode 100644 qga/qemu-ga-selinux-helper.c\n\ndiff --git a/qga/commands.c b/qga/commands.c\nindex 5f20af25d3..29c092630b 100644\n--- a/qga/commands.c\n+++ b/qga/commands.c\n@@ -30,6 +30,10 @@\n  */\n #define GUEST_FILE_READ_COUNT_MAX (48 * MiB)\n \n+#ifdef CONFIG_SELINUX\n+#define GUEST_EXEC_SELINUX_HELPER CONFIG_QEMU_HELPERDIR \"/qemu-ga-selinux-helper\"\n+#endif\n+\n /* Note: in some situations, like with the fsfreeze, logging may be\n  * temporarily disabled. if it is necessary that a command be able\n  * to log for accounting purposes, check ga_logging_enabled() beforehand.\n@@ -418,6 +422,9 @@ GuestExec *qmp_guest_exec(const char *path,\n     GuestExecInfo *gei;\n     char **argv, **envp;\n     strList arglist;\n+#ifdef CONFIG_SELINUX\n+    strList helper_arg;\n+#endif\n     gboolean ret;\n     GError *gerr = NULL;\n     gint in_fd, out_fd, err_fd;\n@@ -439,7 +446,13 @@ GuestExec *qmp_guest_exec(const char *path,\n         }\n     }\n \n+#ifdef CONFIG_SELINUX\n+    helper_arg.value = get_relocated_path(GUEST_EXEC_SELINUX_HELPER);\n+    helper_arg.next = &arglist;\n+    argv = guest_exec_get_args(&helper_arg, true);\n+#else\n     argv = guest_exec_get_args(&arglist, true);\n+#endif\n     envp = has_env ? guest_exec_get_args(env, false) : NULL;\n \n     flags = G_SPAWN_SEARCH_PATH | G_SPAWN_DO_NOT_REAP_CHILD |\ndiff --git a/qga/meson.build b/qga/meson.build\nindex 89a4a8f713..61f60fba26 100644\n--- a/qga/meson.build\n+++ b/qga/meson.build\n@@ -125,6 +125,13 @@ qga = executable('qemu-ga', qga_ss.sources() + qga_objs,\n                  install: true)\n all_qga += qga\n \n+if selinux.found()\n+  qga_selinux_helper = executable('qemu-ga-selinux-helper', files('qemu-ga-selinux-helper.c'),\n+             install: true,\n+             install_dir: get_option('libexecdir'))\n+  all_qga += qga_selinux_helper\n+endif\n+\n if host_os == 'windows'\n   qemu_ga_msi_arch = {\n     'x86': ['-D', 'Arch=32'],\ndiff --git a/qga/qemu-ga-selinux-helper.c b/qga/qemu-ga-selinux-helper.c\nnew file mode 100644\nindex 0000000000..a184e74ede\n--- /dev/null\n+++ b/qga/qemu-ga-selinux-helper.c\n@@ -0,0 +1,17 @@\n+/* SPDX-License-Identifier: GPL-2.0-or-later */\n+#include <stdio.h>\n+#include <glib.h>\n+\n+int main(int argc, char **argv)\n+{\n+    if (argc < 2) {\n+        return EXIT_FAILURE;\n+    }\n+\n+    execvp(argv[1], argv + 1);\n+\n+    int err = errno;\n+    fprintf(stderr, \"%s: %s\\n\", argv[1], strerror(err));\n+\n+    exit(EXIT_FAILURE);\n+}\n-- \n2.53.0",
+  "patches": [],
+  "generated_at": "2026-03-27T15:06:44Z",
+  "generator": "loupe-review v1.0",
+  "disclaimer": "LLM-generated draft. Not an authoritative review."
+}

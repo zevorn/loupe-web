@@ -1,6 +1,60 @@
 {
-  "updated_at": "2026-03-27T13:30:30Z",
+  "updated_at": "2026-03-27T15:09:01Z",
   "reviews": [
+    {
+      "id": "20260327-20260327145012.907264-1-peter.maydell-at-linaro.org",
+      "path": "reviews/2026-03-27/20260327145012.907264-1-peter.maydell-at-linaro.org.json",
+      "title": "[PATCH] hw/arm/xilinx_zynq: Use strcasecmp to parse boot-mode",
+      "author": "Peter Maydell",
+      "date": "2026-03-27",
+      "subsystem": "hw/arm/xilinx_zynq",
+      "version": 1,
+      "patch_count": 1,
+      "message_id": "<20260327145012.907264-1-peter.maydell@linaro.org>",
+      "verdict": "accept",
+      "findings": {
+        "critical": 0,
+        "major": 0,
+        "minor": 0,
+        "nit": 0
+      }
+    },
+    {
+      "id": "20260327-20260327143413.254227-1-minipli-at-grsecurity.net",
+      "path": "reviews/2026-03-27/20260327143413.254227-1-minipli-at-grsecurity.net.json",
+      "title": "[PATCH] gdbstub: Update x86 control register bits",
+      "author": "Mathias Krause",
+      "date": "2026-03-27",
+      "subsystem": "gdbstub",
+      "version": 1,
+      "patch_count": 1,
+      "message_id": "<20260327143413.254227-1-minipli@grsecurity.net>",
+      "verdict": "changes_requested",
+      "findings": {
+        "critical": 0,
+        "major": 1,
+        "minor": 0,
+        "nit": 0
+      }
+    },
+    {
+      "id": "20260327-20260327134401.270186-16-kkostiuk-at-redhat.com",
+      "path": "reviews/2026-03-27/20260327134401.270186-16-kkostiuk-at-redhat.com.json",
+      "title": "[PATCH v2 0/15] Misc changes to allow building with Windows Clang",
+      "author": "Kostiantyn Kostiuk",
+      "date": "2026-03-27",
+      "subsystem": "riscv",
+      "version": 2,
+      "patch_count": 15,
+      "message_id": "<20260327134401.270186-16-kkostiuk@redhat.com>",
+      "verdict": "accept",
+      "findings": {
+        "critical": 0,
+        "major": 0,
+        "minor": 0,
+        "nit": 0
+      }
+    },
     {
       "id": "20260327-20260327131024.51947-1-hongmianquan-at-bytedance.com",
       "path": "reviews/2026-03-27/20260327131024.51947-1-hongmianquan-at-bytedance.com.json",
@@ -69,6 +123,24 @@
       "findings": {
         "critical": 0,
         "major": 0,
+        "minor": 0,
+        "nit": 0
+      }
+    },
+    {
+      "id": "20260327-20260327102515.502822-5-cathy.hu-at-suse.com",
+      "path": "reviews/2026-03-27/20260327102515.502822-5-cathy.hu-at-suse.com.json",
+      "title": "[PATCH RFC] qga: Add selinux-helper for guest-exec subcommand",
+      "author": "Cathy Hu",
+      "date": "2026-03-27",
+      "subsystem": "qga",
+      "version": 1,
+      "patch_count": 1,
+      "message_id": "<20260327102515.502822-5-cathy.hu@suse.com>",
+      "verdict": "needs_revision",
+      "findings": {
+        "critical": 0,
+        "major": 3,
         "minor": 0,
         "nit": 0
       }
@@ -196,6 +268,24 @@
         "critical": 0,
         "major": 1,
         "minor": 2,
+        "nit": 0
+      }
+    },
+    {
+      "id": "20260327-1471e413d3589b6734819bda2b59b725b74f273a.d551129b.99fc.47f6.",
+      "path": "reviews/2026-03-27/1471e413d3589b6734819bda2b59b725b74f273a.d551129b.99fc.47f6.86dc.0759227268a2-at.json",
+      "title": "[PATCH] net/ftgmac100: preserve full VLAN TCI in TX tag insertion",
+      "author": "linhuang",
+      "date": "2026-03-27",
+      "subsystem": "net/ftgmac100",
+      "version": 1,
+      "patch_count": 1,
+      "message_id": "<1471e413d3589b6734819bda2b59b725b74f273a.d551129b.99fc.47f6.86dc.0759227268a2@feishu.cn>",
+      "verdict": "reject",
+      "findings": {
+        "critical": 1,
+        "major": 0,
+        "minor": 0,
         "nit": 0
       }
     },
