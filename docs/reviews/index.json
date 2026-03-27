@@ -1,6 +1,42 @@
 {
-  "updated_at": "2026-03-27T02:43:50Z",
+  "updated_at": "2026-03-27T03:10:14Z",
   "reviews": [
+    {
+      "id": "20260327-20260327025228.474257-6-zhenzhong.duan-at-intel.com",
+      "path": "reviews/2026-03-27/20260327025228.474257-6-zhenzhong.duan-at-intel.com.json",
+      "title": "[PATCH 0/5] intel_iommu: Enable PRQ support for passthrough device",
+      "author": "Zhenzhong Duan",
+      "date": "2026-03-27",
+      "subsystem": "intel_iommu",
+      "version": 1,
+      "patch_count": 5,
+      "message_id": "<20260327025228.474257-6-zhenzhong.duan@intel.com>",
+      "verdict": "changes_requested",
+      "findings": {
+        "critical": 0,
+        "major": 1,
+        "minor": 1,
+        "nit": 0
+      }
+    },
+    {
+      "id": "20260327-20260327023125.3802140-5-lixianglai-at-loongson.cn",
+      "path": "reviews/2026-03-27/20260327023125.3802140-5-lixianglai-at-loongson.cn.json",
+      "title": "[PATCH v4 0/4] add rtc acpi table",
+      "author": "Xianglai Li",
+      "date": "2026-03-27",
+      "subsystem": "riscv",
+      "version": 4,
+      "patch_count": 4,
+      "message_id": "<20260327023125.3802140-5-lixianglai@loongson.cn>",
+      "verdict": "changes-requested",
+      "findings": {
+        "critical": 0,
+        "major": 1,
+        "minor": 1,
+        "nit": 0
+      }
+    },
     {
       "id": "20260327-20260327011152.4126-5-mohamed-at-unpredictable.fr",
       "path": "reviews/2026-03-27/20260327011152.4126-5-mohamed-at-unpredictable.fr.json",

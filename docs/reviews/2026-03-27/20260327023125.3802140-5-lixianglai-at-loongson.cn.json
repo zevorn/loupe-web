@@ -1,0 +1,126 @@
+{
+  "schema_version": "1",
+  "id": "20260327-20260327023125.3802140-5-lixianglai-at-loongson.cn",
+  "series": {
+    "title": "[PATCH v4 0/4] add rtc acpi table",
+    "version": 4,
+    "patch_count": 4,
+    "author": {
+      "name": "Xianglai Li",
+      "email": "lixianglai@loongson.cn"
+    },
+    "date": "2026-03-27",
+    "subsystem": "riscv",
+    "message_id": "<20260327023125.3802140-5-lixianglai@loongson.cn>",
+    "lore_url": "https://lore.kernel.org/qemu-devel/20260327023125.3802140-5-lixianglai%40loongson.cn/",
+    "patchwork_url": "http://patchwork.ozlabs.org/project/qemu-devel/patch/20260327023125.3802140-5-lixianglai@loongson.cn/",
+    "base_branch": "master"
+  },
+  "version_history": [],
+  "ml_context": {
+    "patchwork_state": "new",
+    "reviewed_by": [],
+    "acked_by": [],
+    "ci_status": "",
+    "prior_feedback": [],
+    "maintainer_activity": ""
+  },
+  "review": {
+    "verdict": "changes-requested",
+    "summary": "The ACPI RTC description itself looks mechanically reasonable, but the series changes guest-visible firmware interfaces unconditionally on existing LoongArch virt machine types. The FDT patch removes an already-published IRQ resource from the RTC node, which is an ABI regression for DT guests. The ACPI patch also exposes a new RTC device in DSDT for all compat machine versions instead of gating it to a new machine type/compat property.",
+    "mode": "ci-single",
+    "stages": {
+      "A": "Patch structure is sensible: code change, expected AML update, and DT cleanup are split. The temporary allowed-diff patch is consistent with the usual bios-tables workflow, even if checkpatch complains.",
+      "B": "The new AML fragment for RTC is straightforward and matches the MMIO region, with the intent of suppressing alarm support by omitting IRQ resources.",
+      "C": "The main correctness risk is guest ABI: removing RTC interrupt data from the FDT changes what existing DT guests see and may break software expecting the published IRQ.",
+      "D": "Compatibility handling is missing for firmware interface changes. Adding a new ACPI-enumerated RTC device for all existing virt machine versions is also a guest-visible change that should be versioned.",
+      "E": "Test blobs were updated consistently for the AML change, but there is no compatibility/test coverage showing that older machine types retain their previous ACPI/FDT layout."
+    },
+    "findings": [
+      {
+        "id": "F1",
+        "severity": "high",
+        "file": "hw/loongarch/virt-fdt-build.c",
+        "line": 472,
+        "title": "Removing RTC IRQ properties from the DT is a guest ABI break",
+        "description": "The patch deletes both the RTC node's \"interrupts\" and \"interrupt-parent\" properties for the generic LoongArch virt DT. That changes the firmware contract for already-existing machine types. Even if the current VM model does not implement wake-up semantics, previously booted DT guests could legitimately rely on the published IRQ resource for RTC alarm support or driver probe behavior. In QEMU, guest-visible DT layout is ABI and should not be changed retroactively for existing compat machine types.",
+        "patch_context": [
+          "-static void fdt_add_rtc_node(LoongArchVirtMachineState *lvms,",
+          "-                             uint32_t *pch_pic_phandle)",
+          "+static void fdt_add_rtc_node(LoongArchVirtMachineState *lvms)",
+          " {",
+          "     char *nodename;",
+          "     hwaddr base = VIRT_RTC_REG_BASE;",
+          "@@",
+          "     qemu_fdt_setprop_string(ms->fdt, nodename, \"compatible\",",
+          "                             \"loongson,ls7a-rtc\");",
+          "+    /*",
+          "+     * The virtual machine model does not support suspend and wake-up,",
+          "+     * and rtc is no longer the wake-up source. Therefore, the current",
+          "+     * rtc table no longer provides the rtc alarm interrupt number to",
+          "+     * avoid the software initializing alarm.",
+          "+     */",
+          "     qemu_fdt_setprop_sized_cells(ms->fdt, nodename, \"reg\", 2, base, 2, size);",
+          "-    qemu_fdt_setprop_cells(ms->fdt, nodename, \"interrupts\",",
+          "-                           VIRT_RTC_IRQ - VIRT_GSI_BASE ,",
+          "-                           FDT_IRQ_TYPE_LEVEL_HIGH);",
+          "-    qemu_fdt_setprop_cell(ms->fdt, nodename, \"interrupt-parent\",",
+          "-                          *pch_pic_phandle);"
+        ],
+        "suggestion": "Keep the existing IRQ properties for current machine types and, if needed, introduce the no-IRQ RTC description only behind a new compat machine version or explicit machine property.",
+        "confidence": "high",
+        "confidence_reason": "This is a direct guest-visible DT change on an existing machine model, and QEMU machine DT/firmware interfaces are ABI-sensitive."
+      },
+      {
+        "id": "F2",
+        "severity": "medium",
+        "file": "hw/loongarch/virt-acpi-build.c",
+        "line": 499,
+        "title": "New ACPI RTC device is exposed on all compat machine versions",
+        "description": "The series adds a new DSDT Device (RTC) unconditionally in build_dsdt(). That changes the ACPI namespace seen by guests on all LoongArch virt machine versions, even though older machine types previously did not enumerate this device through ACPI. Guest-visible ACPI tables are also part of the machine interface, so this should be versioned rather than retrofitted into all compat machine types.",
+        "patch_context": [
+          "+static void acpi_dsdt_add_rtc(Aml *scope)",
+          "+{",
+          "+    Aml *dev = aml_device(\"RTC\");",
+          "+",
+          " +    aml_append(dev, aml_name_decl(\"_HID\", aml_string(\"LOON0001\")));",
+          "+    aml_append(dev, aml_name_decl(\"_UID\", aml_int(0)));",
+          "+",
+          " +    Aml *crs = aml_resource_template();",
+          "+    aml_append(crs,",
+          "+        aml_qword_memory(AML_POS_DECODE, AML_MIN_FIXED, AML_MAX_FIXED,",
+          "+                         AML_NON_CACHEABLE, AML_READ_WRITE,",
+          "+                         0, VIRT_RTC_REG_BASE,",
+          "+                         VIRT_RTC_REG_BASE + VIRT_RTC_LEN - 1,",
+          "+                         0, VIRT_RTC_LEN));",
+          "+    aml_append(dev, aml_name_decl(\"_CRS\", crs));",
+          "+    aml_append(scope, dev);",
+          "+}",
+          "@@",
+          "     for (i = 0; i < VIRT_UART_COUNT; i++) {",
+          "         build_uart_device_aml(dsdt, i);",
+          "     }",
+          "+    acpi_dsdt_add_rtc(dsdt);",
+          "     build_pci_device_aml(dsdt, lvms);"
+        ],
+        "suggestion": "Gate the new DSDT RTC device on a new machine version/compat property so older virt machine types preserve their existing ACPI tables.",
+        "confidence": "medium",
+        "confidence_reason": "QEMU generally treats ACPI tables as guest ABI; the exact compat scheme in this subtree is not shown here, but the unconditional firmware change is visible in the patch."
+      }
+    ],
+    "checkpatch": {
+      "status": "issues",
+      "issues": [
+        "ERROR: Do not add expected files together with tests, follow instructions in tests/qtest/bios-tables-test.c. Files"
+      ]
+    },
+    "build_status": "configure_ok",
+    "am_status": "success"
+  },
+  "cover_letter": "Subject: [PATCH v4 0/4] add rtc acpi table\nFrom: Xianglai Li <lixianglai@loongson.cn>\nDate: Fri, 27 Mar 2026 10:31:21 +0800\nMessage-Id: <20260327023125.3802140-1-lixianglai@loongson.cn>\nMIME-Version: 1.0\nContent-Type: text/plain; charset=\"utf-8\"\nContent-Transfer-Encoding: 7bit\n\n1.Add the acpi table to the loongson rtc hardware so that the virtual machine\nkernel can use the loongson RTC-related drivers.\n\n2.Delete the interrupt information in the rtc fdt table. \n\nchange:\nV3->V4:\nUpdate the test data in the directory \"tests/qtest/bios-tables-test\"\n\nV2->V3:\nSplit the modifications related to ACPI and FDT for RTC into two patches\n\nV1->V2:\n1.Add a comment to explain why the acpi table no longer provides interrupt numbers\n2.Delete the interrupt number from the rtc fdt table \n\nCc: Song Gao <gaosong@loongson.cn> \nCc: Bibo Mao <maobibo@loongson.cn> \nCc: Jiaxun Yang <jiaxun.yang@flygoat.com> \nCc: \"Huacai Chen\"<zltjiangshi@gmail.com>\nCc: Jonathan Cameron <jonathan.cameron@huawei.com> \n\nXianglai Li (4):\n  bios-tables-test-allowed-diff.h: Allow LoongArch DSDT.*\n  hw/loongarch: add rtc acpi table\n  tests/qtest/bios-tables-test: Update DSDT blobs after loongarch rtc\n    change\n  hw/loongarch: modify rtc fdt table\n\n hw/loongarch/virt-acpi-build.c                |  25 ++++++++++++++++++\n hw/loongarch/virt-fdt-build.c                 |  16 +++++------\n tests/data/acpi/loongarch64/virt/DSDT         | Bin 4603 -> 4689 bytes\n tests/data/acpi/loongarch64/virt/DSDT.memhp   | Bin 5824 -> 5910 bytes\n tests/data/acpi/loongarch64/virt/DSDT.numamem | Bin 4609 -> 4695 bytes\n .../data/acpi/loongarch64/virt/DSDT.topology  | Bin 4905 -> 4991 bytes\n 6 files changed, 33 insertions(+), 8 deletions(-)\n\n-- \n2.39.1",
+  "diff": "From git@z Thu Jan  1 00:00:00 1970\nSubject: [PATCH v4 1/4] bios-tables-test-allowed-diff.h: Allow LoongArch\n DSDT.*\nFrom: Xianglai Li <lixianglai@loongson.cn>\nDate: Fri, 27 Mar 2026 10:31:22 +0800\nMessage-Id: <20260327023125.3802140-2-lixianglai@loongson.cn>\nMIME-Version: 1.0\nContent-Type: text/plain; charset=\"utf-8\"\nContent-Transfer-Encoding: 7bit\n\nSigned-off-by: Xianglai Li <lixianglai@loongson.cn>\nReviewed-by: maobibo@loongson.cn\n---\nCc: Song Gao <gaosong@loongson.cn> \nCc: Bibo Mao <maobibo@loongson.cn> \nCc: Jiaxun Yang <jiaxun.yang@flygoat.com> \nCc: \"Huacai Chen\"<zltjiangshi@gmail.com>\nCc: Jonathan Cameron <jonathan.cameron@huawei.com> \n\n tests/qtest/bios-tables-test-allowed-diff.h | 4 ++++\n 1 file changed, 4 insertions(+)\n\ndiff --git a/tests/qtest/bios-tables-test-allowed-diff.h b/tests/qtest/bios-tables-test-allowed-diff.h\nindex dfb8523c8b..2ed837faee 100644\n--- a/tests/qtest/bios-tables-test-allowed-diff.h\n+++ b/tests/qtest/bios-tables-test-allowed-diff.h\n@@ -1 +1,5 @@\n /* List of comma-separated changed AML files to ignore */\n+\"tests/data/acpi/loongarch64/virt/DSDT\",\n+\"tests/data/acpi/loongarch64/virt/DSDT.memhp\",\n+\"tests/data/acpi/loongarch64/virt/DSDT.numamem\",\n+\"tests/data/acpi/loongarch64/virt/DSDT.topology\",\n-- \n2.39.1\n\nFrom git@z Thu Jan  1 00:00:00 1970\nSubject: [PATCH v4 2/4] hw/loongarch: add rtc acpi table\nFrom: Xianglai Li <lixianglai@loongson.cn>\nDate: Fri, 27 Mar 2026 10:31:23 +0800\nMessage-Id: <20260327023125.3802140-3-lixianglai@loongson.cn>\nMIME-Version: 1.0\nContent-Type: text/plain; charset=\"utf-8\"\nContent-Transfer-Encoding: 7bit\n\nAdd the acpi table to the loongson rtc hardware so that the virtual machine\nkernel can use the loongson RTC-related drivers.\n\nSigned-off-by: Xianglai Li <lixianglai@loongson.cn>\n---\nCc: Song Gao <gaosong@loongson.cn> \nCc: Bibo Mao <maobibo@loongson.cn> \nCc: Jiaxun Yang <jiaxun.yang@flygoat.com> \nCc: \"Huacai Chen\"<zltjiangshi@gmail.com>\nCc: Jonathan Cameron <jonathan.cameron@huawei.com> \n\n hw/loongarch/virt-acpi-build.c | 25 +++++++++++++++++++++++++\n 1 file changed, 25 insertions(+)\n\ndiff --git a/hw/loongarch/virt-acpi-build.c b/hw/loongarch/virt-acpi-build.c\nindex 3e34bedcd6..42820001d7 100644\n--- a/hw/loongarch/virt-acpi-build.c\n+++ b/hw/loongarch/virt-acpi-build.c\n@@ -460,6 +460,30 @@ static void acpi_dsdt_add_tpm(Aml *scope, LoongArchVirtMachineState *vms)\n }\n #endif\n \n+static void acpi_dsdt_add_rtc(Aml *scope)\n+{\n+    Aml *dev = aml_device(\"RTC\");\n+\n+    aml_append(dev, aml_name_decl(\"_HID\", aml_string(\"LOON0001\")));\n+    aml_append(dev, aml_name_decl(\"_UID\", aml_int(0)));\n+\n+    Aml *crs = aml_resource_template();\n+    aml_append(crs,\n+        aml_qword_memory(AML_POS_DECODE, AML_MIN_FIXED, AML_MAX_FIXED,\n+                         AML_NON_CACHEABLE, AML_READ_WRITE,\n+                         0, VIRT_RTC_REG_BASE,\n+                         VIRT_RTC_REG_BASE + VIRT_RTC_LEN - 1,\n+                         0, VIRT_RTC_LEN));\n+    /*\n+     * The virtual machine model does not support suspend and wake-up,\n+     * and rtc is no longer the wake-up source. Therefore, the current\n+     * rtc table no longer provides the rtc alarm interrupt number to\n+     * avoid the software initializing alarm.\n+     */\n+    aml_append(dev, aml_name_decl(\"_CRS\", crs));\n+    aml_append(scope, dev);\n+}\n+\n /* build DSDT */\n static void\n build_dsdt(GArray *table_data, BIOSLinker *linker, MachineState *machine)\n@@ -475,6 +499,7 @@ build_dsdt(GArray *table_data, BIOSLinker *linker, MachineState *machine)\n     for (i = 0; i < VIRT_UART_COUNT; i++) {\n         build_uart_device_aml(dsdt, i);\n     }\n+    acpi_dsdt_add_rtc(dsdt);\n     build_pci_device_aml(dsdt, lvms);\n     build_la_ged_aml(dsdt, machine);\n     build_flash_aml(dsdt, lvms);\n-- \n2.39.1\n\nFrom git@z Thu Jan  1 00:00:00 1970\nSubject: [PATCH v4 3/4] tests/qtest/bios-tables-test: Update DSDT blobs\n after loongarch rtc change\nFrom: Xianglai Li <lixianglai@loongson.cn>\nDate: Fri, 27 Mar 2026 10:31:24 +0800\nMessage-Id: <20260327023125.3802140-4-lixianglai@loongson.cn>\nMIME-Version: 1.0\nContent-Type: text/plain; charset=\"utf-8\"\nContent-Transfer-Encoding: 7bit\n\nWe add acpi RTC table for loongarch\nThe following are the changes in the DSDT table:\n\n+     Device (RTC)\n+     {\n+         Name (_HID, \"LOON0001\")  // _HID: Hardware ID\n+         Name (_UID, Zero)  // _UID: Unique ID\n+         Name (_CRS, ResourceTemplate ()  // _CRS: Current Resource Settings\n+         {\n+             QWordMemory (ResourceProducer, PosDecode, MinFixed, MaxFixed, NonCacheable, ReadWrite,\n+                 0x0000000000000000, // Granularity\n+                 0x00000000100D0100, // Range Minimum\n+                 0x00000000100D01FF, // Range Maximum\n+                 0x0000000000000000, // Translation Offset\n+                 0x0000000000000100, // Length\n+                 ,, , AddressRangeMemory, TypeStatic)\n+         })\n+     }\n\nSigned-off-by: Xianglai Li <lixianglai@loongson.cn>\n---\nCc: Song Gao <gaosong@loongson.cn> \nCc: Bibo Mao <maobibo@loongson.cn> \nCc: Jiaxun Yang <jiaxun.yang@flygoat.com> \nCc: \"Huacai Chen\"<zltjiangshi@gmail.com>\nCc: Jonathan Cameron <jonathan.cameron@huawei.com> \n\n tests/data/acpi/loongarch64/virt/DSDT         | Bin 4603 -> 4689 bytes\n tests/data/acpi/loongarch64/virt/DSDT.memhp   | Bin 5824 -> 5910 bytes\n tests/data/acpi/loongarch64/virt/DSDT.numamem | Bin 4609 -> 4695 bytes\n .../data/acpi/loongarch64/virt/DSDT.topology  | Bin 4905 -> 4991 bytes\n tests/qtest/bios-tables-test-allowed-diff.h   |   4 ----\n 5 files changed, 4 deletions(-)\n\ndiff --git a/tests/data/acpi/loongarch64/virt/DSDT b/tests/data/acpi/loongarch64/virt/DSDT\nindex 09aa903c4e875f541223e36f59b28e101599df20..4c7354721e76c9e3813c3502a8c51b41f26a3cd7 100644\nGIT binary patch\ndelta 90\nzcmeyZd{KqVCD<h-P>6wn@x(^1bxd|HtU)2p@f`6Uo-VvT{{DUj1_p)<9Py!^E<n;b\niC|J;#%b-h}fq{pS0R|X(1whRIKzd?<$mT6f?)(7LU=rK_\n\ndelta 24\nfcmcbp@>`k9CD<k8w;%%pW6VabbxfQ2n4S3nXT1kE\n\ndiff --git a/tests/data/acpi/loongarch64/virt/DSDT.memhp b/tests/data/acpi/loongarch64/virt/DSDT.memhp\nindex a069d6878fb45fa6b0e6342eedb0eb3d25eb20da..c578e7fe34b2dd70b4a1a07d5a08c1ae29533b04 100644\nGIT binary patch\ndelta 90\nzcmX@0J57(vCD<iIOq_v%@$5#fbxd|HtU)2p@f`6Uo-VvT{{DUj1_p)<9Py!^E<n;b\niC|J;#%b-h}fq{pS0R|X(1whRIKzd?<$mT6fJR$(0DiRX_\n\ndelta 24\nfcmbQHcR-iRCD<k8fEWV<W8y}xbxfQ2m^nlMTWtnz\n\ndiff --git a/tests/data/acpi/loongarch64/virt/DSDT.numamem b/tests/data/acpi/loongarch64/virt/DSDT.numamem\nindex 78ece52f57a383db128c7d1a08526e15ab911bb7..c47629c9bc817cc152b572be3145344534ce9ba9 100644\nGIT binary patch\ndelta 90\nzcmZovxvs+H66_KZF2umV7_yOT9h034Yfy-DJV(5Trwgx-zrUY>fq@|dM|`NK3y^dU\ni3KlfxGU(D~VBle7fB{Bc0TA;)ke*l|vUv-WFFyc^XA%Jb\n\ndelta 24\nfcmcbv(x}4a66_MfD8#_P_<SSRI;PEh%%1!JRLBNg\n\ndiff --git a/tests/data/acpi/loongarch64/virt/DSDT.topology b/tests/data/acpi/loongarch64/virt/DSDT.topology\nindex 7ab23f47cc82dd7bc1975e17893a8cd61039e66d..368e4ee41727ca521b1906be2b021a6550bdda07 100644\nGIT binary patch\ndelta 90\nzcmZ3f_Fs+5CD<jTUYLP_(PkspIwm_8)}RpQc#e1vPZwSve}6v%0|P?_j`&bd7a-{z\ni6f9`WWzeO~z`(=E00WG?0wCspAU&}_Wb+oLQUL(1z!HxD\n\ndelta 24\nfcmeybwo;ADCD<iIQ<#B)@%%=vbxfQ2m<t5}UKa-H\n\ndiff --git a/tests/qtest/bios-tables-test-allowed-diff.h b/tests/qtest/bios-tables-test-allowed-diff.h\nindex 2ed837faee..dfb8523c8b 100644\n--- a/tests/qtest/bios-tables-test-allowed-diff.h\n+++ b/tests/qtest/bios-tables-test-allowed-diff.h\n@@ -1,5 +1 @@\n /* List of comma-separated changed AML files to ignore */\n-\"tests/data/acpi/loongarch64/virt/DSDT\",\n-\"tests/data/acpi/loongarch64/virt/DSDT.memhp\",\n-\"tests/data/acpi/loongarch64/virt/DSDT.numamem\",\n-\"tests/data/acpi/loongarch64/virt/DSDT.topology\",\n-- \n2.39.1\n\nFrom git@z Thu Jan  1 00:00:00 1970\nSubject: [PATCH v4 4/4] hw/loongarch: modify rtc fdt table\nFrom: Xianglai Li <lixianglai@loongson.cn>\nDate: Fri, 27 Mar 2026 10:31:25 +0800\nMessage-Id: <20260327023125.3802140-5-lixianglai@loongson.cn>\nMIME-Version: 1.0\nContent-Type: text/plain; charset=\"utf-8\"\nContent-Transfer-Encoding: 7bit\n\nDelete the interrupt information in the rtc fdt table.\n\nSigned-off-by: Xianglai Li <lixianglai@loongson.cn>\n---\nCc: Song Gao <gaosong@loongson.cn> \nCc: Bibo Mao <maobibo@loongson.cn> \nCc: Jiaxun Yang <jiaxun.yang@flygoat.com> \nCc: \"Huacai Chen\"<zltjiangshi@gmail.com>\nCc: Jonathan Cameron <jonathan.cameron@huawei.com> \n\n hw/loongarch/virt-fdt-build.c | 16 ++++++++--------\n 1 file changed, 8 insertions(+), 8 deletions(-)\n\ndiff --git a/hw/loongarch/virt-fdt-build.c b/hw/loongarch/virt-fdt-build.c\nindex 6c06b36fca..42f014a7bd 100644\n--- a/hw/loongarch/virt-fdt-build.c\n+++ b/hw/loongarch/virt-fdt-build.c\n@@ -458,8 +458,7 @@ static void fdt_add_uart_node(LoongArchVirtMachineState *lvms,\n     g_free(nodename);\n }\n \n-static void fdt_add_rtc_node(LoongArchVirtMachineState *lvms,\n-                             uint32_t *pch_pic_phandle)\n+static void fdt_add_rtc_node(LoongArchVirtMachineState *lvms)\n {\n     char *nodename;\n     hwaddr base = VIRT_RTC_REG_BASE;\n@@ -470,12 +469,13 @@ static void fdt_add_rtc_node(LoongArchVirtMachineState *lvms,\n     qemu_fdt_add_subnode(ms->fdt, nodename);\n     qemu_fdt_setprop_string(ms->fdt, nodename, \"compatible\",\n                             \"loongson,ls7a-rtc\");\n+    /*\n+     * The virtual machine model does not support suspend and wake-up,\n+     * and rtc is no longer the wake-up source. Therefore, the current\n+     * rtc table no longer provides the rtc alarm interrupt number to\n+     * avoid the software initializing alarm.\n+     */\n     qemu_fdt_setprop_sized_cells(ms->fdt, nodename, \"reg\", 2, base, 2, size);\n-    qemu_fdt_setprop_cells(ms->fdt, nodename, \"interrupts\",\n-                           VIRT_RTC_IRQ - VIRT_GSI_BASE ,\n-                           FDT_IRQ_TYPE_LEVEL_HIGH);\n-    qemu_fdt_setprop_cell(ms->fdt, nodename, \"interrupt-parent\",\n-                          *pch_pic_phandle);\n     g_free(nodename);\n }\n \n@@ -550,7 +550,7 @@ void virt_fdt_setup(LoongArchVirtMachineState *lvms)\n         fdt_add_uart_node(lvms, &pch_pic_phandle, base, irq, i == 0);\n     }\n \n-    fdt_add_rtc_node(lvms, &pch_pic_phandle);\n+    fdt_add_rtc_node(lvms);\n     fdt_add_ged_reset(lvms);\n     platform_bus_add_all_fdt_nodes(machine->fdt, \"/platic\",\n                                    VIRT_PLATFORM_BUS_BASEADDRESS,\n-- \n2.39.1",
+  "patches": [],
+  "generated_at": "2026-03-27T03:10:14Z",
+  "generator": "loupe-review v1.0",
+  "disclaimer": "LLM-generated draft. Not an authoritative review."
+}
