@@ -1,0 +1,53 @@
+{
+  "schema_version": "1",
+  "id": "20260327-20260327204704.424158-1-pbonzini-at-redhat.com",
+  "series": {
+    "title": "[PATCH] hpet: lower HPET_MAX_TIMERS to 24",
+    "version": 1,
+    "patch_count": 1,
+    "author": {
+      "name": "Paolo Bonzini",
+      "email": "pbonzini@redhat.com"
+    },
+    "date": "2026-03-27",
+    "subsystem": "hpet",
+    "message_id": "<20260327204704.424158-1-pbonzini@redhat.com>",
+    "lore_url": "https://lore.kernel.org/qemu-devel/20260327204704.424158-1-pbonzini%40redhat.com/",
+    "patchwork_url": "http://patchwork.ozlabs.org/project/qemu-devel/patch/20260327204704.424158-1-pbonzini@redhat.com/",
+    "base_branch": "master"
+  },
+  "version_history": [],
+  "ml_context": {
+    "patchwork_state": "new",
+    "reviewed_by": [],
+    "acked_by": [],
+    "ci_status": "",
+    "prior_feedback": [],
+    "maintainer_activity": ""
+  },
+  "review": {
+    "verdict": "accept",
+    "summary": "The change is internally consistent and matches the HPET MMIO layout described in the commit message: with timer blocks starting at offset 0x100 and consuming 0x20 bytes each within a 0x400-byte register window, the practical maximum is 24 timers. Both the C and Rust constants are updated together, and no concrete regression is evident from the patch itself.",
+    "mode": "ci-single",
+    "stages": {
+      "A": "Problem statement is sound: 1024-byte MMIO space minus 256-byte fixed register area leaves 768 bytes, which fits 24 timer blocks at 32 bytes each.",
+      "B": "Patch correctness looks good: both authoritative constants are changed from 32 to 24, keeping C and Rust implementations aligned.",
+      "C": "Interface and compatibility risk appears low from the patch text alone. The change tightens an implementation limit to match the actual addressable register space rather than changing register format or behavior.",
+      "D": "Build/syntax risk is minimal. The patch is a constant-only update, checkpatch is clean, and configure succeeded.",
+      "E": "No blocking issues found in the diff provided. Residual risk is limited to any out-of-tree user depending on an invalid 32-timer configuration."
+    },
+    "findings": [],
+    "checkpatch": {
+      "status": "clean",
+      "issues": []
+    },
+    "build_status": "configure_ok",
+    "am_status": "success"
+  },
+  "cover_letter": null,
+  "diff": "From git@z Thu Jan  1 00:00:00 1970\nSubject: [PATCH] hpet: lower HPET_MAX_TIMERS to 24\nFrom: Paolo Bonzini <pbonzini@redhat.com>\nDate: Fri, 27 Mar 2026 21:47:04 +0100\nMessage-Id: <20260327204704.424158-1-pbonzini@redhat.com>\nMIME-Version: 1.0\nContent-Type: text/plain; charset=\"utf-8\"\nContent-Transfer-Encoding: 7bit\n\nEach timer block occupies 32 bytes, but they only start at\noffset 256 of the 1024-byte MMIO register space.  Therefore\nthe correct limit for HPET_MAX_TIMERS is 24, not 32.\n\nSigned-off-by: Paolo Bonzini <pbonzini@redhat.com>\n---\n include/hw/timer/hpet.h          | 2 +-\n rust/hw/timer/hpet/src/device.rs | 2 +-\n 2 files changed, 2 insertions(+), 2 deletions(-)\n\ndiff --git a/include/hw/timer/hpet.h b/include/hw/timer/hpet.h\nindex c2656f7f0be..84be4c3529a 100644\n--- a/include/hw/timer/hpet.h\n+++ b/include/hw/timer/hpet.h\n@@ -22,7 +22,7 @@\n \n #define FS_PER_NS 1000000       /* 1000000 femtoseconds == 1 ns */\n #define HPET_MIN_TIMERS         3\n-#define HPET_MAX_TIMERS         32\n+#define HPET_MAX_TIMERS         24\n \n #define HPET_NUM_IRQ_ROUTES     32\n \ndiff --git a/rust/hw/timer/hpet/src/device.rs b/rust/hw/timer/hpet/src/device.rs\nindex 0a5c131819b..ec0bca4496d 100644\n--- a/rust/hw/timer/hpet/src/device.rs\n+++ b/rust/hw/timer/hpet/src/device.rs\n@@ -32,7 +32,7 @@\n /// Minimum recommended hardware implementation.\n const HPET_MIN_TIMERS: usize = 3;\n /// Maximum timers in each timer block.\n-const HPET_MAX_TIMERS: usize = 32;\n+const HPET_MAX_TIMERS: usize = 24;\n \n /// Flags that HPETState.flags supports.\n const HPET_FLAG_MSI_SUPPORT_SHIFT: usize = 0;\n-- \n2.53.0",
+  "patches": [],
+  "generated_at": "2026-03-27T20:53:44Z",
+  "generator": "loupe-review v1.0",
+  "disclaimer": "LLM-generated draft. Not an authoritative review."
+}

@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-03-27T19:25:04Z",
+  "updated_at": "2026-03-27T20:53:44Z",
   "reviews": [
     {
       "id": "20260327-DB8P190MB07142E1BA8DEEA8B2E41D5B2DB57A-at-DB8P190MB0714.EURP",
@@ -11,6 +11,24 @@
       "version": 1,
       "patch_count": 1,
       "message_id": "<DB8P190MB07142E1BA8DEEA8B2E41D5B2DB57A@DB8P190MB0714.EURP190.PROD.OUTLOOK.COM>",
+      "verdict": "accept",
+      "findings": {
+        "critical": 0,
+        "major": 0,
+        "minor": 0,
+        "nit": 0
+      }
+    },
+    {
+      "id": "20260327-20260327204704.424158-1-pbonzini-at-redhat.com",
+      "path": "reviews/2026-03-27/20260327204704.424158-1-pbonzini-at-redhat.com.json",
+      "title": "[PATCH] hpet: lower HPET_MAX_TIMERS to 24",
+      "author": "Paolo Bonzini",
+      "date": "2026-03-27",
+      "subsystem": "hpet",
+      "version": 1,
+      "patch_count": 1,
+      "message_id": "<20260327204704.424158-1-pbonzini@redhat.com>",
       "verdict": "accept",
       "findings": {
         "critical": 0,
