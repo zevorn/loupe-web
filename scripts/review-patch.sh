@@ -93,6 +93,17 @@ if [ -z "${DIFF_TEXT}" ]; then
     fi
 fi
 
+# Override title with original Subject from mbox (Patchwork strips [PATCH] prefix)
+if [ -n "${DIFF_TEXT}" ]; then
+    MBOX_SUBJECT=$(echo "${DIFF_TEXT}" | grep -m1 '^Subject:' | sed 's/^Subject: *//')
+    if [ -n "${COVER_TEXT}" ]; then
+        COVER_SUBJECT=$(echo "${COVER_TEXT}" | grep -m1 '^Subject:' | sed 's/^Subject: *//')
+        [ -n "${COVER_SUBJECT}" ] && MBOX_SUBJECT="${COVER_SUBJECT}"
+    fi
+    [ -n "${MBOX_SUBJECT}" ] && TITLE="${MBOX_SUBJECT}"
+    echo "  Title (from mbox): ${TITLE}"
+fi
+
 # --- Step 4: Apply patches in QEMU worktree + checkpatch ---
 echo "[4/7] Applying patches in QEMU worktree..."
 CHECKPATCH_RESULT="not_run"
@@ -289,22 +300,28 @@ cat > "${META_FILE}" << METAEOF
 }
 METAEOF
 
-# Save diff and cover to temp files for python
+# Save diff, cover, checkpatch issues to temp files for python
 DIFF_TMPFILE=$(mktemp)
 COVER_TMPFILE=$(mktemp)
+CP_TMPFILE=$(mktemp)
 echo "${DIFF_TEXT}" > "${DIFF_TMPFILE}"
 echo "${COVER_TEXT}" > "${COVER_TMPFILE}"
+echo "${CHECKPATCH_ISSUES}" > "${CP_TMPFILE}"
 
-python3 - "${META_FILE}" "${REVIEW_FILE}" "${DIFF_TMPFILE}" "${COVER_TMPFILE}" "${OUTPUT}" << 'PYEOF'
+python3 - "${META_FILE}" "${REVIEW_FILE}" "${DIFF_TMPFILE}" "${COVER_TMPFILE}" "${CP_TMPFILE}" "${OUTPUT}" << 'PYEOF'
 import sys, json
 meta = json.load(open(sys.argv[1]))
 review = json.load(open(sys.argv[2]))
 diff_text = open(sys.argv[3]).read().strip()
 cover_text = open(sys.argv[4]).read().strip()
-out_path = sys.argv[5]
+cp_text = open(sys.argv[5]).read().strip()
+out_path = sys.argv[6]
 slug = meta["message_id"].strip("<>").replace("@","-at-")
 for c in "/<>?*[]\\": slug = slug.replace(c, "-")
 slug = slug[:60]
+
+# Parse checkpatch issues from file
+cp_issues_list = [line for line in cp_text.split('\n') if line.strip()] if cp_text else []
 
 # Merge checkpatch issues from codex review if present
 cp_issues = review.pop("checkpatch_issues", [])
@@ -337,7 +354,7 @@ output = {
         "mode": "ci-single",
         "stages": review.get("stages", {}),
         "findings": review.get("findings", []),
-        "checkpatch": {"status": meta["checkpatch_status"], "issues": cp_issues},
+        "checkpatch": {"status": meta["checkpatch_status"], "issues": cp_issues_list if cp_issues_list else cp_issues},
         "build_status": meta["build_status"],
         "am_status": meta["am_status"]
     },
@@ -352,7 +369,7 @@ with open(out_path, 'w') as f:
     json.dump(output, f, indent=2, ensure_ascii=False)
 PYEOF
 
-rm -f "${META_FILE}" "${REVIEW_FILE}" "${DIFF_TMPFILE}" "${COVER_TMPFILE}"
+rm -f "${META_FILE}" "${REVIEW_FILE}" "${DIFF_TMPFILE}" "${COVER_TMPFILE}" "${CP_TMPFILE}"
 
 if [ -f "${OUTPUT}" ] && jq empty "${OUTPUT}" 2>/dev/null; then
     echo "=== Done ==="
