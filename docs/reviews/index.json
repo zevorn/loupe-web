@@ -1,6 +1,42 @@
 {
-  "updated_at": "2026-03-28T11:37:52Z",
+  "updated_at": "2026-03-28T13:19:00Z",
   "reviews": [
+    {
+      "id": "20260328-20260328130110.166469-1-vikingtc4-at-gmail.com",
+      "path": "reviews/2026-03-28/20260328130110.166469-1-vikingtc4-at-gmail.com.json",
+      "title": "[PATCH] migration/ram: avoid page population in ram_handle_zero",
+      "author": "Trieu Huynh",
+      "date": "2026-03-28",
+      "subsystem": "migration/ram",
+      "version": 1,
+      "patch_count": 1,
+      "message_id": "<20260328130110.166469-1-vikingtc4@gmail.com>",
+      "verdict": "needs_revision",
+      "findings": {
+        "critical": 0,
+        "major": 1,
+        "minor": 0,
+        "nit": 0
+      }
+    },
+    {
+      "id": "20260328-20260328121215.159532-1-vikingtc4-at-gmail.com",
+      "path": "reviews/2026-03-28/20260328121215.159532-1-vikingtc4-at-gmail.com.json",
+      "title": "[PATCH] migration: fix QIOChannelFile leak on error in",
+      "author": "Trieu Huynh",
+      "date": "2026-03-28",
+      "subsystem": "migration",
+      "version": 1,
+      "patch_count": 1,
+      "message_id": "<20260328121215.159532-1-vikingtc4@gmail.com>",
+      "verdict": "needs_revision",
+      "findings": {
+        "critical": 0,
+        "major": 0,
+        "minor": 1,
+        "nit": 0
+      }
+    },
     {
       "id": "20260328-20260328072424.10611-1-vikingtc4-at-gmail.com",
       "path": "reviews/2026-03-28/20260328072424.10611-1-vikingtc4-at-gmail.com.json",

@@ -1,0 +1,71 @@
+{
+  "schema_version": "1",
+  "id": "20260328-20260328121215.159532-1-vikingtc4-at-gmail.com",
+  "series": {
+    "title": "[PATCH] migration: fix QIOChannelFile leak on error in",
+    "version": 1,
+    "patch_count": 1,
+    "author": {
+      "name": "Trieu Huynh",
+      "email": "vikingtc4@gmail.com"
+    },
+    "date": "2026-03-28",
+    "subsystem": "migration",
+    "message_id": "<20260328121215.159532-1-vikingtc4@gmail.com>",
+    "lore_url": "https://lore.kernel.org/qemu-devel/20260328121215.159532-1-vikingtc4%40gmail.com/",
+    "patchwork_url": "http://patchwork.ozlabs.org/project/qemu-devel/patch/20260328121215.159532-1-vikingtc4@gmail.com/",
+    "base_branch": "master"
+  },
+  "version_history": [],
+  "ml_context": {
+    "patchwork_state": "new",
+    "reviewed_by": [],
+    "acked_by": [],
+    "ci_status": "",
+    "prior_feedback": [],
+    "maintainer_activity": ""
+  },
+  "review": {
+    "verdict": "needs_revision",
+    "summary": "The leak fix in migration/file.c looks correct for both identified error paths, but the added regression test only covers the ftruncate() failure case and does not exercise the qio_channel_io_seek() failure path described in the changelog. The series is close, but test coverage is incomplete for the stated bug scope.",
+    "mode": "ci-single",
+    "stages": {
+      "A": "Checked the stated regression against the modified error paths in file_connect_outgoing().",
+      "B": "Validated the added object_unref(OBJECT(fioc)) calls as the correct resource release for the two leak sites.",
+      "C": "Reviewed the new qtest and confirmed it drives a failing file migration via /dev/full and compares FD counts before and after retries.",
+      "D": "Cross-checked reported metadata: checkpatch clean, git am applied, configure passed.",
+      "E": "Overall risk of the code change is low, but the regression coverage does not fully match the commit claim."
+    },
+    "findings": [
+      {
+        "id": "F1",
+        "severity": "medium",
+        "file": "tests/qtest/migration/file-tests.c",
+        "line": 41,
+        "title": "Regression test covers only one of the two claimed leak paths",
+        "description": "The changelog says the patch fixes leaks on both the ftruncate() failure path and the later qio_channel_io_seek() failure path, but the new test only drives repeated failures against /dev/full, which exercises the truncate failure case. That leaves the seek-after-channel-creation path untested, so a future regression there would not be caught by this test.",
+        "patch_context": [
+          "+    for (i = 0; i < retries; i++) {",
+          "+        migrate_qmp_fail(from, \"file:/dev/full\", NULL, \"{}\");",
+          "+        migration_event_wait(from, \"failed\");",
+          "+    }"
+        ],
+        "suggestion": "Add a second regression test that forces qio_channel_io_seek() to fail after channel creation, or narrow the commit message so it only claims coverage for the truncate-failure leak if that is the only practical test case.",
+        "confidence": "medium",
+        "confidence_reason": "The exercised path is evident from the use of /dev/full and the commit message explicitly names two separate error sites, but full runtime confirmation of the second path is not available from the diff alone."
+      }
+    ],
+    "checkpatch": {
+      "status": "clean",
+      "issues": []
+    },
+    "build_status": "configure_ok",
+    "am_status": "success"
+  },
+  "cover_letter": null,
+  "diff": "From git@z Thu Jan  1 00:00:00 1970\nSubject: [PATCH] migration: fix QIOChannelFile leak on error in\n file_connect_outgoing\nFrom: Trieu Huynh <vikingtc4@gmail.com>\nDate: Sat, 28 Mar 2026 21:12:14 +0900\nMessage-Id: <20260328121215.159532-1-vikingtc4@gmail.com>\nMIME-Version: 1.0\nContent-Type: text/plain; charset=\"utf-8\"\nContent-Transfer-Encoding: 7bit\n\nCommit 03a680c978 changed g_autoptr(QIOChannelFile) to a plain pointer\nbut failed to restore the necessary object_unref() calls on error paths.\nPreviously, these were handled implicitly by the g_autoptr cleanup\nmechanism.\n\nTwo error paths currently leak the QIOChannelFile object and its\nunderlying file descriptor:\n\n  1. When ftruncate() fails (e.g., on character or block devices).\n  2. When qio_channel_io_seek() fails after the channel is created.\n\nIn environments that retry migration automatically (e.g., libvirt),\nthese FDs accumulate until QEMU hits RLIMIT_NOFILE and fails with\nEMFILE (Too many open files).\n\nAdd the missing object_unref() calls to both error paths to ensure\nresources are properly released.\n\nSigned-off-by: Trieu Huynh <vikingtc4@gmail.com>\n---\n migration/file.c                   |  2 ++\n tests/qtest/migration/file-tests.c | 48 ++++++++++++++++++++++++++++++\n 2 files changed, 50 insertions(+)\n\ndiff --git a/migration/file.c b/migration/file.c\nindex 5618aced49..962b4b3a1b 100644\n--- a/migration/file.c\n+++ b/migration/file.c\n@@ -112,6 +112,7 @@ QIOChannel *file_connect_outgoing(MigrationState *s,\n         error_setg_errno(errp, errno,\n                          \"failed to truncate migration file to offset %\" PRIx64,\n                          offset);\n+        object_unref(OBJECT(fioc));\n         goto out;\n     }\n \n@@ -119,6 +120,7 @@ QIOChannel *file_connect_outgoing(MigrationState *s,\n \n     ioc = QIO_CHANNEL(fioc);\n     if (offset && qio_channel_io_seek(ioc, offset, SEEK_SET, errp) < 0) {\n+        object_unref(OBJECT(fioc));\n         ioc = NULL;\n         goto out;\n     }\ndiff --git a/tests/qtest/migration/file-tests.c b/tests/qtest/migration/file-tests.c\nindex 5d1b861cf6..fef172068f 100644\n--- a/tests/qtest/migration/file-tests.c\n+++ b/tests/qtest/migration/file-tests.c\n@@ -20,6 +20,51 @@\n \n static char *tmpfs;\n \n+static int count_proc_fds(pid_t pid)\n+{\n+    g_autofree char *fddir = g_strdup_printf(\"/proc/%d/fd\", (int)pid);\n+    GDir *dir = g_dir_open(fddir, 0, NULL);\n+    int count = 0;\n+\n+    if (!dir) {\n+        return -1;\n+    }\n+    while (g_dir_read_name(dir)) {\n+        count++;\n+    }\n+    g_dir_close(dir);\n+    return count;\n+}\n+\n+static void test_file_connect_outgoing_fd_leak(char *name, MigrateCommon *args)\n+{\n+    QTestState *from, *to;\n+    int fd_before, fd_after;\n+    const int retries = 5;\n+    int i;\n+    if (!g_file_test(\"/dev/full\", G_FILE_TEST_EXISTS)) {\n+        g_test_skip(\"/dev/full not available\");\n+        return;\n+    }\n+\n+    args->listen_uri = \"defer\";\n+    if (migrate_start(&from, &to, args->listen_uri, &args->start)) {\n+        return;\n+    }\n+\n+    fd_before = count_proc_fds(qtest_pid(from));\n+    g_assert_cmpint(fd_before, >, 0);\n+    for (i = 0; i < retries; i++) {\n+        migrate_qmp_fail(from, \"file:/dev/full\", NULL, \"{}\");\n+        migration_event_wait(from, \"failed\");\n+    }\n+\n+    fd_after = count_proc_fds(qtest_pid(from));\n+    g_assert_cmpint(fd_after, >, 0);\n+    g_assert_cmpint(fd_after, ==, fd_before);\n+    migrate_end(from, to, false);\n+}\n+\n static void test_precopy_file(char *name, MigrateCommon *args)\n {\n     g_autofree char *uri = g_strdup_printf(\"file:%s/%s\", tmpfs,\n@@ -314,6 +359,9 @@ void migration_test_add_file(MigrationTestEnv *env)\n     migration_test_add(\"/migration/precopy/file/offset/bad\",\n                        test_precopy_file_offset_bad);\n \n+    migration_test_add(\"/migration/precopy/file/connect-outgoing-fd-leak\",\n+                       test_file_connect_outgoing_fd_leak);\n+\n     migration_test_add(\"/migration/precopy/file/mapped-ram\",\n                        test_precopy_file_mapped_ram);\n     migration_test_add(\"/migration/precopy/file/mapped-ram/live\",\n-- \n2.43.0",
+  "patches": [],
+  "generated_at": "2026-03-28T13:17:53Z",
+  "generator": "loupe-review v1.0",
+  "disclaimer": "LLM-generated draft. Not an authoritative review."
+}

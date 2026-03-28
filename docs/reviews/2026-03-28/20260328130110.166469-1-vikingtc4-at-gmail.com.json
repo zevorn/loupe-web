@@ -1,0 +1,79 @@
+{
+  "schema_version": "1",
+  "id": "20260328-20260328130110.166469-1-vikingtc4-at-gmail.com",
+  "series": {
+    "title": "[PATCH] migration/ram: avoid page population in ram_handle_zero",
+    "version": 1,
+    "patch_count": 1,
+    "author": {
+      "name": "Trieu Huynh",
+      "email": "vikingtc4@gmail.com"
+    },
+    "date": "2026-03-28",
+    "subsystem": "migration/ram",
+    "message_id": "<20260328130110.166469-1-vikingtc4@gmail.com>",
+    "lore_url": "https://lore.kernel.org/qemu-devel/20260328130110.166469-1-vikingtc4%40gmail.com/",
+    "patchwork_url": "http://patchwork.ozlabs.org/project/qemu-devel/patch/20260328130110.166469-1-vikingtc4@gmail.com/",
+    "base_branch": "master"
+  },
+  "version_history": [],
+  "ml_context": {
+    "patchwork_state": "new",
+    "reviewed_by": [],
+    "acked_by": [],
+    "ci_status": "",
+    "prior_feedback": [],
+    "maintainer_activity": ""
+  },
+  "review": {
+    "verdict": "needs_revision",
+    "summary": "The optimization is valid for anonymous/tmpfs-backed sparse RAM, but it changes guest-visible semantics for shared file-backed RAM. Replacing an explicit zeroing write with MADV_DONTNEED can resurrect existing backing-file contents instead of producing zeros, so the patch is not safe as written.",
+    "mode": "ci-single",
+    "stages": {
+      "A": "Reviewed the intent and call sites. The patch changes zero-page handling in incoming migration and RDMA registration paths by preferring qemu_madvise(QEMU_MADV_DONTNEED) over reading/writing the mapping.",
+      "B": "Checked functional equivalence. The new fast path is only equivalent to zeroing for anonymous or implicitly-zero tmpfs-backed pages; it is not generally equivalent for shared file-backed mappings.",
+      "C": "Assessed backend and runtime safety. Gating on !(RAM_PREALLOC) does not distinguish anonymous/memfd scratch RAM from persistent or pre-populated file-backed RAM, so backend semantics can change.",
+      "D": "Build/checkpatch status is clean, but there is no evidence here of coverage for memory-backend-file/share=on or other non-memfd shared mappings where backing storage may already contain data.",
+      "E": "Recommendation: restrict the MADV_DONTNEED fast path to backends where discard is provably equivalent to guest-zeroing, or keep the old memset path for generic shared/file-backed RAM."
+    },
+    "findings": [
+      {
+        "id": "F1",
+        "severity": "high",
+        "file": "migration/ram.c",
+        "line": 3645,
+        "title": "MADV_DONTNEED is not equivalent to zeroing for shared file-backed RAM",
+        "description": "The new early-return path assumes discarding the page preserves the same guest-visible result as writing zeros. That is true for anonymous mappings and freshly-sized memfd/tmpfs pages, but not for generic MAP_SHARED file-backed RAM. On such backends, MADV_DONTNEED drops the page cache and later faults reload the file's existing contents; if the destination backing file already contains non-zero data, the guest will see stale bytes instead of zeros after migration. The current gate only excludes RAM_PREALLOC, which does not protect against memory-backend-file/share=on and similar cases.",
+        "patch_context": [
+          "-void ram_handle_zero(void *host, uint64_t size)",
+          "+void ram_handle_zero(void *host, uint64_t size, bool can_discard)",
+          " {",
+          "+    if (can_discard && qemu_madvise(host, size, QEMU_MADV_DONTNEED) == 0) {",
+          "+        return;",
+          "+    }",
+          "     if (!buffer_is_zero(host, size)) {",
+          "         memset(host, 0, size);",
+          "     }",
+          " }",
+          "-    ram_handle_zero(host, size);",
+          "+    ram_handle_zero(host, size, !(block->flags & RAM_PREALLOC));"
+        ],
+        "suggestion": "Only use the discard fast path for RAM backends where dropping the mapping is guaranteed to materialize zeros on the next access, such as anonymous RAM or explicitly-identified memfd/tmpfs scratch backends. For generic shared/file-backed RAM, keep the existing zeroing behavior (or add a stronger backend capability check instead of using !RAM_PREALLOC).",
+        "confidence": "high",
+        "confidence_reason": "This follows directly from Linux MAP_SHARED file-backed semantics: MADV_DONTNEED discards cached pages but does not overwrite backing storage, while the previous path explicitly zeroed memory."
+      }
+    ],
+    "checkpatch": {
+      "status": "clean",
+      "issues": []
+    },
+    "build_status": "configure_ok",
+    "am_status": "success"
+  },
+  "cover_letter": null,
+  "diff": "From git@z Thu Jan  1 00:00:00 1970\nSubject: [PATCH] migration/ram: avoid page population in ram_handle_zero\n via madvise\nFrom: Trieu Huynh <vikingtc4@gmail.com>\nDate: Sat, 28 Mar 2026 22:01:10 +0900\nMessage-Id: <20260328130110.166469-1-vikingtc4@gmail.com>\nMIME-Version: 1.0\nContent-Type: text/plain; charset=\"utf-8\"\nContent-Transfer-Encoding: 7bit\n\nWhen the destination receives a zero page during precopy migration,\nram_handle_zero() calls buffer_is_zero() which reads the page. For\nanonymous mmap this is benign (reads map to the shared zero page), but\nfor memory-backend-memfd (mmap(MAP_SHARED) of a memfd) even a read\ncommits a physical page in the tmpfs page cache.\n\nAs a result, after migration all zero pages of the guest are committed\non the destination, turning a sparse RSS into a fully-populated one\n(see GitLab issue #2839: a 256 GB VM went from ~4 GB RSS before\nmigration to ~256 GB after).\n\nAdd a bool can_discard parameter and call madvise(MADV_DONTNEED) when\nit is true. This releases tmpfs/anonymous pages back to the kernel's\nzero-page pool without reading the mapping at all. The madvise is\nissued before any read or write, preventing the initial page fault\nentirely.\n\nCallers pass can_discard = !(block->flags & RAM_PREALLOC) so that\nbackends with prealloc=on are unaffected: deliberately pre-faulted pages\nmust not be discarded. On the destination side vCPUs are paused\n(RUN_STATE_INMIGRATE) while precopy pages are loaded, so madvise is\nrace-free.\n\nAfter migration for VM with 4GB RAM, the RSS on destination was reduced\nto 247 MB (vs 4148 MB before change), measured via VmRSS in\n/proc/$PID/status.\n\nRelates-to: https://wiki.qemu.org/ToDo/LiveMigration#Avoid_page_population_when_page_is_not_populated\nSee-also: https://gitlab.com/qemu-project/qemu/-/issues/2839\n\nSigned-off-by: Trieu Huynh <vikingtc4@gmail.com>\n---\n migration/ram.c  | 16 +++++++++++++---\n migration/ram.h  |  2 +-\n migration/rdma.c |  9 ++++++++-\n 3 files changed, 22 insertions(+), 5 deletions(-)\n\ndiff --git a/migration/ram.c b/migration/ram.c\nindex 2a7e958e87..e57613e29d 100644\n--- a/migration/ram.c\n+++ b/migration/ram.c\n@@ -3638,9 +3638,13 @@ static inline void *colo_cache_from_block_offset(RAMBlock *block,\n  *\n  * @host: host address for the zero page\n  * @size: size of the zero page\n+ * @can_discard: check whether RAMBlock was created with prealloc=on\n  */\n-void ram_handle_zero(void *host, uint64_t size)\n+void ram_handle_zero(void *host, uint64_t size, bool can_discard)\n {\n+    if (can_discard && qemu_madvise(host, size, QEMU_MADV_DONTNEED) == 0) {\n+        return;\n+    }\n     if (!buffer_is_zero(host, size)) {\n         memset(host, 0, size);\n     }\n@@ -4086,7 +4090,7 @@ static bool handle_zero_mapped_ram(RAMBlock *block, unsigned long from_bit_idx,\n                    block->idstr);\n         return false;\n     }\n-    ram_handle_zero(host, size);\n+    ram_handle_zero(host, size, !(block->flags & RAM_PREALLOC));\n \n     return true;\n }\n@@ -4421,7 +4425,13 @@ static int ram_load_precopy(QEMUFile *f)\n                 ret = -EINVAL;\n                 break;\n             }\n-            ram_handle_zero(host, TARGET_PAGE_SIZE);\n+            {\n+                ram_addr_t ram_offset;\n+                RAMBlock *rb = qemu_ram_block_from_host(host, false,\n+                                                        &ram_offset);\n+                bool can_discard = rb && !(rb->flags & RAM_PREALLOC);\n+                ram_handle_zero(host, TARGET_PAGE_SIZE, can_discard);\n+            }\n             break;\n \n         case RAM_SAVE_FLAG_PAGE:\ndiff --git a/migration/ram.h b/migration/ram.h\nindex 41697a7599..faa80f27d1 100644\n--- a/migration/ram.h\n+++ b/migration/ram.h\n@@ -90,7 +90,7 @@ int ram_discard_range(const char *block_name, uint64_t start, size_t length);\n int ram_postcopy_incoming_init(MigrationIncomingState *mis, Error **errp);\n int ram_load_postcopy(QEMUFile *f, int channel);\n \n-void ram_handle_zero(void *host, uint64_t size);\n+void ram_handle_zero(void *host, uint64_t size, bool can_discard);\n \n void ram_transferred_add(uint64_t bytes);\n void ram_release_page(const char *rbname, uint64_t offset);\ndiff --git a/migration/rdma.c b/migration/rdma.c\nindex 55ab85650a..d4c36af5b9 100644\n--- a/migration/rdma.c\n+++ b/migration/rdma.c\n@@ -28,6 +28,7 @@\n #include \"qemu/error-report.h\"\n #include \"qemu/main-loop.h\"\n #include \"qemu/module.h\"\n+#include \"system/ramblock.h\"\n #include \"qemu/rcu.h\"\n #include \"qemu/sockets.h\"\n #include \"qemu/bitmap.h\"\n@@ -3413,7 +3414,13 @@ int rdma_registration_handle(QEMUFile *f)\n                              comp->value);\n                 goto err;\n             }\n-            ram_handle_zero(host_addr, comp->length);\n+            {\n+                ram_addr_t ram_offset;\n+                RAMBlock *rb = qemu_ram_block_from_host(host_addr, false,\n+                                                        &ram_offset);\n+                bool can_discard = rb && !(rb->flags & RAM_PREALLOC);\n+                ram_handle_zero(host_addr, comp->length, can_discard);\n+            }\n             break;\n \n         case RDMA_CONTROL_REGISTER_FINISHED:\n-- \n2.43.0",
+  "patches": [],
+  "generated_at": "2026-03-28T13:19:00Z",
+  "generator": "loupe-review v1.0",
+  "disclaimer": "LLM-generated draft. Not an authoritative review."
+}
