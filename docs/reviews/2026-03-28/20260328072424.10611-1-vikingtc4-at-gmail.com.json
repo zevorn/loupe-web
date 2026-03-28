@@ -1,0 +1,53 @@
+{
+  "schema_version": "1",
+  "id": "20260328-20260328072424.10611-1-vikingtc4-at-gmail.com",
+  "series": {
+    "title": "[PATCH] migration: validate page_size in mapped-ram header before",
+    "version": 1,
+    "patch_count": 1,
+    "author": {
+      "name": "Trieu Huynh",
+      "email": "vikingtc4@gmail.com"
+    },
+    "date": "2026-03-28",
+    "subsystem": "migration",
+    "message_id": "<20260328072424.10611-1-vikingtc4@gmail.com>",
+    "lore_url": "https://lore.kernel.org/qemu-devel/20260328072424.10611-1-vikingtc4%40gmail.com/",
+    "patchwork_url": "http://patchwork.ozlabs.org/project/qemu-devel/patch/20260328072424.10611-1-vikingtc4@gmail.com/",
+    "base_branch": "master"
+  },
+  "version_history": [],
+  "ml_context": {
+    "patchwork_state": "new",
+    "reviewed_by": [],
+    "acked_by": [],
+    "ci_status": "",
+    "prior_feedback": [],
+    "maintainer_activity": ""
+  },
+  "review": {
+    "verdict": "accept",
+    "summary": "The patch addresses a real correctness issue in migration stream handling by rejecting a zero mapped-ram page_size before later arithmetic uses it. The change is narrowly scoped, matches the reported crash mechanism, preserves existing control flow by returning an error via errp, and introduces no obvious regression in the shown path.",
+    "mode": "ci-single",
+    "stages": {
+      "A": "Problem statement is credible: page_size is read from the migration stream, converted from big-endian, and can be attacker/corruption controlled. A zero value would make later division undefined and can crash QEMU.",
+      "B": "The implementation is technically correct for the reported bug. Validation is inserted immediately after endian conversion and before downstream use, which is the right place to reject an invalid header.",
+      "C": "Error handling is consistent with surrounding QEMU style: error_setg(errp, ...) followed by false return. The message is specific and useful for operators diagnosing malformed migration input.",
+      "D": "Risk of regression appears low. The patch only rejects an invalid value that should never be accepted from a well-formed stream, and it does not alter valid-header behavior.",
+      "E": "No additional issues are evident from the provided diff alone. A dedicated negative test for malformed mapped-ram headers would improve coverage, but its absence is not a blocker for this fix."
+    },
+    "findings": [],
+    "checkpatch": {
+      "status": "clean",
+      "issues": []
+    },
+    "build_status": "configure_ok",
+    "am_status": "success"
+  },
+  "cover_letter": null,
+  "diff": "From git@z Thu Jan  1 00:00:00 1970\nSubject: [PATCH] migration: validate page_size in mapped-ram header before\n use\nFrom: Trieu Huynh <vikingtc4@gmail.com>\nDate: Sat, 28 Mar 2026 16:24:24 +0900\nMessage-Id: <20260328072424.10611-1-vikingtc4@gmail.com>\nMIME-Version: 1.0\nContent-Type: text/plain; charset=\"utf-8\"\nContent-Transfer-Encoding: 7bit\n\nmapped_ram_read_header() reads page_size from the migration stream and\nstores it in MappedRamHeader, but does not validate that the value is\nnon-zero before it is later used in parse_ramblock_mapped_ram():\n\nnum_pages = length / header.page_size;\n\nIf a corrupted or malformed migration stream provides page_size = 0,\nQEMU unexpectedly crashes.\n\nAdd validation in mapped_ram_read_header() to reject zero page_size\nvalues early and return an error instead of continuing with an invalid\nheader.\n\nSteps to reproduce:\n\nCreate a migration snapshot with mapped-ram enabled:\n(qemu) migrate_set_capability mapped-ram on\n(qemu) migrate file:/tmp/qemu-snapshots/snapshot.bin\nModify the snapshot so that MappedRamHeader.page_size becomes 0.\nRestore the snapshot:\n(qemu) migrate_set_capability mapped-ram on\n(qemu) migrate_incoming file:/tmp/qemu-bug-test/snapshot.bin\n\nAs-is: qemu crashes immediately\n(qemu) Floating point exception (core dumped)\nTo-be: qemu continue running\n(qemu) qemu-system-x86_64: Migration mapped-ram header has invalid\npage_size of 0\n\nSigned-off-by: Trieu Huynh <vikingtc4@gmail.com>\n---\n migration/ram.c | 5 +++++\n 1 file changed, 5 insertions(+)\n\ndiff --git a/migration/ram.c b/migration/ram.c\nindex 979751f61b..2a7e958e87 100644\n--- a/migration/ram.c\n+++ b/migration/ram.c\n@@ -3088,6 +3088,11 @@ static bool mapped_ram_read_header(QEMUFile *file, MappedRamHeader *header,\n     }\n \n     header->page_size = be64_to_cpu(header->page_size);\n+    if (header->page_size == 0) {\n+        error_setg(errp, \"Migration mapped-ram header has invalid \"\n+                   \"page_size of 0\");\n+        return false;\n+    }\n     header->bitmap_offset = be64_to_cpu(header->bitmap_offset);\n     header->pages_offset = be64_to_cpu(header->pages_offset);\n \n-- \n2.43.0",
+  "patches": [],
+  "generated_at": "2026-03-28T08:56:11Z",
+  "generator": "loupe-review v1.0",
+  "disclaimer": "LLM-generated draft. Not an authoritative review."
+}
