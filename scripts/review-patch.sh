@@ -411,24 +411,44 @@ import sys, json
 
 text = open(sys.argv[1]).read()
 
-# Strategy: codex outputs the review JSON as a single line containing "verdict".
-# Find all lines that are valid JSON and contain "verdict".
-# This avoids MCP tool JSON (which contains thoughtNumber, structuredContent, etc.)
+# Extract the review JSON from codex output.
+# Two formats are accepted:
+#   1. Full schema: {"schema_version":..., "review": {"verdict":..., ...}, ...}
+#   2. Review-only: {"verdict":..., "findings":[...], ...}
+# MCP tool JSON (thoughtNumber, structuredContent) is excluded.
+
+def is_mcp(obj):
+    return any(k in obj for k in ('thoughtNumber', 'structuredContent', 'nextThoughtNeeded'))
+
+def extract_review(obj):
+    """Return a review-only dict from either format, or None."""
+    if is_mcp(obj):
+        return None
+    # Full schema: verdict lives inside obj["review"]
+    if 'review' in obj and isinstance(obj['review'], dict) and 'verdict' in obj['review']:
+        return obj['review']
+    # Review-only: verdict at top level
+    if 'verdict' in obj:
+        return obj
+    return None
+
 result = None
 
+# Pass 1: line-based extraction
 for line in text.split('\n'):
     line = line.strip()
     if not line.startswith('{') or '"verdict"' not in line:
         continue
     try:
         obj = json.loads(line)
-        if 'verdict' in obj and 'thoughtNumber' not in obj:
-            result = obj
+        r = extract_review(obj)
+        if r is not None:
+            result = r
             break
     except:
         continue
 
-# Fallback: try block-based extraction if line-based failed
+# Pass 2: block-based extraction (largest JSON objects first)
 if result is None:
     blocks = []
     depth = 0
@@ -445,9 +465,9 @@ if result is None:
     for b in sorted(blocks, key=len, reverse=True):
         try:
             obj = json.loads(b)
-            if 'verdict' in obj and 'thoughtNumber' not in obj \
-               and 'structuredContent' not in obj and 'nextThoughtNeeded' not in obj:
-                result = obj
+            r = extract_review(obj)
+            if r is not None:
+                result = r
                 break
         except:
             continue
@@ -474,6 +494,10 @@ for finding in result.get('findings', []):
     finding['severity'] = SEV_MAP.get(s, s)
     if finding['severity'] not in ('critical', 'major', 'minor', 'nit'):
         finding['severity'] = 'nit'
+
+# AC-1 guardrail: warn if needs_revision but no findings
+if result['verdict'] == 'needs_revision' and not result.get('findings'):
+    print("  WARNING: verdict is needs_revision but findings array is empty", file=sys.stderr)
 
 with open(sys.argv[2], 'w') as f:
     json.dump(result, f, ensure_ascii=False)
