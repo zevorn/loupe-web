@@ -67,7 +67,172 @@ SUBSYSTEM=$(echo "${TITLE}" | sed -n 's/.*\] *\([^:]*\):.*/\1/p' | head -1)
 LORE_URL="https://lore.kernel.org/qemu-devel/${ENCODED_MSGID}/"
 
 echo "  Title: ${TITLE}"
-echo "  Author: ${AUTHOR_NAME}, Subsystem: ${SUBSYSTEM}"
+echo "  Author: ${AUTHOR_NAME}, Version: v${VERSION}, Subsystem: ${SUBSYSTEM}"
+
+# --- Step 2.5: Fetch version history and ML context from Patchwork ---
+echo "[2.5/7] Fetching version history and mailing list context..."
+VH_FILE=$(mktemp)
+ML_FILE=$(mktemp)
+
+# Extract subject stem: strip [PATCH vN n/m], [RFC ...], prefixes
+SUBJECT_STEM=$(echo "${TITLE}" | sed -E 's/^\[.*\] *//' | sed 's/^ *//')
+
+# Collect R-b/A-b tags and comments for current patch
+REVIEWED_BY="[]"
+ACKED_BY="[]"
+CI_STATUS=""
+MAINTAINER_ACTIVITY=""
+
+if [ -n "${SERIES_ID}" ]; then
+    # Fetch all patches in current series for R-b / A-b tags
+    SERIES_PATCHES=$(curl -sL -A "${UA}" "https://patchwork.ozlabs.org/api/series/${SERIES_ID}/" | jq -r '.patches[]?.id // empty' 2>/dev/null)
+    ALL_COMMENTS=""
+    for PID in ${SERIES_PATCHES}; do
+        PATCH_COMMENTS=$(curl -sL -A "${UA}" "https://patchwork.ozlabs.org/api/patches/${PID}/comments/" 2>/dev/null)
+        ALL_COMMENTS="${ALL_COMMENTS}${PATCH_COMMENTS}"
+    done
+    # Extract Reviewed-by and Acked-by from comments
+    REVIEWED_BY=$(echo "${ALL_COMMENTS}" | grep -oE 'Reviewed-by: [^<]*<[^>]+>' | sort -u | jq -Rn '[inputs]' 2>/dev/null || echo '[]')
+    ACKED_BY=$(echo "${ALL_COMMENTS}" | grep -oE 'Acked-by: [^<]*<[^>]+>' | sort -u | jq -Rn '[inputs]' 2>/dev/null || echo '[]')
+    # CI status from Patchwork checks
+    FIRST_PID=$(echo "${SERIES_PATCHES}" | head -1)
+    if [ -n "${FIRST_PID}" ]; then
+        CI_STATUS=$(curl -sL -A "${UA}" "https://patchwork.ozlabs.org/api/patches/${FIRST_PID}/checks/" | jq -r '.[0].state // empty' 2>/dev/null)
+    fi
+fi
+
+# Search for prior versions if version > 1
+echo '[]' > "${VH_FILE}"
+if [ "${VERSION}" -gt 1 ] && [ -n "${SUBJECT_STEM}" ]; then
+    echo "  Searching for prior versions of: ${SUBJECT_STEM}"
+    ENCODED_STEM=$(python3 -c "import urllib.parse,sys; print(urllib.parse.quote(sys.argv[1], safe=''))" "${SUBJECT_STEM}")
+    PRIOR_PATCHES_FILE=$(mktemp)
+    curl -sL -A "${UA}" "https://patchwork.ozlabs.org/api/patches/?project=qemu-devel&q=${ENCODED_STEM}&order=-date&per_page=30" > "${PRIOR_PATCHES_FILE}" 2>/dev/null
+
+    python3 - "${PRIOR_PATCHES_FILE}" "${VH_FILE}" "${VERSION}" "${BARE_MSGID}" << 'VHEOF'
+import sys, json
+
+try:
+    patches = json.load(open(sys.argv[1]))
+except:
+    patches = []
+
+out_path = sys.argv[2]
+current_ver = int(sys.argv[3])
+current_msgid = sys.argv[4]
+
+# Group patches by version, skip current version
+versions = {}
+for p in (patches if isinstance(patches, list) else []):
+    name = p.get("name", "")
+    msgid = p.get("msgid", "")
+    # Extract version from patch name
+    import re
+    vm = re.search(r'\bv(\d+)\b', name, re.IGNORECASE)
+    ver = int(vm.group(1)) if vm else 1
+    if ver >= current_ver:
+        continue
+    if ver not in versions:
+        date = (p.get("date") or "")[:10]
+        # Fetch comments for this patch to get review data
+        pid = p.get("id")
+        series_list = p.get("series", [])
+        sid = series_list[0].get("id") if series_list else None
+        versions[ver] = {
+            "version": ver,
+            "date": date,
+            "message_id": msgid,
+            "patch_id": pid,
+            "series_id": sid,
+            "key_change": "",
+            "review_verdict": "no_review",
+            "findings": {"critical": 0, "major": 0, "minor": 0, "nit": 0},
+            "key_reviewers": []
+        }
+
+# For each prior version, fetch comments to determine review status
+import urllib.request
+UA = "Mozilla/5.0 (compatible; loupe-review/1.0)"
+
+for ver in sorted(versions.keys()):
+    v = versions[ver]
+    reviewers = set()
+    has_change_request = False
+
+    # Try series-level comment fetch if we have series_id
+    patch_ids = []
+    if v["series_id"]:
+        try:
+            req = urllib.request.Request(
+                f"https://patchwork.ozlabs.org/api/series/{v['series_id']}/",
+                headers={"User-Agent": UA})
+            series_data = json.loads(urllib.request.urlopen(req, timeout=10).read())
+            patch_ids = [p["id"] for p in series_data.get("patches", [])]
+        except:
+            pass
+    if not patch_ids and v["patch_id"]:
+        patch_ids = [v["patch_id"]]
+
+    all_comment_text = ""
+    for pid in patch_ids:
+        try:
+            req = urllib.request.Request(
+                f"https://patchwork.ozlabs.org/api/patches/{pid}/comments/",
+                headers={"User-Agent": UA})
+            comments = json.loads(urllib.request.urlopen(req, timeout=10).read())
+            for c in (comments if isinstance(comments, list) else []):
+                submitter = c.get("submitter", {}).get("name", "")
+                content = c.get("content", "")
+                all_comment_text += content + "\n"
+                if submitter:
+                    reviewers.add(submitter)
+        except:
+            pass
+
+    # Analyze comments
+    rb_tags = re.findall(r'Reviewed-by:\s*([^<\n]+)', all_comment_text)
+    ab_tags = re.findall(r'Acked-by:\s*([^<\n]+)', all_comment_text)
+    nack = bool(re.search(r'(?i)\bnack\b|not acceptable', all_comment_text))
+
+    if rb_tags or ab_tags:
+        v["review_verdict"] = "ready_to_merge"
+        v["key_reviewers"] = list(set(r.strip() for r in rb_tags + ab_tags))
+    elif nack:
+        v["review_verdict"] = "blocked"
+        v["key_reviewers"] = list(reviewers)[:3]
+    elif reviewers or all_comment_text.strip():
+        v["review_verdict"] = "needs_revision"
+        v["key_reviewers"] = list(reviewers)[:3]
+    else:
+        v["review_verdict"] = "no_review"
+
+result = sorted(versions.values(), key=lambda x: x["version"])
+# Clean up internal fields
+for r in result:
+    r.pop("patch_id", None)
+    r.pop("series_id", None)
+
+with open(out_path, 'w') as f:
+    json.dump(result, f, ensure_ascii=False)
+VHEOF
+
+    rm -f "${PRIOR_PATCHES_FILE}"
+    VH_COUNT=$(jq 'length' "${VH_FILE}" 2>/dev/null || echo 0)
+    echo "  Found ${VH_COUNT} prior version(s)"
+else
+    echo "  v1 patch, no prior versions"
+fi
+
+# Build ml_context JSON
+cat > "${ML_FILE}" << MLEOF
+{
+    "reviewed_by": ${REVIEWED_BY},
+    "acked_by": ${ACKED_BY},
+    "ci_status": "${CI_STATUS}",
+    "prior_feedback": [],
+    "maintainer_activity": "${MAINTAINER_ACTIVITY}"
+}
+MLEOF
 
 # --- Step 3: Download patches with b4 ---
 echo "[3/7] Downloading patches with b4..."
@@ -292,7 +457,6 @@ cat > "${META_FILE}" << METAEOF
     "message_id": $(python3 -c "import json,sys; print(json.dumps(sys.argv[1]))" "${MSGID}"),
     "lore_url": "${LORE_URL}",
     "patchwork_url": "${PW_URL:-}",
-    "patchwork_state": "${PW_STATE}",
     "checkpatch_status": "${CHECKPATCH_RESULT}",
     "build_status": "${BUILD_STATUS}",
     "am_status": "${AM_STATUS}",
@@ -308,14 +472,16 @@ echo "${DIFF_TEXT}" > "${DIFF_TMPFILE}"
 echo "${COVER_TEXT}" > "${COVER_TMPFILE}"
 echo "${CHECKPATCH_ISSUES}" > "${CP_TMPFILE}"
 
-python3 - "${META_FILE}" "${REVIEW_FILE}" "${DIFF_TMPFILE}" "${COVER_TMPFILE}" "${CP_TMPFILE}" "${OUTPUT}" << 'PYEOF'
+python3 - "${META_FILE}" "${REVIEW_FILE}" "${DIFF_TMPFILE}" "${COVER_TMPFILE}" "${CP_TMPFILE}" "${VH_FILE}" "${ML_FILE}" "${OUTPUT}" << 'PYEOF'
 import sys, json
 meta = json.load(open(sys.argv[1]))
 review = json.load(open(sys.argv[2]))
 diff_text = open(sys.argv[3]).read().strip()
 cover_text = open(sys.argv[4]).read().strip()
 cp_text = open(sys.argv[5]).read().strip()
-out_path = sys.argv[6]
+vh = json.load(open(sys.argv[6]))
+ml = json.load(open(sys.argv[7]))
+out_path = sys.argv[8]
 slug = meta["message_id"].strip("<>").replace("@","-at-")
 for c in "/<>?*[]\\": slug = slug.replace(c, "-")
 slug = slug[:60]
@@ -341,13 +507,8 @@ output = {
         "patchwork_url": meta["patchwork_url"],
         "base_branch": "master"
     },
-    "version_history": [],
-    "ml_context": {
-        "patchwork_state": meta["patchwork_state"],
-        "reviewed_by": [], "acked_by": [],
-        "ci_status": "", "prior_feedback": [],
-        "maintainer_activity": ""
-    },
+    "version_history": vh,
+    "ml_context": ml,
     "review": {
         "verdict": review.get("verdict", "unknown"),
         "summary": review.get("summary", ""),
@@ -362,14 +523,14 @@ output = {
     "diff": diff_text if diff_text else None,
     "patches": [],
     "generated_at": meta["generated_at"],
-    "generator": "loupe-review v1.0",
+    "generator": "loupe:patch-review v1.0",
     "disclaimer": "LLM-generated draft. Not an authoritative review."
 }
 with open(out_path, 'w') as f:
     json.dump(output, f, indent=2, ensure_ascii=False)
 PYEOF
 
-rm -f "${META_FILE}" "${REVIEW_FILE}" "${DIFF_TMPFILE}" "${COVER_TMPFILE}" "${CP_TMPFILE}"
+rm -f "${META_FILE}" "${REVIEW_FILE}" "${DIFF_TMPFILE}" "${COVER_TMPFILE}" "${CP_TMPFILE}" "${VH_FILE}" "${ML_FILE}"
 
 if [ -f "${OUTPUT}" ] && jq empty "${OUTPUT}" 2>/dev/null; then
     echo "=== Done ==="
