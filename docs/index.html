@@ -1294,13 +1294,12 @@ function renderReviewView() {
         html += '</tbody></table>';
     }
 
-    /* 3. ML Context */
+    /* 3. Mailing List Context */
     var ml = r.ml_context;
     if (ml) {
-        html += '<h2>ML Context</h2>';
+        html += '<h2>Mailing List Context</h2>';
         html += '<div class="stages">';
         var mlRows = [
-            ['patchwork_state', ml.patchwork_state],
             ['reviewed_by', Array.isArray(ml.reviewed_by) ? ml.reviewed_by.join(', ') : ml.reviewed_by],
             ['acked_by', Array.isArray(ml.acked_by) ? ml.acked_by.join(', ') : ml.acked_by],
             ['ci_status', ml.ci_status],
