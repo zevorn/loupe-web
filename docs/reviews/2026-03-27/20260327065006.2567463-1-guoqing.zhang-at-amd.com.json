@@ -39,7 +39,7 @@
     "findings": [
       {
         "id": "F1",
-        "severity": "high",
+        "severity": "major",
         "file": "migration/rdma.c",
         "line": 3524,
         "title": "RDMA chunk size becomes protocol-significant without synchronization between peers",
@@ -56,7 +56,7 @@
       },
       {
         "id": "F2",
-        "severity": "medium",
+        "severity": "minor",
         "file": "migration/options.c",
         "line": 185,
         "title": "Invalid startup property values can bypass validation and reach a runtime assert",

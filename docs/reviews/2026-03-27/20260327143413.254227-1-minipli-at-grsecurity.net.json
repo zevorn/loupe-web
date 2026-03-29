@@ -26,7 +26,7 @@
     "maintainer_activity": ""
   },
   "review": {
-    "verdict": "changes_requested",
+    "verdict": "needs_revision",
     "summary": "The series updates CR4 flag XMLs usefully, but it introduces a duplicated `PKE` field in the 32-bit target description. That creates an invalid/ambiguous register flag mapping and needs to be fixed before merge.",
     "mode": "ci-single",
     "stages": {

@@ -26,7 +26,7 @@
     "maintainer_activity": ""
   },
   "review": {
-    "verdict": "accept",
+    "verdict": "ready_to_merge",
     "summary": "Both patches appear correct. Patch 2 fixes a real guest-triggerable out-of-bounds access in nvme_abort by validating sqid before indexing n->sq[]. Patch 1 restores the WZDS advertisement in dlfeat and its rationale is consistent with NVMe semantics because DEAC is advisory and QEMU may still physically zero blocks when unmap is unavailable. No correctness regressions were identified from the provided diffs alone.",
     "mode": "ci-single",
     "stages": {

@@ -26,7 +26,7 @@
     "maintainer_activity": ""
   },
   "review": {
-    "verdict": "changes_requested",
+    "verdict": "needs_revision",
     "summary": "The series is mechanically correct overall, but patch 2 leaves two user-facing validation messages inconsistent with the actual accepted ranges in code. Since this series is explicitly about fixing migration error/help text, those remaining inaccuracies should be corrected in the same pass.",
     "mode": "ci-single",
     "stages": {

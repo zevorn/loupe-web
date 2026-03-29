@@ -26,7 +26,7 @@
     "maintainer_activity": ""
   },
   "review": {
-    "verdict": "changes-requested",
+    "verdict": "needs_revision",
     "summary": "The ACPI RTC description itself looks mechanically reasonable, but the series changes guest-visible firmware interfaces unconditionally on existing LoongArch virt machine types. The FDT patch removes an already-published IRQ resource from the RTC node, which is an ABI regression for DT guests. The ACPI patch also exposes a new RTC device in DSDT for all compat machine versions instead of gating it to a new machine type/compat property.",
     "mode": "ci-single",
     "stages": {
@@ -39,7 +39,7 @@
     "findings": [
       {
         "id": "F1",
-        "severity": "high",
+        "severity": "major",
         "file": "hw/loongarch/virt-fdt-build.c",
         "line": 472,
         "title": "Removing RTC IRQ properties from the DT is a guest ABI break",
@@ -73,7 +73,7 @@
       },
       {
         "id": "F2",
-        "severity": "medium",
+        "severity": "minor",
         "file": "hw/loongarch/virt-acpi-build.c",
         "line": 499,
         "title": "New ACPI RTC device is exposed on all compat machine versions",

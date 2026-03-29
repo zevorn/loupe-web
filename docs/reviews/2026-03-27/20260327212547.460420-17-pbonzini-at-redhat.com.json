@@ -26,7 +26,7 @@
     "maintainer_activity": ""
   },
   "review": {
-    "verdict": "reject",
+    "verdict": "blocked",
     "summary": "The lifetime and reentrancy fixes in the visible part of the series are directionally reasonable, but patch 6 introduces a clear build regression in lsi53c895a by renaming the command-state enum and still using the removed LSI_CMD_PENDING constant. On the provided patches, the series is not ready to merge.",
     "mode": "ci-single",
     "stages": {
@@ -54,7 +54,7 @@
     "findings": [
       {
         "id": "F1",
-        "severity": "high",
+        "severity": "major",
         "file": "hw/scsi/lsi53c895a.c",
         "line": 882,
         "title": "Patch 6 leaves removed LSI_CMD_PENDING references behind",

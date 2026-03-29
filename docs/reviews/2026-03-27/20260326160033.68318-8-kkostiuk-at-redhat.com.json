@@ -39,7 +39,7 @@
     "findings": [
       {
         "id": "F1",
-        "severity": "medium",
+        "severity": "minor",
         "file": "storage-daemon/meson.build",
         "line": 1,
         "title": "`assert(have_tools)` can regress `--disable-tools` configurations",

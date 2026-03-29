@@ -39,7 +39,7 @@
     "findings": [
       {
         "id": "F1",
-        "severity": "medium",
+        "severity": "minor",
         "file": "migration/savevm.c",
         "line": 871,
         "title": "New hard assertion can break existing VMS_ARRAY_OF_POINTER descriptors that are not converted by this series",
@@ -61,7 +61,7 @@
       },
       {
         "id": "F2",
-        "severity": "medium",
+        "severity": "minor",
         "file": "include/migration/vmstate.h",
         "line": 186,
         "title": "Reordering VMStateField members is a compatibility hazard for positional initializers",

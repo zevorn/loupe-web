@@ -26,7 +26,7 @@
     "maintainer_activity": ""
   },
   "review": {
-    "verdict": "accept",
+    "verdict": "ready_to_merge",
     "summary": "Patch is a straightforward correctness fix: RHCT time base frequency now follows the KVM-provided value when KVM is enabled, matching the existing DT behavior. The change is localized, build-neutral for the reported configuration, and I did not identify a functional regression in the diff provided.",
     "mode": "ci-single",
     "stages": {

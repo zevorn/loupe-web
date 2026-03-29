@@ -26,7 +26,7 @@
     "maintainer_activity": ""
   },
   "review": {
-    "verdict": "accept",
+    "verdict": "ready_to_merge",
     "summary": "The change is mechanically small and matches established QEMU migration patterns for timer-backed CPU state. Adding `env.timer` as an optional subsection addresses the reported post-load hang without perturbing KVM cases where the timer is absent. I did not identify a correctness, compatibility, or maintainability issue in the patch itself.",
     "mode": "ci-single",
     "stages": {

@@ -26,7 +26,7 @@
     "maintainer_activity": ""
   },
   "review": {
-    "verdict": "reject",
+    "verdict": "blocked",
     "summary": "The new `locking=posix` mode is implemented by mutating a process-global lock backend in `util/osdep.c`. That makes the option non-local: after one `locking=posix` open, later file nodes no longer get their requested locking mode, and already-open OFD-locked nodes can hit the wrong fcntl command on later lock operations. The feature needs a per-node/per-fd lock backend instead of changing global state.",
     "mode": "ci-single",
     "stages": {
@@ -39,7 +39,7 @@
     "findings": [
       {
         "id": "F1",
-        "severity": "high",
+        "severity": "major",
         "file": "block/file-posix.c",
         "line": 690,
         "title": "`locking=posix` permanently flips the process-wide lock backend",
@@ -62,7 +62,7 @@
       },
       {
         "id": "F2",
-        "severity": "high",
+        "severity": "major",
         "file": "util/osdep.c",
         "line": 241,
         "title": "Global backend switch can break later lock operations on already-open OFD-locked files",

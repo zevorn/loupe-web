@@ -26,7 +26,7 @@
     "maintainer_activity": ""
   },
   "review": {
-    "verdict": "accept",
+    "verdict": "ready_to_merge",
     "summary": "The series fixes real POSIX-shell portability bugs in `scripts/qemu-guest-agent/fsfreeze-hook` without introducing a behavioral regression I could substantiate from the patch context. The logging fallback fix also corrects an existing one-shot syslog-then-file inconsistency when the logfile does not yet exist.",
     "mode": "ci-single",
     "stages": {

@@ -26,7 +26,7 @@
     "maintainer_activity": ""
   },
   "review": {
-    "verdict": "accept",
+    "verdict": "ready_to_merge",
     "summary": "The change is correct and narrowly scoped. `ide_sector_read()` can start block I/O before `ide_transfer_start()` runs, so moving `ide_set_retry()` into the read path closes the stale-retry window described in the commit message. I did not identify a behavioral regression from the added call, and the patch matches the existing write-side intent of recording retry state before issuing I/O.",
     "mode": "ci-single",
     "stages": {

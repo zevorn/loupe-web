@@ -26,7 +26,7 @@
     "maintainer_activity": ""
   },
   "review": {
-    "verdict": "no_findings",
+    "verdict": "ready_to_merge",
     "summary": "Review of the provided diff (patches 1-3/65 plus cover letter) did not identify a concrete correctness or regression issue. The QOM helper refactor appears behavior-preserving, the link-array property plumbing is internally consistent in the posted hunks, and the GICv5 class skeleton is straightforward bootstrap code.",
     "mode": "ci-single",
     "stages": {

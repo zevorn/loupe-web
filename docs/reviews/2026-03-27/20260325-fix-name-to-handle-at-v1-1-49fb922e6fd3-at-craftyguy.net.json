@@ -26,7 +26,7 @@
     "maintainer_activity": ""
   },
   "review": {
-    "verdict": "accept",
+    "verdict": "ready_to_merge",
     "summary": "The change addresses the reported linux-user crash by using 64-bit storage for mount_id when AT_HANDLE_MNT_ID_UNIQUE is requested, while preserving the existing 32-bit path for older semantics. I did not identify a functional regression in the patch itself.",
     "mode": "ci-single",
     "stages": {

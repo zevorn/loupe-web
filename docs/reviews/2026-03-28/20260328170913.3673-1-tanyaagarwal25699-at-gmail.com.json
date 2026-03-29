@@ -39,7 +39,7 @@
     "findings": [
       {
         "id": "F1",
-        "severity": "medium",
+        "severity": "minor",
         "file": "target/i386/svm.h",
         "line": 57,
         "title": "Whitespace-only churn across stable target headers without functional payoff",
@@ -58,7 +58,7 @@
       },
       {
         "id": "F2",
-        "severity": "low",
+        "severity": "nit",
         "file": "target/alpha/cpu.h",
         "line": 311,
         "title": "Single patch mixes unrelated target subsystems, increasing review and merge friction",

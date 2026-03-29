@@ -90,13 +90,20 @@ jobs:
             local slug
             slug=$(echo "${msgid}" | sed 's/[<>]//g; s/@/-at-/; s/[^a-zA-Z0-9._-]/-/g' | cut -c1-80)
             local output="${DATE_DIR}/${slug}.json"
-            bash scripts/review-patch.sh "${msgid}" "${output}" || \
-              echo "Review failed for ${msgid}, continuing..."
+            local logfile="${DATE_DIR}/${slug}.log"
+            bash scripts/review-patch.sh "${msgid}" "${output}" "${logfile}" || \
+              echo "[FAIL] ${msgid}" >> "${DATE_DIR}/_summary.log"
           }
           export -f review_one
           export DATE_DIR
 
           jq -r '.[]' /tmp/new-patches.json | xargs -I{} -P4 bash -c 'review_one "$@"' _ {}
+
+          echo "=== Review Summary ==="
+          for f in "${DATE_DIR}"/*.json; do
+              [ -f "$f" ] || continue
+              jq -r '"  \(.series.title // "unknown") -> \(.review.verdict) (\(.review.findings | length) findings)"' "$f" 2>/dev/null || echo "  $(basename "$f"): invalid JSON"
+          done
 
       - name: Update index
         run: bash scripts/update-index.sh

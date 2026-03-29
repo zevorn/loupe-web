@@ -26,7 +26,7 @@
     "maintainer_activity": ""
   },
   "review": {
-    "verdict": "changes_requested",
+    "verdict": "needs_revision",
     "summary": "The series is mostly straightforward, but the new SLDT/STR emulation is architecturally incomplete and can return a selector where the guest should instead take an exception. That is guest-visible behavior, so I would not merge as-is.",
     "mode": "ci-single",
     "stages": {
@@ -39,7 +39,7 @@
     "findings": [
       {
         "id": "F1",
-        "severity": "high",
+        "severity": "major",
         "file": "target/i386/emulate/x86_emu.c",
         "line": 1341,
         "title": "SLDT/STR are emulated even when the instruction should #UD",
@@ -61,7 +61,7 @@
       },
       {
         "id": "F2",
-        "severity": "medium",
+        "severity": "minor",
         "file": "target/i386/emulate/x86_emu.c",
         "line": 1341,
         "title": "SLDT/STR ignore privilege checks such as UMIP and can leak selectors to user mode",

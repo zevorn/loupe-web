@@ -26,7 +26,7 @@
     "maintainer_activity": ""
   },
   "review": {
-    "verdict": "changes_requested",
+    "verdict": "needs_revision",
     "summary": "The patch has a critical functional regression in `trans_dbar()`: it unconditionally emits a full SC barrier before decoding the hint, so every `dbar` still behaves as a full barrier and the new fine-grained handling never takes effect. There is also a compatibility bug for CPUs without `DBAR_HINTS`: reserved/no-op hints are returned as no-ops before the feature fallback check, contradicting the stated legacy behavior that all hints degrade to a full barrier.",
     "mode": "ci-single",
     "stages": {
@@ -39,7 +39,7 @@
     "findings": [
       {
         "id": "LA-DBAR-001",
-        "severity": "high",
+        "severity": "major",
         "file": "target/loongarch/tcg/insn_trans/trans_memory.c.inc",
         "line": 147,
         "title": "`trans_dbar()` always emits a full SC barrier before decoding the hint",
@@ -57,7 +57,7 @@
       },
       {
         "id": "LA-DBAR-002",
-        "severity": "medium",
+        "severity": "minor",
         "file": "target/loongarch/tcg/insn_trans/trans_memory.c.inc",
         "line": 151,
         "title": "Reserved/no-op hints bypass the non-`DBAR_HINTS` fallback and become no-ops on legacy CPUs",

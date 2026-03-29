@@ -26,7 +26,7 @@
     "maintainer_activity": ""
   },
   "review": {
-    "verdict": "accept",
+    "verdict": "ready_to_merge",
     "summary": "The patch addresses a real correctness issue in migration stream handling by rejecting a zero mapped-ram page_size before later arithmetic uses it. The change is narrowly scoped, matches the reported crash mechanism, preserves existing control flow by returning an error via errp, and introduces no obvious regression in the shown path.",
     "mode": "ci-single",
     "stages": {

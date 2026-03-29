@@ -26,7 +26,7 @@
     "maintainer_activity": ""
   },
   "review": {
-    "verdict": "changes_requested",
+    "verdict": "needs_revision",
     "summary": "The series has a correctness issue in the new SVM MMU-index helper: it derives 32-bit MMU indices by adding 1 to a 64-bit base index. QEMU's x86 MMU index constants are not guaranteed to be laid out that way, and the surrounding code previously selected `MMU_USER64_IDX` vs `MMU_USER32_IDX` explicitly. That can route 32-bit nested translations through the wrong access mode and break GMET behavior for 32-bit guests.",
     "mode": "ci-single",
     "stages": {
@@ -54,7 +54,7 @@
     "findings": [
       {
         "id": "F1",
-        "severity": "high",
+        "severity": "major",
         "file": "target/i386/tcg/system/excp_helper.c",
         "line": 551,
         "title": "32-bit SVM MMU index is derived from 64-bit index by arithmetic",

@@ -39,7 +39,7 @@
     "findings": [
       {
         "id": "F1",
-        "severity": "medium",
+        "severity": "minor",
         "file": "tests/qtest/migration/misc-tests.c",
         "line": 233,
         "title": "QMP failure description is likely read from the wrong dict",

@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-03-29T14:45:22Z",
+  "updated_at": "2026-03-29T15:41:05Z",
   "reviews": [
     {
       "id": "20260329-20260329113732.482619-1-vikingtc4-at-gmail.com",
@@ -11,7 +11,7 @@
       "version": 1,
       "patch_count": 1,
       "message_id": "<20260329113732.482619-1-vikingtc4@gmail.com>",
-      "verdict": "accept",
+      "verdict": "ready_to_merge",
       "findings": {
         "critical": 0,
         "major": 0,
@@ -83,7 +83,7 @@
       "version": 1,
       "patch_count": 1,
       "message_id": "<20260328072424.10611-1-vikingtc4@gmail.com>",
-      "verdict": "accept",
+      "verdict": "ready_to_merge",
       "findings": {
         "critical": 0,
         "major": 0,
@@ -101,7 +101,7 @@
       "version": 1,
       "patch_count": 1,
       "message_id": "<DB8P190MB07142E1BA8DEEA8B2E41D5B2DB57A@DB8P190MB0714.EURP190.PROD.OUTLOOK.COM>",
-      "verdict": "accept",
+      "verdict": "ready_to_merge",
       "findings": {
         "critical": 0,
         "major": 0,
@@ -119,7 +119,7 @@
       "version": 1,
       "patch_count": 16,
       "message_id": "<20260327212547.460420-17-pbonzini@redhat.com>",
-      "verdict": "reject",
+      "verdict": "blocked",
       "findings": {
         "critical": 0,
         "major": 1,
@@ -137,7 +137,7 @@
       "version": 1,
       "patch_count": 1,
       "message_id": "<20260327204704.424158-1-pbonzini@redhat.com>",
-      "verdict": "accept",
+      "verdict": "ready_to_merge",
       "findings": {
         "critical": 0,
         "major": 0,
@@ -155,7 +155,7 @@
       "version": 1,
       "patch_count": 1,
       "message_id": "<20260327182541.691078-2-pierrick.bouvier@linaro.org>",
-      "verdict": "accept",
+      "verdict": "ready_to_merge",
       "findings": {
         "critical": 0,
         "major": 0,
@@ -173,7 +173,7 @@
       "version": 1,
       "patch_count": 1,
       "message_id": "<20260327182541.691078-1-pierrick.bouvier@linaro.org>",
-      "verdict": "accept",
+      "verdict": "ready_to_merge",
       "findings": {
         "critical": 0,
         "major": 0,
@@ -191,7 +191,7 @@
       "version": 1,
       "patch_count": 3,
       "message_id": "<20260327180905.378560-4-kkostiuk@redhat.com>",
-      "verdict": "accept",
+      "verdict": "ready_to_merge",
       "findings": {
         "critical": 0,
         "major": 0,
@@ -209,7 +209,7 @@
       "version": 1,
       "patch_count": 1,
       "message_id": "<20260327180905.378560-1-kkostiuk@redhat.com>",
-      "verdict": "accept",
+      "verdict": "ready_to_merge",
       "findings": {
         "critical": 0,
         "major": 0,
@@ -227,7 +227,7 @@
       "version": 1,
       "patch_count": 1,
       "message_id": "<20260327174701.364328-1-pbonzini@redhat.com>",
-      "verdict": "accept",
+      "verdict": "ready_to_merge",
       "findings": {
         "critical": 0,
         "major": 0,
@@ -317,7 +317,7 @@
       "version": 1,
       "patch_count": 1,
       "message_id": "<20260327160446.330583-1-pbonzini@redhat.com>",
-      "verdict": "changes_requested",
+      "verdict": "needs_revision",
       "findings": {
         "critical": 0,
         "major": 1,
@@ -335,7 +335,7 @@
       "version": 1,
       "patch_count": 1,
       "message_id": "<20260327145012.907264-1-peter.maydell@linaro.org>",
-      "verdict": "accept",
+      "verdict": "ready_to_merge",
       "findings": {
         "critical": 0,
         "major": 0,
@@ -353,7 +353,7 @@
       "version": 1,
       "patch_count": 1,
       "message_id": "<20260327143413.254227-1-minipli@grsecurity.net>",
-      "verdict": "changes_requested",
+      "verdict": "needs_revision",
       "findings": {
         "critical": 0,
         "major": 1,
@@ -371,7 +371,7 @@
       "version": 2,
       "patch_count": 15,
       "message_id": "<20260327134401.270186-16-kkostiuk@redhat.com>",
-      "verdict": "accept",
+      "verdict": "ready_to_merge",
       "findings": {
         "critical": 0,
         "major": 0,
@@ -389,7 +389,7 @@
       "version": 2,
       "patch_count": 1,
       "message_id": "<20260327131024.51947-1-hongmianquan@bytedance.com>",
-      "verdict": "accept",
+      "verdict": "ready_to_merge",
       "findings": {
         "critical": 0,
         "major": 0,
@@ -407,7 +407,7 @@
       "version": 2,
       "patch_count": 1,
       "message_id": "<20260327124136.983955-1-shivangu@linux.ibm.com>",
-      "verdict": "accept",
+      "verdict": "ready_to_merge",
       "findings": {
         "critical": 0,
         "major": 0,
@@ -425,7 +425,7 @@
       "version": 2,
       "patch_count": 1,
       "message_id": "<20260327111700.795099-7-peter.maydell@linaro.org>",
-      "verdict": "changes_requested",
+      "verdict": "needs_revision",
       "findings": {
         "critical": 0,
         "major": 1,
@@ -443,7 +443,7 @@
       "version": 2,
       "patch_count": 64,
       "message_id": "<20260327111700.795099-66-peter.maydell@linaro.org>",
-      "verdict": "no_findings",
+      "verdict": "ready_to_merge",
       "findings": {
         "critical": 0,
         "major": 0,
@@ -497,7 +497,7 @@
       "version": 1,
       "patch_count": 1,
       "message_id": "<20260327030404.1840571-1-hayatake396@gmail.com>",
-      "verdict": "pass",
+      "verdict": "ready_to_merge",
       "findings": {
         "critical": 0,
         "major": 0,
@@ -515,7 +515,7 @@
       "version": 1,
       "patch_count": 5,
       "message_id": "<20260327025228.474257-6-zhenzhong.duan@intel.com>",
-      "verdict": "changes_requested",
+      "verdict": "needs_revision",
       "findings": {
         "critical": 0,
         "major": 1,
@@ -533,7 +533,7 @@
       "version": 4,
       "patch_count": 4,
       "message_id": "<20260327023125.3802140-5-lixianglai@loongson.cn>",
-      "verdict": "changes-requested",
+      "verdict": "needs_revision",
       "findings": {
         "critical": 0,
         "major": 1,
@@ -551,7 +551,7 @@
       "version": 6,
       "patch_count": 4,
       "message_id": "<20260327011152.4126-5-mohamed@unpredictable.fr>",
-      "verdict": "changes_requested",
+      "verdict": "needs_revision",
       "findings": {
         "critical": 0,
         "major": 0,
@@ -569,7 +569,7 @@
       "version": 1,
       "patch_count": 1,
       "message_id": "<20260327003206.3749780-1-gaosong@loongson.cn>",
-      "verdict": "changes_requested",
+      "verdict": "needs_revision",
       "findings": {
         "critical": 0,
         "major": 1,
@@ -605,7 +605,7 @@
       "version": 1,
       "patch_count": 1,
       "message_id": "<1471e413d3589b6734819bda2b59b725b74f273a.d551129b.99fc.47f6.86dc.0759227268a2@feishu.cn>",
-      "verdict": "reject",
+      "verdict": "blocked",
       "findings": {
         "critical": 1,
         "major": 0,
@@ -623,7 +623,7 @@
       "version": 5,
       "patch_count": 6,
       "message_id": "<20260326233130.59392-7-mohamed@unpredictable.fr>",
-      "verdict": "changes_requested",
+      "verdict": "needs_revision",
       "findings": {
         "critical": 0,
         "major": 1,
@@ -641,7 +641,7 @@
       "version": 1,
       "patch_count": 1,
       "message_id": "<20260326214436.256215-1-pierrick.bouvier@linaro.org>",
-      "verdict": "accept",
+      "verdict": "ready_to_merge",
       "findings": {
         "critical": 0,
         "major": 0,
@@ -677,7 +677,7 @@
       "version": 4,
       "patch_count": 3,
       "message_id": "<20260326193358.97858-4-mohamed@unpredictable.fr>",
-      "verdict": "changes_requested",
+      "verdict": "needs_revision",
       "findings": {
         "critical": 0,
         "major": 0,
@@ -695,7 +695,7 @@
       "version": 1,
       "patch_count": 2,
       "message_id": "<20260326190438.734239-3-adityag@linux.ibm.com>",
-      "verdict": "reject",
+      "verdict": "blocked",
       "findings": {
         "critical": 0,
         "major": 1,
@@ -713,7 +713,7 @@
       "version": 3,
       "patch_count": 3,
       "message_id": "<20260326183628.79281-4-mohamed@unpredictable.fr>",
-      "verdict": "looks_good_with_nits",
+      "verdict": "ready_to_merge",
       "findings": {
         "critical": 0,
         "major": 0,
@@ -731,7 +731,7 @@
       "version": 1,
       "patch_count": 1,
       "message_id": "<20260326165124.138593-1-kwolf@redhat.com>",
-      "verdict": "accept",
+      "verdict": "ready_to_merge",
       "findings": {
         "critical": 0,
         "major": 0,
@@ -749,7 +749,7 @@
       "version": 1,
       "patch_count": 1,
       "message_id": "<20260326164405.1626-1-farosas@suse.de>",
-      "verdict": "accept",
+      "verdict": "ready_to_merge",
       "findings": {
         "critical": 0,
         "major": 0,
@@ -785,7 +785,7 @@
       "version": 1,
       "patch_count": 1,
       "message_id": "<20260326154850.301609-1-thuth@redhat.com>",
-      "verdict": "accept",
+      "verdict": "ready_to_merge",
       "findings": {
         "critical": 0,
         "major": 0,
@@ -803,7 +803,7 @@
       "version": 1,
       "patch_count": 1,
       "message_id": "<20260326152733.344926-1-chan9yan9@gmail.com>",
-      "verdict": "accept",
+      "verdict": "ready_to_merge",
       "findings": {
         "critical": 0,
         "major": 0,
@@ -821,7 +821,7 @@
       "version": 2,
       "patch_count": 1,
       "message_id": "<20260326152622.92334-1-mohamed@unpredictable.fr>",
-      "verdict": "changes_requested",
+      "verdict": "needs_revision",
       "findings": {
         "critical": 0,
         "major": 2,
@@ -857,7 +857,7 @@
       "version": 2,
       "patch_count": 1,
       "message_id": "<20260326144835.67911-1-heinrich.schuchardt@canonical.com>",
-      "verdict": "accept",
+      "verdict": "ready_to_merge",
       "findings": {
         "critical": 0,
         "major": 0,
@@ -875,7 +875,7 @@
       "version": 1,
       "patch_count": 1,
       "message_id": "<20260326144000.492037-1-magnuskulke@linux.microsoft.com>",
-      "verdict": "reject",
+      "verdict": "blocked",
       "findings": {
         "critical": 0,
         "major": 1,
@@ -893,7 +893,7 @@
       "version": 1,
       "patch_count": 1,
       "message_id": "<20260326135109.67394-1-mohamed@unpredictable.fr>",
-      "verdict": "changes_requested",
+      "verdict": "needs_revision",
       "findings": {
         "critical": 0,
         "major": 0,
@@ -911,7 +911,7 @@
       "version": 1,
       "patch_count": 1,
       "message_id": "<20260326121947.51200-1-heinrich.schuchardt@canonical.com>",
-      "verdict": "accept",
+      "verdict": "ready_to_merge",
       "findings": {
         "critical": 0,
         "major": 0,
@@ -929,7 +929,7 @@
       "version": 1,
       "patch_count": 1,
       "message_id": "<20260326113457.159065-1-thuth@redhat.com>",
-      "verdict": "accept",
+      "verdict": "ready_to_merge",
       "findings": {
         "critical": 0,
         "major": 0,
@@ -947,7 +947,7 @@
       "version": 1,
       "patch_count": 3,
       "message_id": "<20260326091948.194529-4-silvan@quobyte.com>",
-      "verdict": "reject",
+      "verdict": "blocked",
       "findings": {
         "critical": 0,
         "major": 2,
@@ -965,7 +965,7 @@
       "version": 2,
       "patch_count": 14,
       "message_id": "<20260326091130.321483-15-zhenzhong.duan@intel.com>",
-      "verdict": "changes_requested",
+      "verdict": "needs_revision",
       "findings": {
         "critical": 0,
         "major": 1,
@@ -983,7 +983,7 @@
       "version": 1,
       "patch_count": 2,
       "message_id": "<20260326082350.17374-3-its@irrelevant.dk>",
-      "verdict": "accept",
+      "verdict": "ready_to_merge",
       "findings": {
         "critical": 0,
         "major": 0,
@@ -1001,7 +1001,7 @@
       "version": 1,
       "patch_count": 1,
       "message_id": "<20260326082350.17374-1-its@irrelevant.dk>",
-      "verdict": "accept",
+      "verdict": "ready_to_merge",
       "findings": {
         "critical": 0,
         "major": 0,
@@ -1019,7 +1019,7 @@
       "version": 1,
       "patch_count": 3,
       "message_id": "<20260326074247.188674-4-armbru@redhat.com>",
-      "verdict": "changes_requested",
+      "verdict": "needs_revision",
       "findings": {
         "critical": 0,
         "major": 0,
@@ -1037,7 +1037,7 @@
       "version": 1,
       "patch_count": 1,
       "message_id": "<20260326065111.626236-1-zhaoguohan@kylinos.cn>",
-      "verdict": "accept",
+      "verdict": "ready_to_merge",
       "findings": {
         "critical": 0,
         "major": 0,
@@ -1055,7 +1055,7 @@
       "version": 2,
       "patch_count": 1,
       "message_id": "<20260326025825.2427332-1-guoqing.zhang@amd.com>",
-      "verdict": "reject",
+      "verdict": "blocked",
       "findings": {
         "critical": 0,
         "major": 1,
@@ -1073,7 +1073,7 @@
       "version": 1,
       "patch_count": 1,
       "message_id": "<20260325-fix-name-to-handle-at-v1-1-49fb922e6fd3@craftyguy.net>",
-      "verdict": "accept",
+      "verdict": "ready_to_merge",
       "findings": {
         "critical": 0,
         "major": 0,
@@ -1091,7 +1091,7 @@
       "version": 1,
       "patch_count": 1,
       "message_id": "<20260325081314.57089-1-yang.yicong@picoheart.com>",
-      "verdict": "accept",
+      "verdict": "ready_to_merge",
       "findings": {
         "critical": 0,
         "major": 0,
@@ -1127,7 +1127,7 @@
       "version": 2,
       "patch_count": 1,
       "message_id": "<20260325014856.58948-1-jay.chang@sifive.com>",
-      "verdict": "accept",
+      "verdict": "ready_to_merge",
       "findings": {
         "critical": 0,
         "major": 0,

@@ -54,7 +54,7 @@
     "findings": [
       {
         "id": "QGA-SElinux-helper-compile-headers",
-        "severity": "high",
+        "severity": "major",
         "file": "qga/qemu-ga-selinux-helper.c",
         "line": 2,
         "title": "New helper uses libc/POSIX APIs without including their headers",
@@ -79,7 +79,7 @@
       },
       {
         "id": "QGA-SElinux-helper-broken-string-literal",
-        "severity": "high",
+        "severity": "major",
         "file": "qga/qemu-ga-selinux-helper.c",
         "line": 14,
         "title": "Malformed `fprintf` string literal breaks compilation",
@@ -97,7 +97,7 @@
       },
       {
         "id": "QGA-SElinux-helper-install-path-mismatch",
-        "severity": "high",
+        "severity": "major",
         "file": "qga/meson.build",
         "line": 129,
         "title": "Helper is installed to a different directory than the runtime lookup path",

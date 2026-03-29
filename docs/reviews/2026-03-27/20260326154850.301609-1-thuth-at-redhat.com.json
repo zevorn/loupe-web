@@ -26,7 +26,7 @@
     "maintainer_activity": ""
   },
   "review": {
-    "verdict": "accept",
+    "verdict": "ready_to_merge",
     "summary": "No functional issues identified. The patch cleanly switches isa-cirrus-vga to a property-driven default of global_vmstate=false while restoring the legacy behavior for machine types covered by hw_compat_10_2, which matches the stated migration-compatibility goal.",
     "mode": "ci-single",
     "stages": {

@@ -26,7 +26,7 @@
     "maintainer_activity": ""
   },
   "review": {
-    "verdict": "accept",
+    "verdict": "ready_to_merge",
     "summary": "The patch corrects the SPCR byte layout by restoring the specification-defined order of Terminal Type before Language. The change is narrowly scoped, matches the reported regression introduced by the earlier refactor, and presents no evident compatibility or build risk.",
     "mode": "ci-single",
     "stages": {

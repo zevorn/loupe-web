@@ -39,7 +39,7 @@
     "findings": [
       {
         "id": "ARMTCG-001",
-        "severity": "medium",
+        "severity": "minor",
         "file": "target/arm/tcg/stubs32.c",
         "line": 8,
         "title": "32-bit fallback for gen_a64_update_pc() now aborts instead of preserving prior no-op semantics",

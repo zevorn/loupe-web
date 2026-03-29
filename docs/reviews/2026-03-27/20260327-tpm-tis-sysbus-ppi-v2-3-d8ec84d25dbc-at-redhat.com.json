@@ -39,7 +39,7 @@
     "findings": [
       {
         "id": "F1",
-        "severity": "high",
+        "severity": "major",
         "file": "hw/tpm/tpm_tis_sysbus.c",
         "line": 114,
         "title": "Adding a second sysbus MMIO region changes ARM virt guest ABI without compat gating",
@@ -57,7 +57,7 @@
       },
       {
         "id": "F2",
-        "severity": "medium",
+        "severity": "minor",
         "file": "hw/arm/virt-acpi-build.c",
         "line": 243,
         "title": "Changing TPM ACPI _UID from 0 to 1 is a guest-visible ABI break",
@@ -73,7 +73,7 @@
       },
       {
         "id": "F3",
-        "severity": "medium",
+        "severity": "minor",
         "file": "hw/tpm/tpm_tis_sysbus.c",
         "line": 109,
         "title": "The new `ppi` property does not control sysbus resource creation",

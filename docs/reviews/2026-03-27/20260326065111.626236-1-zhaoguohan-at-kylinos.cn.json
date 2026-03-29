@@ -26,7 +26,7 @@
     "maintainer_activity": ""
   },
   "review": {
-    "verdict": "accept",
+    "verdict": "ready_to_merge",
     "summary": "The patch correctly fixes the async request association bug in `ui/dbus.c` by binding completion state to the originating request, holding the necessary references for callback lifetime safety, and ignoring stale completions after replacement requests. I did not identify a functional regression in the proposed change.",
     "mode": "ci-single",
     "stages": {

@@ -39,7 +39,7 @@
     "findings": [
       {
         "id": "F1",
-        "severity": "high",
+        "severity": "major",
         "file": "migration/ram.c",
         "line": 3645,
         "title": "MADV_DONTNEED is not equivalent to zeroing for shared file-backed RAM",

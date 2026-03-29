@@ -26,7 +26,7 @@
     "maintainer_activity": ""
   },
   "review": {
-    "verdict": "reject",
+    "verdict": "blocked",
     "summary": "The series adds a useful tuning knob, but the RDMA chunk size becomes part of the migration wire interpretation without any source/destination negotiation. A mismatched setting between peers will make the receiver decode chunk indices with a different granularity and can register or write the wrong host range. There is also a secondary validation gap where the new machine property path can accept invalid values that are only caught later by an assert.",
     "mode": "ci-single",
     "stages": {
@@ -39,7 +39,7 @@
     "findings": [
       {
         "id": "F1",
-        "severity": "high",
+        "severity": "major",
         "file": "migration/rdma.c",
         "line": 531,
         "title": "Chunk-size is used as a local-only knob even though it changes RDMA wire interpretation",
@@ -56,7 +56,7 @@
       },
       {
         "id": "F2",
-        "severity": "medium",
+        "severity": "minor",
         "file": "migration/options.c",
         "line": 186,
         "title": "Invalid x-rdma-chunk-size values can still enter through the property path",

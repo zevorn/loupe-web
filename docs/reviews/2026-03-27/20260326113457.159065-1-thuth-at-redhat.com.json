@@ -26,7 +26,7 @@
     "maintainer_activity": ""
   },
   "review": {
-    "verdict": "accept",
+    "verdict": "ready_to_merge",
     "summary": "The patch correctly fixes isa-vga migration by introducing an ISAVGAState wrapper VMStateDescription and wiring dc->vmsd to it, so migration state is serialized into the embedded VGACommonState rather than the ISADevice base object. I did not find a functional regression in the code change. Dropping global_vmstate is a migration format change, but the justification is credible because migration for this device was already broken before this patch.",
     "mode": "ci-single",
     "stages": {

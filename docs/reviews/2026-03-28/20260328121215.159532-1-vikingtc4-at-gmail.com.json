@@ -39,7 +39,7 @@
     "findings": [
       {
         "id": "F1",
-        "severity": "medium",
+        "severity": "minor",
         "file": "tests/qtest/migration/file-tests.c",
         "line": 41,
         "title": "Regression test covers only one of the two claimed leak paths",

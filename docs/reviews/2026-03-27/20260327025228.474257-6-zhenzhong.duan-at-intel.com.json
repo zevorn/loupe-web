@@ -26,7 +26,7 @@
     "maintainer_activity": ""
   },
   "review": {
-    "verdict": "changes_requested",
+    "verdict": "needs_revision",
     "summary": "The series is close, but patch 3 introduces a functional hole in the FAULTQ read path: it hard-codes a 100-entry buffer and treats an oversized group as a one-off log condition instead of a recoverable protocol case. That can leave PRQ delivery permanently stalled for a PASID. I also see a likely enablement mismatch where host FAULTQ setup is keyed off SVM+PRE rather than guest PRQ enable state, which risks delivering recoverable faults before the guest queue is ready. Patches 4 and 5 are not present in the supplied diff, so their detailed line-level review is necessarily limited.",
     "mode": "ci-single",
     "stages": {
@@ -39,7 +39,7 @@
     "findings": [
       {
         "id": "F001",
-        "severity": "high",
+        "severity": "major",
         "file": "hw/i386/intel_iommu_accel.c",
         "line": 123,
         "title": "Oversized fault groups are not recoverable and can wedge PRQ delivery",
@@ -67,7 +67,7 @@
       },
       {
         "id": "F002",
-        "severity": "medium",
+        "severity": "minor",
         "file": "hw/i386/intel_iommu_accel.c",
         "line": 168,
         "title": "FAULTQ allocation is gated by SVM+PRE, not by guest PRQ enable state",

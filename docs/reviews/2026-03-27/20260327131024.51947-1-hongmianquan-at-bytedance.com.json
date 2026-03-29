@@ -26,7 +26,7 @@
     "maintainer_activity": ""
   },
   "review": {
-    "verdict": "accept",
+    "verdict": "ready_to_merge",
     "summary": "The fix is coherent with the reported shutdown deadlock: the coroutine wakeup can be queued on iohandler_ctx while monitor_cleanup() blocks in qemu_aio_context, and the added aio_wait_kick() provides the missing cross-context nudge so the cleanup loop can make progress. I did not identify a functional regression from the patch as written.",
     "mode": "ci-single",
     "stages": {

@@ -39,7 +39,7 @@
     "findings": [
       {
         "id": "XICS-001",
-        "severity": "medium",
+        "severity": "minor",
         "file": "hw/intc/xics.c",
         "line": 225,
         "title": "Invalid-server path rejects instead of ignoring malformed routing",

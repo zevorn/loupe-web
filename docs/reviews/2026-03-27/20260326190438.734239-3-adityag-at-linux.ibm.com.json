@@ -26,7 +26,7 @@
     "maintainer_activity": ""
   },
   "review": {
-    "verdict": "reject",
+    "verdict": "blocked",
     "summary": "Patch 2 introduces a build-breaking error in `pci_host_config_read_common()`: the new debug path references `val`, but that variable does not exist in the read helper. The series should not be merged until that is fixed.",
     "mode": "ci-single",
     "stages": {
@@ -39,7 +39,7 @@
     "findings": [
       {
         "id": "F1",
-        "severity": "high",
+        "severity": "major",
         "file": "hw/pci/pci_host.c",
         "line": 115,
         "title": "Undefined `val` in read-side invalid-length path breaks the build",

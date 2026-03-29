@@ -54,7 +54,7 @@
     "findings": [
       {
         "id": "ARM-SB-001",
-        "severity": "medium",
+        "severity": "minor",
         "file": "target/arm/tcg/stubs32.c",
         "line": 8,
         "title": "32-bit stub now aborts before the series removes all possible callers",

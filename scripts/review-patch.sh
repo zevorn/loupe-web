@@ -1,12 +1,18 @@
 #!/usr/bin/env bash
 # Review a single patch: script handles all git/network ops,
 # codex only does code analysis on the resulting diff.
-# Usage: review-patch.sh <message-id> <output-file>
+# Usage: review-patch.sh <message-id> <output-file> [log-file]
 set -uo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 UA="Mozilla/5.0 (compatible; loupe-review/1.0)"
 MSGID="$1"
 OUTPUT="$2"
+LOG_FILE="${3:-}"
+if [ -n "${LOG_FILE}" ]; then
+    exec > "${LOG_FILE}" 2>&1
+fi
 QEMU_DIR="${QEMU_DIR:-$(pwd)/qemu}"
 
 BARE_MSGID=$(echo "${MSGID}" | sed 's/^<//; s/>$//')
@@ -16,7 +22,7 @@ echo "=== Reviewing: ${BARE_MSGID} ==="
 
 # --- Step 1: Patchwork metadata ---
 echo "[1/7] Querying Patchwork..."
-PW_DATA=$(curl -sL -A "${UA}" "https://patchwork.ozlabs.org/api/patches/?project=qemu-devel&msgid=${ENCODED_MSGID}")
+PW_DATA=$(curl -sL --retry 2 --retry-delay 3 -A "${UA}" "https://patchwork.ozlabs.org/api/patches/?project=qemu-devel&msgid=${ENCODED_MSGID}")
 PW_COUNT=$(echo "${PW_DATA}" | jq 'length' 2>/dev/null || echo 0)
 
 TITLE="" AUTHOR_NAME="" AUTHOR_EMAIL="" PW_STATE="unknown" PW_DATE="" PW_URL=""
@@ -32,7 +38,7 @@ if [ "${PW_COUNT}" -gt 0 ]; then
     PW_URL=$(echo "${PW_DATA}" | jq -r '.[0].web_url // empty')
     SERIES_ID=$(echo "${PW_DATA}" | jq -r '.[0].series[0].id // empty')
     if [ -n "${SERIES_ID}" ]; then
-        SERIES_DATA=$(curl -sL -A "${UA}" "https://patchwork.ozlabs.org/api/series/${SERIES_ID}/")
+        SERIES_DATA=$(curl -sL --retry 2 --retry-delay 3 -A "${UA}" "https://patchwork.ozlabs.org/api/series/${SERIES_ID}/")
         PATCH_COUNT=$(echo "${SERIES_DATA}" | jq '.patches | length' 2>/dev/null || echo 1)
         COVER_TITLE=$(echo "${SERIES_DATA}" | jq -r '.cover_letter.name // empty')
         [ -n "${COVER_TITLE}" ] && TITLE="${COVER_TITLE}"
@@ -42,7 +48,7 @@ fi
 # --- Step 2: Fallback to lore ---
 if [ -z "${TITLE}" ] || [ "${TITLE}" = "null" ]; then
     echo "[2/7] Fetching from lore..."
-    LORE_HDR=$(curl -sL -A "${UA}" "https://lore.kernel.org/qemu-devel/${ENCODED_MSGID}/raw" | head -80)
+    LORE_HDR=$(curl -sL --retry 2 --retry-delay 3 -A "${UA}" "https://lore.kernel.org/qemu-devel/${ENCODED_MSGID}/raw" | head -80)
     if echo "${LORE_HDR}" | grep -q '^Subject:'; then
         TITLE=$(echo "${LORE_HDR}" | grep -m1 '^Subject:' | sed 's/^Subject: *//')
         FROM_LINE=$(echo "${LORE_HDR}" | grep -m1 '^From:' | sed 's/^From: *//')
@@ -85,11 +91,12 @@ MAINTAINER_ACTIVITY=""
 
 if [ -n "${SERIES_ID}" ]; then
     # Fetch all patches in current series for R-b / A-b tags
-    SERIES_PATCHES=$(curl -sL -A "${UA}" "https://patchwork.ozlabs.org/api/series/${SERIES_ID}/" | jq -r '.patches[]?.id // empty' 2>/dev/null)
+    SERIES_PATCHES=$(curl -sL --retry 2 --retry-delay 3 -A "${UA}" "https://patchwork.ozlabs.org/api/series/${SERIES_ID}/" | jq -r '.patches[]?.id // empty' 2>/dev/null)
     ALL_COMMENTS=""
     for PID in ${SERIES_PATCHES}; do
-        PATCH_COMMENTS=$(curl -sL -A "${UA}" "https://patchwork.ozlabs.org/api/patches/${PID}/comments/" 2>/dev/null)
+        PATCH_COMMENTS=$(curl -sL --retry 2 --retry-delay 3 -A "${UA}" "https://patchwork.ozlabs.org/api/patches/${PID}/comments/" 2>/dev/null)
         ALL_COMMENTS="${ALL_COMMENTS}${PATCH_COMMENTS}"
+        sleep 0.5
     done
     # Extract Reviewed-by and Acked-by from comments
     REVIEWED_BY=$(echo "${ALL_COMMENTS}" | grep -oE 'Reviewed-by: [^<]*<[^>]+>' | sort -u | jq -Rn '[inputs]' 2>/dev/null || echo '[]')
@@ -97,7 +104,7 @@ if [ -n "${SERIES_ID}" ]; then
     # CI status from Patchwork checks
     FIRST_PID=$(echo "${SERIES_PATCHES}" | head -1)
     if [ -n "${FIRST_PID}" ]; then
-        CI_STATUS=$(curl -sL -A "${UA}" "https://patchwork.ozlabs.org/api/patches/${FIRST_PID}/checks/" | jq -r '.[0].state // empty' 2>/dev/null)
+        CI_STATUS=$(curl -sL --retry 2 --retry-delay 3 -A "${UA}" "https://patchwork.ozlabs.org/api/patches/${FIRST_PID}/checks/" | jq -r '.[0].state // empty' 2>/dev/null)
     fi
 fi
 
@@ -107,7 +114,7 @@ if [ "${VERSION}" -gt 1 ] && [ -n "${SUBJECT_STEM}" ]; then
     echo "  Searching for prior versions of: ${SUBJECT_STEM}"
     ENCODED_STEM=$(python3 -c "import urllib.parse,sys; print(urllib.parse.quote(sys.argv[1], safe=''))" "${SUBJECT_STEM}")
     PRIOR_PATCHES_FILE=$(mktemp)
-    curl -sL -A "${UA}" "https://patchwork.ozlabs.org/api/patches/?project=qemu-devel&q=${ENCODED_STEM}&order=-date&per_page=30" > "${PRIOR_PATCHES_FILE}" 2>/dev/null
+    curl -sL --retry 2 --retry-delay 3 -A "${UA}" "https://patchwork.ozlabs.org/api/patches/?project=qemu-devel&q=${ENCODED_STEM}&order=-date&per_page=30" > "${PRIOR_PATCHES_FILE}" 2>/dev/null
 
     python3 - "${PRIOR_PATCHES_FILE}" "${VH_FILE}" "${VERSION}" "${BARE_MSGID}" << 'VHEOF'
 import sys, json
@@ -152,6 +159,7 @@ for p in (patches if isinstance(patches, list) else []):
 
 # For each prior version, fetch comments to determine review status
 import urllib.request
+import time
 UA = "Mozilla/5.0 (compatible; loupe-review/1.0)"
 
 for ver in sorted(versions.keys()):
@@ -163,6 +171,7 @@ for ver in sorted(versions.keys()):
     patch_ids = []
     if v["series_id"]:
         try:
+            time.sleep(0.5)
             req = urllib.request.Request(
                 f"https://patchwork.ozlabs.org/api/series/{v['series_id']}/",
                 headers={"User-Agent": UA})
@@ -176,6 +185,7 @@ for ver in sorted(versions.keys()):
     all_comment_text = ""
     for pid in patch_ids:
         try:
+            time.sleep(0.5)
             req = urllib.request.Request(
                 f"https://patchwork.ozlabs.org/api/patches/{pid}/comments/",
                 headers={"User-Agent": UA})
@@ -251,7 +261,7 @@ fi
 
 if [ -z "${DIFF_TEXT}" ]; then
     echo "  b4 failed, trying curl..."
-    DIFF_TEXT=$(curl -sL -A "${UA}" "https://lore.kernel.org/qemu-devel/${ENCODED_MSGID}/raw" 2>/dev/null)
+    DIFF_TEXT=$(curl -sL --retry 2 --retry-delay 3 -A "${UA}" "https://lore.kernel.org/qemu-devel/${ENCODED_MSGID}/raw" 2>/dev/null)
     if echo "${DIFF_TEXT}" | head -3 | grep -qi '<html'; then
         DIFF_TEXT=""
         echo "  WARNING: lore returned anti-bot page"
@@ -362,36 +372,35 @@ rm -rf "${B4_DIR}"
 
 echo "  AM: ${AM_STATUS}, Checkpatch: ${CHECKPATCH_RESULT}, Build: ${BUILD_STATUS}"
 
-# --- Step 5: Codex review (code analysis only, no network needed) ---
-echo "[5/7] Running codex code review..."
+# --- Step 5: Codex review (full Stage A-E protocol) ---
+echo "[5/7] Running codex code review (Stage A-E protocol)..."
 REVIEW_OUT=$(mktemp)
 
-# Prepare diff for codex (truncate for context limit)
-DIFF_FOR_REVIEW=$(echo "${DIFF_TEXT}" | head -500)
-
 PROMPT_FILE=$(mktemp)
-cat > "${PROMPT_FILE}" << 'PROMPTEOF'
-You are a QEMU patch reviewer. Analyze this patch series.
-Output ONLY a single JSON object. No markdown, no explanation.
-Keys: verdict, summary, stages(A,B,C,D,E), findings(array)
-Each finding: id, severity, file, line, title, description,
-  patch_context(diff lines array), suggestion, confidence, confidence_reason
-Start with { end with }
-PROMPTEOF
+# Load the full review protocol
+cat "${SCRIPT_DIR}/review-prompt.txt" > "${PROMPT_FILE}"
 
 if [ -n "${COVER_TEXT}" ]; then
-    echo -e "\nCOVER LETTER:\n${COVER_TEXT}" >> "${PROMPT_FILE}"
+    echo -e "\n\nCOVER LETTER:\n${COVER_TEXT}" >> "${PROMPT_FILE}"
 fi
 
 echo -e "\nCHECKPATCH RESULT: ${CHECKPATCH_RESULT}" >> "${PROMPT_FILE}"
 [ -n "${CHECKPATCH_ISSUES}" ] && echo "${CHECKPATCH_ISSUES}" >> "${PROMPT_FILE}"
 echo -e "\nGIT AM STATUS: ${AM_STATUS}" >> "${PROMPT_FILE}"
 echo -e "\nBUILD STATUS: ${BUILD_STATUS}" >> "${PROMPT_FILE}"
-echo -e "\nPATCH:\n${DIFF_FOR_REVIEW}" >> "${PROMPT_FILE}"
 
-# Run codex in QEMU dir so it can read source files for deeper analysis
-(cd "${QEMU_DIR}" && codex exec --full-auto "$(cat "${PROMPT_FILE}")") > "${REVIEW_OUT}" 2>&1 || true
+# Pass full diff (no truncation)
+echo -e "\nPATCH:\n${DIFF_TEXT}" >> "${PROMPT_FILE}"
+
+# Run codex with 30-minute timeout
+CODEX_EXIT=0
+(cd "${QEMU_DIR}" && timeout 1800 codex exec --full-auto "$(cat "${PROMPT_FILE}")") > "${REVIEW_OUT}" 2>&1 || CODEX_EXIT=$?
 rm -f "${PROMPT_FILE}"
+
+if [ "${CODEX_EXIT}" -eq 124 ]; then
+    echo "  WARNING: Codex review timed out after 30 minutes"
+    echo '{"verdict":"unknown","summary":"Review timed out after 30 minutes","stages":{},"findings":[]}' > "${REVIEW_OUT}"
+fi
 
 # --- Step 6: Extract review JSON ---
 echo "[6/7] Extracting review..."
@@ -445,6 +454,26 @@ if result is None:
 
 if result is None:
     result = {"verdict":"unknown","summary":"AI review failed","stages":{"A":"","B":"","C":"","D":"","E":""},"findings":[]}
+
+# Normalize verdict
+VERDICT_MAP = {
+    'accept': 'ready_to_merge', 'pass': 'ready_to_merge',
+    'looks_good_with_nits': 'ready_to_merge', 'no_findings': 'ready_to_merge',
+    'reject': 'blocked',
+    'changes_requested': 'needs_revision', 'changes-requested': 'needs_revision',
+}
+v = result.get('verdict', 'unknown')
+result['verdict'] = VERDICT_MAP.get(v, v)
+if result['verdict'] not in ('needs_revision', 'ready_to_merge', 'blocked', 'unknown'):
+    result['verdict'] = 'needs_revision'
+
+# Normalize severity
+SEV_MAP = {'error': 'critical', 'high': 'major', 'medium': 'minor', 'low': 'nit'}
+for finding in result.get('findings', []):
+    s = finding.get('severity', 'nit')
+    finding['severity'] = SEV_MAP.get(s, s)
+    if finding['severity'] not in ('critical', 'major', 'minor', 'nit'):
+        finding['severity'] = 'nit'
 
 with open(sys.argv[2], 'w') as f:
     json.dump(result, f, ensure_ascii=False)
@@ -544,6 +573,46 @@ with open(out_path, 'w') as f:
 PYEOF
 
 rm -f "${META_FILE}" "${REVIEW_FILE}" "${DIFF_TMPFILE}" "${COVER_TMPFILE}" "${CP_TMPFILE}" "${VH_FILE}" "${ML_FILE}"
+
+# Validate and normalize the output JSON
+if [ -f "${OUTPUT}" ] && jq empty "${OUTPUT}" 2>/dev/null; then
+    python3 - "${OUTPUT}" << 'VALEOF'
+import sys, json
+
+path = sys.argv[1]
+with open(path) as f:
+    data = json.load(f)
+
+rev = data.get("review", {})
+
+# Normalize verdict
+VERDICT_MAP = {
+    "accept": "ready_to_merge", "pass": "ready_to_merge",
+    "looks_good_with_nits": "ready_to_merge", "no_findings": "ready_to_merge",
+    "reject": "blocked",
+    "changes_requested": "needs_revision", "changes-requested": "needs_revision",
+}
+v = rev.get("verdict", "unknown")
+rev["verdict"] = VERDICT_MAP.get(v, v)
+if rev["verdict"] not in ("needs_revision", "ready_to_merge", "blocked", "unknown"):
+    rev["verdict"] = "needs_revision"
+
+# Normalize severity
+SEV_MAP = {"error": "critical", "high": "major", "medium": "minor", "low": "nit"}
+for f in rev.get("findings", []):
+    s = f.get("severity", "nit")
+    f["severity"] = SEV_MAP.get(s, s)
+    if f["severity"] not in ("critical", "major", "minor", "nit"):
+        f["severity"] = "nit"
+
+# Update generator
+data["generator"] = "loupe:patch-review v1.0"
+
+with open(path, "w") as f:
+    json.dump(data, f, indent=2, ensure_ascii=False)
+VALEOF
+    echo "  Schema validation: normalized"
+fi
 
 if [ -f "${OUTPUT}" ] && jq empty "${OUTPUT}" 2>/dev/null; then
     echo "=== Done ==="

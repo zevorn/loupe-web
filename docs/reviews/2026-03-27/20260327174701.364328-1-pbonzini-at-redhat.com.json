@@ -26,7 +26,7 @@
     "maintainer_activity": ""
   },
   "review": {
-    "verdict": "accept",
+    "verdict": "ready_to_merge",
     "summary": "The patch correctly fixes the off-by-one bounds check in both HPET MMIO timer access paths and also moves the `s->timer[timer_id]` dereference until after validation, eliminating the out-of-range array access. I found no functional regressions or missing companion changes in the modified code.",
     "mode": "ci-single",
     "stages": {

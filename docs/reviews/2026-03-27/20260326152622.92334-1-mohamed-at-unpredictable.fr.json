@@ -26,7 +26,7 @@
     "maintainer_activity": ""
   },
   "review": {
-    "verdict": "changes_requested",
+    "verdict": "needs_revision",
     "summary": "The patch applies and does not affect build configuration, but the new WHPX documentation contains two command-line errors in workaround examples, plus style/process issues reported by checkpatch (missing SPDX header and trailing whitespace).",
     "mode": "ci-single",
     "stages": {
@@ -39,7 +39,7 @@
     "findings": [
       {
         "id": "WHPXDOC-001",
-        "severity": "high",
+        "severity": "major",
         "file": "docs/system/whpx.rst",
         "line": 89,
         "title": "`kernel-irqchip` is documented under `-accel whpx`, where it is not a WHPX accelerator option",
@@ -54,7 +54,7 @@
       },
       {
         "id": "WHPXDOC-002",
-        "severity": "high",
+        "severity": "major",
         "file": "docs/system/whpx.rst",
         "line": 120,
         "title": "PIC workaround uses invalid `-M` syntax",
@@ -68,7 +68,7 @@
       },
       {
         "id": "WHPXDOC-003",
-        "severity": "medium",
+        "severity": "minor",
         "file": "docs/system/whpx.rst",
         "line": 1,
         "title": "New documentation file lacks SPDX license identifier",
@@ -84,7 +84,7 @@
       },
       {
         "id": "WHPXDOC-004",
-        "severity": "low",
+        "severity": "nit",
         "file": "docs/system/whpx.rst",
         "line": 32,
         "title": "Trailing whitespace triggers checkpatch errors",
@@ -101,7 +101,7 @@
       },
       {
         "id": "WHPXDOC-005",
-        "severity": "low",
+        "severity": "nit",
         "file": "docs/system/whpx.rst",
         "line": 60,
         "title": "Typo in guest display recommendation",

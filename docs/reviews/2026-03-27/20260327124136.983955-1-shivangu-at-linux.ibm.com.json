@@ -26,7 +26,7 @@
     "maintainer_activity": ""
   },
   "review": {
-    "verdict": "accept",
+    "verdict": "ready_to_merge",
     "summary": "The change correctly defers POWERNV DTB generation until machine initialization is complete, which matches the problem statement and avoids building an incomplete DTB before late-created devices exist. Moving the BMC discovery/setup alongside DTB generation is also coherent because the BMC affects the generated tree. I did not identify a functional regression in the reset path from the patch itself.",
     "mode": "ci-single",
     "stages": {

@@ -26,7 +26,7 @@
     "maintainer_activity": ""
   },
   "review": {
-    "verdict": "accept",
+    "verdict": "ready_to_merge",
     "summary": "The series fixes real POSIX-shell portability bugs in `scripts/qemu-guest-agent/fsfreeze-hook` and corrects the logfile/syslog fallback behavior without introducing an obvious regression. The PIPESTATUS replacement is intricate but functionally sound for POSIX `/bin/sh` and preserves the intended exit-status handling.",
     "mode": "ci-single",
     "stages": {

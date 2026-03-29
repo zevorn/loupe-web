@@ -26,7 +26,7 @@
     "maintainer_activity": ""
   },
   "review": {
-    "verdict": "changes_requested",
+    "verdict": "needs_revision",
     "summary": "The series is not ready as posted. The PASID attach/detach plumbing is mechanically consistent, but patch 1 introduces a fundamental semantic bug by defining \"no PASID\" as 0 even though PASID 0 is a valid value and the cover letter explicitly aims to support PASID_0. There is also a secondary formatting/type issue in the new PASID logging paths.",
     "mode": "ci-single",
     "stages": {
@@ -39,7 +39,7 @@
     "findings": [
       {
         "id": "REV-001",
-        "severity": "high",
+        "severity": "major",
         "file": "include/hw/core/iommu.h",
         "line": 31,
         "title": "IOMMU_NO_PASID is defined as 0, which collides with valid PASID 0",
@@ -57,7 +57,7 @@
       },
       {
         "id": "REV-002",
-        "severity": "medium",
+        "severity": "minor",
         "file": "hw/vfio/trace-events",
         "line": 185,
         "title": "PASID is formatted with signed %d even though the API uses uint32_t",

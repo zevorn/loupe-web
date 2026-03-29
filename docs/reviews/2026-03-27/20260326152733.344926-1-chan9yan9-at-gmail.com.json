@@ -26,7 +26,7 @@
     "maintainer_activity": ""
   },
   "review": {
-    "verdict": "accept",
+    "verdict": "ready_to_merge",
     "summary": "The change appears correct and sufficient for the reported crash path. It adds a null check for the resolved ICP target before dereferencing it, logs the guest error, rejects the IRQ, and returns early. Given the provided patch, checkpatch, and configure results, I did not identify a functional regression or an obvious completeness gap.",
     "mode": "ci-single",
     "stages": {

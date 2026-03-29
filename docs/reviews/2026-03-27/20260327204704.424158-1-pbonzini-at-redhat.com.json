@@ -26,7 +26,7 @@
     "maintainer_activity": ""
   },
   "review": {
-    "verdict": "accept",
+    "verdict": "ready_to_merge",
     "summary": "The change is internally consistent and matches the HPET MMIO layout described in the commit message: with timer blocks starting at offset 0x100 and consuming 0x20 bytes each within a 0x400-byte register window, the practical maximum is 24 timers. Both the C and Rust constants are updated together, and no concrete regression is evident from the patch itself.",
     "mode": "ci-single",
     "stages": {

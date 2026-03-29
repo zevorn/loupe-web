@@ -26,7 +26,7 @@
     "maintainer_activity": ""
   },
   "review": {
-    "verdict": "accept",
+    "verdict": "ready_to_merge",
     "summary": "I did not find a functional regression in this series. The strcasecmp/strncasecmp replacements are confined to ASCII protocol tokens, identifiers, and option names where g_ascii_strcasecmp/g_ascii_strncasecmp is the more explicit choice, and the header/build cleanups are aligned with the stated Windows Clang portability goal.",
     "mode": "ci-single",
     "stages": {

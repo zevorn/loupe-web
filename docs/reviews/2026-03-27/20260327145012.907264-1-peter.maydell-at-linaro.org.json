@@ -26,7 +26,7 @@
     "maintainer_activity": ""
   },
   "review": {
-    "verdict": "accept",
+    "verdict": "ready_to_merge",
     "summary": "The patch fixes an input-validation bug in `boot-mode` parsing by rejecting values with trailing junk while preserving case-insensitive handling. The change is narrowly scoped, matches the documented interface, and does not introduce an obvious regression.",
     "mode": "ci-single",
     "stages": {

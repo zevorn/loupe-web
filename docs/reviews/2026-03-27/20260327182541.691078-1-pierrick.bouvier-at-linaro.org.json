@@ -26,7 +26,7 @@
     "maintainer_activity": ""
   },
   "review": {
-    "verdict": "accept",
+    "verdict": "ready_to_merge",
     "summary": "Patch is a straightforward repository URL migration in docs and functional test assets after GitHub account renaming. The updated links remain consistent with the stated ownership change, no code paths or hashes are altered, and I found no functional or maintenance regressions in the touched areas.",
     "mode": "ci-single",
     "stages": {

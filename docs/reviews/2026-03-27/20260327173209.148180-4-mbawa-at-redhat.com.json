@@ -54,7 +54,7 @@
     "findings": [
       {
         "id": "F1",
-        "severity": "high",
+        "severity": "major",
         "file": "hw/tpm/tpm_tis_sysbus.c",
         "line": 111,
         "title": "PPI RAM buffer is exposed without being zero-initialized",
@@ -74,7 +74,7 @@
       },
       {
         "id": "F2",
-        "severity": "medium",
+        "severity": "minor",
         "file": "hw/tpm/tpm_tis_sysbus.c",
         "line": 115,
         "title": "PPI MMIO region appears to be registered regardless of the `ppi` property",

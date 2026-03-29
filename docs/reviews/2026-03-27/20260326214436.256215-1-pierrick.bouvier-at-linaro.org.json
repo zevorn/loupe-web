@@ -26,7 +26,7 @@
     "maintainer_activity": ""
   },
   "review": {
-    "verdict": "accept",
+    "verdict": "ready_to_merge",
     "summary": "The patch consistently updates documentation and functional test asset URLs to the renamed GitHub account without changing code paths, behavior, hashes, or test logic. I found no correctness or regression issues in the diff itself.",
     "mode": "ci-single",
     "stages": {

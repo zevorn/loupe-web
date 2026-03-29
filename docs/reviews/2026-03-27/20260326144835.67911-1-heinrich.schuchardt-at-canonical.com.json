@@ -26,7 +26,7 @@
     "maintainer_activity": ""
   },
   "review": {
-    "verdict": "accept",
+    "verdict": "ready_to_merge",
     "summary": "The patch fixes a real SPCR serialization bug by restoring the ACPI-defined byte order of Terminal Type followed by Language in `build_spcr()`. The change is minimal, matches the reported regression source, and has low regression risk because it only corrects field emission order in the table builder.",
     "mode": "ci-single",
     "stages": {

@@ -26,7 +26,7 @@
     "maintainer_activity": ""
   },
   "review": {
-    "verdict": "changes_requested",
+    "verdict": "needs_revision",
     "summary": "The series is directionally fine, but patch 3 introduces a small logging regression: the new LOG_GUEST_ERROR messages omit trailing newlines, so guest error logs can become concatenated and hard to read. I did not find a stronger functional issue in the WHPX trace conversion or the documentation addition from the patch text alone.",
     "mode": "ci-single",
     "stages": {
@@ -39,7 +39,7 @@
     "findings": [
       {
         "id": "F1",
-        "severity": "medium",
+        "severity": "minor",
         "file": "target/i386/emulate/x86_mmu.c",
         "line": 290,
         "title": "LOG_GUEST_ERROR conversion drops newline terminators",

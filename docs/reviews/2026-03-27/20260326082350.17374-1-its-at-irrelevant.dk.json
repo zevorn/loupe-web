@@ -26,7 +26,7 @@
     "maintainer_activity": ""
   },
   "review": {
-    "verdict": "accept",
+    "verdict": "ready_to_merge",
     "summary": "Patch 2 fixes a real guest-triggerable out-of-bounds access in nvme_abort by validating sqid before indexing n->sq[]. Patch 1 restores the WZDS capability bit in dlfeat to match existing write-zeroes behavior and does not introduce an obvious functional regression from the posted diff. No blocking issues found in the series itself, though the provided metadata indicates git-am and build were not validated.",
     "mode": "ci-single",
     "stages": {

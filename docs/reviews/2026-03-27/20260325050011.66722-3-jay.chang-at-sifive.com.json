@@ -39,7 +39,7 @@
     "findings": [
       {
         "id": "F1",
-        "severity": "high",
+        "severity": "major",
         "file": "hw/riscv/riscv-iommu.c",
         "line": 2156,
         "title": "PMIP RW1C handling is implemented with inverted write polarity",

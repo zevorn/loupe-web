@@ -26,7 +26,7 @@
     "maintainer_activity": ""
   },
   "review": {
-    "verdict": "changes_requested",
+    "verdict": "needs_revision",
     "summary": "The series is mechanically simple and builds, but the new WHPX documentation still has review blockers: three checkpatch-visible trailing whitespace errors, release-specific wording that will age out immediately, and an imprecise Windows 11 arm64 prerequisite that does not give users a concrete build/KB target to verify.",
     "mode": "ci-single",
     "stages": {
@@ -39,7 +39,7 @@
     "findings": [
       {
         "id": "WHPXDOC-001",
-        "severity": "low",
+        "severity": "nit",
         "file": "docs/system/whpx.rst",
         "line": 44,
         "title": "Trailing whitespace triggers checkpatch errors",
@@ -63,7 +63,7 @@
       },
       {
         "id": "WHPXDOC-002",
-        "severity": "medium",
+        "severity": "minor",
         "file": "docs/system/whpx.rst",
         "line": 73,
         "title": "arm64 host prerequisite is not concrete enough to verify",
@@ -85,7 +85,7 @@
       },
       {
         "id": "WHPXDOC-003",
-        "severity": "low",
+        "severity": "nit",
         "file": "docs/system/whpx.rst",
         "line": 30,
         "title": "Release-specific phrasing will become stale immediately after the next version bump",

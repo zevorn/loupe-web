@@ -26,7 +26,7 @@
     "maintainer_activity": ""
   },
   "review": {
-    "verdict": "reject",
+    "verdict": "blocked",
     "summary": "The fix addresses the reported double-unmap regression in principle, but the implementation is not safe as merged. The new tracking table keys `hwaddr` through `GINT_TO_POINTER()`, which truncates high guest physical addresses on 64-bit machines and can cause incorrect map/unmap suppression for regions above 4 GiB. There is also a listener-lifetime leak because the newly allocated hash table is never destroyed.",
     "mode": "ci-single",
     "stages": {
@@ -39,7 +39,7 @@
     "findings": [
       {
         "id": "MSHV-001",
-        "severity": "high",
+        "severity": "major",
         "file": "accel/mshv/mem.c",
         "line": 171,
         "title": "`hwaddr` is truncated when used as a hash-table key",
@@ -70,7 +70,7 @@
       },
       {
         "id": "MSHV-002",
-        "severity": "medium",
+        "severity": "minor",
         "file": "accel/mshv/mshv-all.c",
         "line": 374,
         "title": "New `mapped_regions` table is allocated but never freed",

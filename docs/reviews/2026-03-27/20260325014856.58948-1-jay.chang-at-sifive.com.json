@@ -26,7 +26,7 @@
     "maintainer_activity": ""
   },
   "review": {
-    "verdict": "accept",
+    "verdict": "ready_to_merge",
     "summary": "The change is mechanically small and appears correct: PRI enablement now uses the standard RISC-V IOMMU EN_PRI control bit instead of a temporary custom TC[32] bit, with no apparent behavioral regression beyond aligning QEMU with the specification.",
     "mode": "ci-single",
     "stages": {

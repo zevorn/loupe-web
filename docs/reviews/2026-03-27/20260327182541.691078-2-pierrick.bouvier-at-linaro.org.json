@@ -26,7 +26,7 @@
     "maintainer_activity": ""
   },
   "review": {
-    "verdict": "accept",
+    "verdict": "ready_to_merge",
     "summary": "The series is a straightforward URL ownership update in documentation and functional test assets after a GitHub account rename. It does not change QEMU code or test logic, and the referenced asset hashes remain unchanged. I did not identify a functional regression in the patch itself.",
     "mode": "ci-single",
     "stages": {

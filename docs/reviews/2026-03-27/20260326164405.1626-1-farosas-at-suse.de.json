@@ -26,7 +26,7 @@
     "maintainer_activity": ""
   },
   "review": {
-    "verdict": "accept",
+    "verdict": "ready_to_merge",
     "summary": "The change correctly updates `test_dirty_limit()` to use deferred incoming setup and explicitly issue `migrate-incoming`, matching the post-4e8c4dda97 failure-handling model for destination-side migration tests. I found no functional regressions in the patch itself.",
     "mode": "ci-single",
     "stages": {

@@ -26,7 +26,7 @@
     "maintainer_activity": ""
   },
   "review": {
-    "verdict": "reject",
+    "verdict": "blocked",
     "summary": "The code change itself is plausible, but the submitted patch is malformed and not applyable. The mail body contains corrupted whitespace/encoding in the diff, which matches the reported checkpatch failure (\"patch seems to be corrupt\") and the failed `git am` status. This needs to be resent in clean `git format-patch`/`git send-email` form before functional review can proceed.",
     "mode": "ci-single",
     "stages": {
@@ -54,7 +54,7 @@
     "findings": [
       {
         "id": "FTGMAC100-001",
-        "severity": "error",
+        "severity": "critical",
         "file": "hw/net/ftgmac100.c",
         "line": 498,
         "title": "Patch is corrupted in transit and cannot be applied",

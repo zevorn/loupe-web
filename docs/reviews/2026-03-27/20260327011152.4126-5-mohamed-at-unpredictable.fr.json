@@ -26,7 +26,7 @@
     "maintainer_activity": ""
   },
   "review": {
-    "verdict": "changes_requested",
+    "verdict": "needs_revision",
     "summary": "The code changes are mostly straightforward, but the new WHPX documentation includes at least one invalid QEMU command-line example. That should be fixed before merging because it gives users a workaround they cannot actually run as written.",
     "mode": "ci-single",
     "stages": {
@@ -39,7 +39,7 @@
     "findings": [
       {
         "id": "F1",
-        "severity": "medium",
+        "severity": "minor",
         "file": "docs/system/whpx.rst",
         "line": 131,
         "title": "Invalid QEMU CLI syntax in documented workaround",
