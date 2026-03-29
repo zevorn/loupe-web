@@ -357,7 +357,8 @@ header nav {
 }
 .stage-row:last-child { border-bottom: none; }
 .stage-label {
-    width: 80px;
+    min-width: 80px;
+    max-width: 160px;
     flex-shrink: 0;
     font-weight: 600;
     color: var(--badge-stage-fg);
@@ -1282,12 +1283,20 @@ function renderReviewView() {
     var vh = r.version_history;
     if (vh && vh.length) {
         html += '<h2>Version History</h2>';
-        html += '<table class="data-table"><thead><tr><th>Version</th><th>Date</th><th>Key Change</th></tr></thead><tbody>';
+        html += '<table class="data-table"><thead><tr><th>Version</th><th>Date</th><th>Verdict</th><th>Findings (C/M/m/n)</th><th>Reviewers</th><th>Key Change</th></tr></thead><tbody>';
         vh.forEach(function(v) {
             var isCurrent = s.version && String(v.version) === String(s.version);
+            var f = v.findings || {};
+            var findingsStr = isCurrent ? '(current)' :
+                (f.critical !== undefined ? f.critical + '/' + f.major + '/' + f.minor + '/' + f.nit : '—');
+            var verdictStr = isCurrent ? '—' : esc(v.review_verdict || 'no_review');
+            var reviewers = Array.isArray(v.key_reviewers) && v.key_reviewers.length ? v.key_reviewers.join(', ') : '—';
             html += '<tr' + (isCurrent ? ' style="background:#fff8e1;"' : '') + '>';
             html += '<td>' + esc(String(v.version || '')) + (isCurrent ? ' (current)' : '') + '</td>';
             html += '<td>' + esc(v.date || '') + '</td>';
+            html += '<td>' + verdictStr + '</td>';
+            html += '<td>' + findingsStr + '</td>';
+            html += '<td>' + esc(reviewers) + '</td>';
             html += '<td>' + esc(v.key_change || '') + '</td>';
             html += '</tr>';
         });
@@ -1295,22 +1304,53 @@ function renderReviewView() {
     }
 
     /* 3. Mailing List Context */
-    var ml = r.ml_context;
-    if (ml) {
-        html += '<h2>Mailing List Context</h2>';
-        html += '<div class="stages">';
-        var mlRows = [
-            ['reviewed_by', Array.isArray(ml.reviewed_by) ? ml.reviewed_by.join(', ') : ml.reviewed_by],
-            ['acked_by', Array.isArray(ml.acked_by) ? ml.acked_by.join(', ') : ml.acked_by],
-            ['ci_status', ml.ci_status],
-            ['prior_feedback', Array.isArray(ml.prior_feedback) ? ml.prior_feedback.join('; ') : ml.prior_feedback],
-            ['maintainer_activity', ml.maintainer_activity]
-        ];
-        mlRows.forEach(function(pair) {
-            if (pair[1] !== undefined && pair[1] !== null && pair[1] !== '') {
-                html += '<div class="stage-row"><span class="stage-label">' + esc(pair[0]) + '</span><span class="stage-text">' + esc(String(pair[1])) + '</span></div>';
-            }
+    var ml = r.ml_context || {};
+    html += '<h2>Mailing List Context</h2>';
+    html += '<div class="stages">';
+    var mlRows = [
+        ['Reviewed-by', Array.isArray(ml.reviewed_by) ? ml.reviewed_by.join(', ') : ml.reviewed_by],
+        ['Acked-by', Array.isArray(ml.acked_by) ? ml.acked_by.join(', ') : ml.acked_by],
+        ['CI Status', ml.ci_status],
+        ['Maintainer', ml.maintainer_activity]
+    ];
+    var hasML = false;
+    mlRows.forEach(function(pair) {
+        if (pair[1] !== undefined && pair[1] !== null && pair[1] !== '') {
+            hasML = true;
+            html += '<div class="stage-row"><span class="stage-label">' + esc(pair[0]) + '</span><span class="stage-text">' + esc(String(pair[1])) + '</span></div>';
+        }
+    });
+
+    /* Prior version reviews */
+    var priorVersions = (vh || []).filter(function(v) {
+        return !(s.version && String(v.version) === String(s.version));
+    });
+    if (priorVersions.length) {
+        hasML = true;
+        var fb = Array.isArray(ml.prior_feedback) ? ml.prior_feedback.join('; ') : (ml.prior_feedback || '');
+        if (fb) {
+            html += '<div class="stage-row"><span class="stage-label">Prior Feedback</span><span class="stage-text">' + esc(fb) + '</span></div>';
+        }
+        html += '</div>';
+        html += '<h3 style="margin:12px 0 4px;font-size:13px;">Prior Version Reviews</h3>';
+        html += '<table class="data-table"><thead><tr><th>Ver</th><th>Verdict</th><th>Findings (C/M/m/n)</th><th>Reviewers</th></tr></thead><tbody>';
+        priorVersions.forEach(function(v) {
+            var f = v.findings || {};
+            var findingsStr = f.critical !== undefined ? f.critical + '/' + f.major + '/' + f.minor + '/' + f.nit : '—';
+            var reviewers = Array.isArray(v.key_reviewers) && v.key_reviewers.length ? v.key_reviewers.join(', ') : '—';
+            html += '<tr>';
+            html += '<td>v' + esc(String(v.version || '')) + '</td>';
+            html += '<td>' + esc(v.review_verdict || 'no_review') + '</td>';
+            html += '<td>' + findingsStr + '</td>';
+            html += '<td>' + esc(reviewers) + '</td>';
+            html += '</tr>';
         });
+        html += '</tbody></table>';
+    } else {
+        html += '<div class="stage-row"><span class="stage-label">Prior Versions</span><span class="stage-text">none</span></div>';
+        if (!hasML) {
+            html += '<div class="stage-row"><span class="stage-label"></span><span class="stage-text" style="color:var(--text-muted);font-style:italic;">No mailing list context available</span></div>';
+        }
         html += '</div>';
     }
 
