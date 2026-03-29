@@ -275,12 +275,20 @@ CHECKPATCH_RESULT="not_run"
 CHECKPATCH_ISSUES=""
 BUILD_STATUS="not_run"
 AM_STATUS="not_run"
-REVIEW_BRANCH="review-$(echo "${BARE_MSGID}" | sed 's/@/-/;s/[^a-zA-Z0-9-]/-/g;s/--*/-/g;s/-$//' | cut -c1-40)"
-WORKTREE_DIR="${QEMU_DIR}/../loupe-worktree-$$"
+WT_SLUG=$(echo "${BARE_MSGID}" | sed 's/@/-/;s/[^a-zA-Z0-9-]/-/g;s/--*/-/g;s/-$//' | cut -c1-40)
+REVIEW_BRANCH="review-${WT_SLUG}"
+WORKTREE_DIR="${QEMU_DIR}/../loupe-worktree-${WT_SLUG}"
+WORKTREE_LOCK="${QEMU_DIR}/.loupe-worktree.lock"
 
 if [ -d "${QEMU_DIR}" ] && [ -n "${DIFF_TEXT}" ]; then
-    # Create worktree (clean up stale branch first)
-    (cd "${QEMU_DIR}" && git branch -D "${REVIEW_BRANCH}" 2>/dev/null; git worktree remove --force "${WORKTREE_DIR}" 2>/dev/null; git worktree add -b "${REVIEW_BRANCH}" "${WORKTREE_DIR}" master 2>&1) || true
+    # Create worktree (flock serializes concurrent git worktree ops)
+    (
+        flock -w 120 9 || { echo "  WARNING: worktree lock timeout"; exit 1; }
+        cd "${QEMU_DIR}"
+        git branch -D "${REVIEW_BRANCH}" 2>/dev/null
+        git worktree remove --force "${WORKTREE_DIR}" 2>/dev/null
+        git worktree add -b "${REVIEW_BRANCH}" "${WORKTREE_DIR}" master 2>&1
+    ) 9>"${WORKTREE_LOCK}" || true
 
     if [ -d "${WORKTREE_DIR}" ]; then
         # Configure git identity for am
@@ -337,8 +345,13 @@ if [ -d "${QEMU_DIR}" ] && [ -n "${DIFF_TEXT}" ]; then
         rm -f patch.mbox
         cd - >/dev/null
 
-        # Cleanup worktree
-        (cd "${QEMU_DIR}" && git worktree remove --force "${WORKTREE_DIR}" 2>/dev/null && git branch -D "${REVIEW_BRANCH}" 2>/dev/null) || true
+        # Cleanup worktree (flock serializes concurrent git worktree ops)
+        (
+            flock -w 60 9 || true
+            cd "${QEMU_DIR}"
+            git worktree remove --force "${WORKTREE_DIR}" 2>/dev/null
+            git branch -D "${REVIEW_BRANCH}" 2>/dev/null
+        ) 9>"${WORKTREE_LOCK}" || true
     else
         echo "  WARNING: Could not create worktree"
     fi

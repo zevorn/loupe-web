@@ -69,13 +69,13 @@ jobs:
 
           curl -sL "https://raw.githubusercontent.com/zevorn/loupe/main/codex/SKILL.md" \
             -o "${CODEX_HOME}/skills/loupe/SKILL.md"
-          curl -sL "https://raw.githubusercontent.com/zevorn/loupe/main/commands/loupe-review.md" \
-            -o "${CODEX_HOME}/skills/loupe/loupe-review.md"
+          curl -sL "https://raw.githubusercontent.com/zevorn/loupe/main/commands/patch-review.md" \
+            -o "${CODEX_HOME}/skills/loupe/patch-review.md"
 
       - name: Fetch new patches from Patchwork
         run: bash scripts/fetch-new-patches.sh
 
-      - name: Review patches
+      - name: Review patches (max 4 parallel)
         run: |
           COUNT=$(jq length /tmp/new-patches.json)
           if [ "$COUNT" -eq 0 ]; then
@@ -85,13 +85,18 @@ jobs:
           DATE_DIR="$(pwd)/docs/reviews/$(date +%Y-%m-%d)"
           mkdir -p "$DATE_DIR"
 
-          for msgid in $(jq -r '.[]' /tmp/new-patches.json); do
-            SLUG=$(echo "${msgid}" | sed 's/[<>]//g; s/@/-at-/; s/[^a-zA-Z0-9._-]/-/g' | cut -c1-80)
-            OUTPUT_FILE="${DATE_DIR}/${SLUG}.json"
+          review_one() {
+            local msgid="$1"
+            local slug
+            slug=$(echo "${msgid}" | sed 's/[<>]//g; s/@/-at-/; s/[^a-zA-Z0-9._-]/-/g' | cut -c1-80)
+            local output="${DATE_DIR}/${slug}.json"
+            bash scripts/review-patch.sh "${msgid}" "${output}" || \
+              echo "Review failed for ${msgid}, continuing..."
+          }
+          export -f review_one
+          export DATE_DIR
 
-            bash scripts/review-patch.sh "${msgid}" "${OUTPUT_FILE}" || \
-              echo "Review failed for ${msgid}, continuing with next..."
-          done
+          jq -r '.[]' /tmp/new-patches.json | xargs -I{} -P4 bash -c 'review_one "$@"' _ {}
 
       - name: Update index
         run: bash scripts/update-index.sh
