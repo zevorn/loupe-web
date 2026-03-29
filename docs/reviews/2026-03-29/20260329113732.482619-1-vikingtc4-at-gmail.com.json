@@ -1,0 +1,73 @@
+{
+  "schema_version": "1",
+  "id": "20260329-20260329113732.482619-1-vikingtc4-at-gmail.com",
+  "series": {
+    "title": "[PATCH] target/mips: save CP0 timer in vmstate",
+    "version": 1,
+    "patch_count": 1,
+    "author": {
+      "name": "Trieu Huynh",
+      "email": "vikingtc4@gmail.com"
+    },
+    "date": "2026-03-29",
+    "subsystem": "target/mips",
+    "message_id": "<20260329113732.482619-1-vikingtc4@gmail.com>",
+    "lore_url": "https://lore.kernel.org/qemu-devel/20260329113732.482619-1-vikingtc4%40gmail.com/",
+    "patchwork_url": "http://patchwork.ozlabs.org/project/qemu-devel/patch/20260329113732.482619-1-vikingtc4@gmail.com/",
+    "base_branch": "master"
+  },
+  "version_history": [],
+  "ml_context": {
+    "patchwork_state": "new",
+    "reviewed_by": [],
+    "acked_by": [],
+    "ci_status": "",
+    "prior_feedback": [],
+    "maintainer_activity": ""
+  },
+  "review": {
+    "verdict": "accept",
+    "summary": "The change is mechanically small and matches established QEMU migration patterns for timer-backed CPU state. Adding `env.timer` as an optional subsection addresses the reported post-load hang without perturbing KVM cases where the timer is absent. I did not identify a correctness, compatibility, or maintainability issue in the patch itself.",
+    "mode": "ci-single",
+    "stages": {
+      "A": {
+        "status": "pass",
+        "focus": "Problem framing",
+        "details": "The bug description is coherent: if the MIPS CP0 timer is not part of VMState, the restored CPU state can retain timer-related register contents while losing the scheduled host-side `QEMUTimer` expiry, which can stall guest progress until another event wakes the main loop."
+      },
+      "B": {
+        "status": "pass",
+        "focus": "Implementation correctness",
+        "details": "The patch adds a dedicated timer subsection using `VMSTATE_TIMER_PTR(env.timer, MIPSCPU)`, which is the normal QEMU mechanism for serializing a pre-existing `QEMUTimer *`. The `.needed` callback correctly suppresses the subsection when `env.timer` is absent."
+      },
+      "C": {
+        "status": "pass",
+        "focus": "Migration compatibility",
+        "details": "Using an optional subsection is the right compatibility shape for extending VMState. New QEMU can still load old snapshots without the timer subsection, and the null-timer/KVM case is kept out of the stream."
+      },
+      "D": {
+        "status": "pass",
+        "focus": "Integration risk",
+        "details": "The added include and subsection are localized to MIPS system migration code. No suspicious interactions with unrelated CPU state, reset paths, or TLB/FPU serialization are introduced by this diff."
+      },
+      "E": {
+        "status": "pass",
+        "focus": "Validation confidence",
+        "details": "`checkpatch`, git-am, and configure all succeed, and the code pattern mirrors existing timer VMState handling used by other targets. Residual risk is low and mainly tied to runtime coverage rather than code shape."
+      }
+    },
+    "findings": [],
+    "checkpatch": {
+      "status": "clean",
+      "issues": []
+    },
+    "build_status": "configure_ok",
+    "am_status": "success"
+  },
+  "cover_letter": null,
+  "diff": "From git@z Thu Jan  1 00:00:00 1970\nSubject: [PATCH] target/mips: save CP0 timer in vmstate\nFrom: Trieu Huynh <vikingtc4@gmail.com>\nDate: Sun, 29 Mar 2026 20:37:32 +0900\nMessage-Id: <20260329113732.482619-1-vikingtc4@gmail.com>\nMIME-Version: 1.0\nContent-Type: text/plain; charset=\"utf-8\"\nContent-Transfer-Encoding: 7bit\n\nThe MIPS R4K CP0 timer (env->timer) is not included in vmstate_mips_cpu,\nso after loadvm the QEMUTimer has no scheduled expiry. This causes\nqemu_poll_ns() to block indefinitely and the guest to freeze until an\nexternal I/O event (e.g. a keypress) wakes the main loop.\n\nFix by adding an optional vmstate subsection for the timer, following\nthe same pattern used by ARM (gt_timer), RISC-V (env.stimer), SPARC\n(qtimer), and OpenRISC (timer).\n\nThe .needed callback returns false when env->timer is NULL (KVM mode),\nkeeping the subsection optional for backwards compatibility with\nexisting snapshots.\n\nnit: when trying to reproduce of this bug requires savevm to work on\nMIPS Malta. That is currently broken by a separate crash in\nvmsd_can_compress() introduced by commit 7aa563630b (\"pc: Start with\nmodern CPU hotplug interface by default\"), which is being tracked and\nfixed independently [1], [2]. This fix is independent of that crash and\ntouches no shared code.\n\n[1] https://lore.kernel.org/qemu-devel/20260316194759.22672-1-farosas@suse.de/\n[2] https://lore.kernel.org/qemu-devel/87341zsvmc.fsf@suse.de/\n\nResolves: https://gitlab.com/qemu-project/qemu/-/issues/1987\n\nSigned-off-by: Trieu Huynh <vikingtc4@gmail.com>\n---\n target/mips/system/machine.c | 22 ++++++++++++++++++++++\n 1 file changed, 22 insertions(+)\n\ndiff --git a/target/mips/system/machine.c b/target/mips/system/machine.c\nindex 8af11fd896..473d3ab036 100644\n--- a/target/mips/system/machine.c\n+++ b/target/mips/system/machine.c\n@@ -3,6 +3,7 @@\n #include \"internal.h\"\n #include \"migration/cpu.h\"\n #include \"fpu_helper.h\"\n+#include \"qemu/timer.h\"\n \n static int cpu_post_load(void *opaque, int version_id)\n {\n@@ -219,6 +220,23 @@ static const VMStateDescription vmstate_tlb = {\n \n /* MIPS CPU state */\n \n+static bool mips_timer_needed(void *opaque)\n+{\n+    MIPSCPU *cpu = opaque;\n+    return cpu->env.timer != NULL;\n+}\n+\n+static const VMStateDescription mips_vmstate_timer = {\n+    .name = \"cpu/timer\",\n+    .version_id = 1,\n+    .minimum_version_id = 1,\n+    .needed = mips_timer_needed,\n+    .fields = (const VMStateField[]) {\n+        VMSTATE_TIMER_PTR(env.timer, MIPSCPU),\n+        VMSTATE_END_OF_LIST()\n+    }\n+};\n+\n const VMStateDescription vmstate_mips_cpu = {\n     .name = \"cpu\",\n     .version_id = 21,\n@@ -333,4 +351,8 @@ const VMStateDescription vmstate_mips_cpu = {\n \n         VMSTATE_END_OF_LIST()\n     },\n+    .subsections = (const VMStateDescription * const []) {\n+        &mips_vmstate_timer,\n+        NULL\n+    }\n };\n-- \n2.43.0",
+  "patches": [],
+  "generated_at": "2026-03-29T11:41:25Z",
+  "generator": "loupe-review v1.0",
+  "disclaimer": "LLM-generated draft. Not an authoritative review."
+}
