@@ -32,7 +32,7 @@ Cover: ./20260330_kkostiuk_misc_qga_changes_to_allow_building_with_windows_clang
   Title (from mbox): [PATCH 0/7] Misc QGA changes to allow building with Windows Clang
 [4/7] Applying patches in QEMU worktree...
 Preparing worktree (new branch 'review-20260330113906-168002-8-kkostiuk-redhat-')
-HEAD is now at e389503 Merge tag 'pull-request-2026-03-30' of https://gitlab.com/thuth/qemu into staging
+HEAD is now at dd3ee9c Merge tag 'for-upstream' of https://gitlab.com/bonzini/qemu into staging
 Applying: qga/win: Use swprintf instead of snwprintf
 Applying: qga/meson: Remove unused lib stdc++
 Applying: qga/meson: Use windows.compile_resources instead of custom_target
@@ -48,11 +48,11 @@ Applying: qga/vss: Drop unused define uuid(x)
 Found ninja-1.13.2 at /usr/local/bin/ninja
 Running postconf script '/home/runner/work/loupe-web/loupe-web/loupe-worktree-20260330113906-168002-8-kkostiuk-redhat-/build/pyvenv/bin/python3 /home/runner/work/loupe-web/loupe-web/loupe-worktree-20260330113906-168002-8-kkostiuk-redhat-/scripts/symlink-install-tree.py'
   configure: success
-Deleted branch review-20260330113906-168002-8-kkostiuk-redhat- (was 5b4d118).
+Deleted branch review-20260330113906-168002-8-kkostiuk-redhat- (was 8c02b0c).
   AM: success, Checkpatch: clean, Build: configure_ok
 [5/7] Running codex code review (Stage A-E protocol)...
 [6/7] Extracting review...
-  Verdict: ready_to_merge
+  Verdict: needs_revision
 [7/7] Assembling JSON...
 Traceback (most recent call last):
   File "<stdin>", line 8, in <module>

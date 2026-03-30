@@ -31,7 +31,7 @@ scripts/review-patch.sh: line 273: echo: write error: Broken pipe
   Title (from mbox): [PATCH 4/5] hw/ufs: Add UFS Write Booster Support
 [4/7] Applying patches in QEMU worktree...
 Preparing worktree (new branch 'review-20260330113436epcms2p2501e3cc236194ac838')
-HEAD is now at e389503 Merge tag 'pull-request-2026-03-30' of https://gitlab.com/thuth/qemu into staging
+HEAD is now at dd3ee9c Merge tag 'for-upstream' of https://gitlab.com/bonzini/qemu into staging
 error: corrupt patch at line 253
 hint: Use 'git am --show-current-patch=diff' to see the failed patch
 hint: When you have resolved this problem, run "git am --continue".
@@ -54,11 +54,11 @@ Patch failed at 0001 hw/ufs: Add UFS Write Booster Support
   Running checkpatch...
   checkpatch: issues
   Skipping build (am failed)
-Deleted branch review-20260330113436epcms2p2501e3cc236194ac838 (was e389503).
+Deleted branch review-20260330113436epcms2p2501e3cc236194ac838 (was dd3ee9c).
   AM: failed, Checkpatch: issues, Build: not_run
 [5/7] Running codex code review (Stage A-E protocol)...
 [6/7] Extracting review...
-  Verdict: needs_revision
+  Verdict: blocked
 [7/7] Assembling JSON...
 Traceback (most recent call last):
   File "<stdin>", line 8, in <module>

@@ -8,7 +8,8 @@
   v1 patch, no prior versions
 [3/7] Downloading patches with b4...
 Grabbing thread from lore.kernel.org/all/20260330115017.256211-13-pbonzini@redhat.com/t.mbox.gz
-Analyzing 13 messages in the thread
+Analyzing 14 messages in the thread
+Looking for additional code-review trailers on lore.kernel.org
 Checking attestation on all messages, may take a moment...
 ---
   [32m✓[0m [PATCH 1/12] meson.build: remove i386-softmmu WHPX support
@@ -17,6 +18,7 @@ Checking attestation on all messages, may take a moment...
   [32m✓[0m [PATCH 4/12] target/i386: emulate: remove redundant logging for unmapped MMIO access
   [32m✓[0m [PATCH 5/12] hpet: fix bounds check for s->timer[]
     + Reviewed-by: Philippe Mathieu-Daudé <philmd@linaro.org> ([32m✓[0m DKIM/linaro.org)
+    + Reviewed-by: Zhao Liu <zhao1.liu@intel.com> ([32m✓[0m DKIM/intel.com)
     + Reviewed-by: Peter Maydell <peter.maydell@linaro.org> ([32m✓[0m DKIM/linaro.org)
   [32m✓[0m [PATCH 6/12] hpet: lower HPET_MAX_TIMERS to 24
     + Reviewed-by: Peter Maydell <peter.maydell@linaro.org> ([32m✓[0m DKIM/linaro.org)
@@ -35,46 +37,40 @@ Cover: ./20260330_pbonzini_i386_lsi_patches_for_qemu_11_0_rc2.cover
  Link: https://lore.kernel.org/r/20260330115017.256211-1-pbonzini@redhat.com
  Base: not specified
        git am ./20260330_pbonzini_i386_lsi_patches_for_qemu_11_0_rc2.mbx
-  b4: mbx=944 lines
+  b4: mbx=945 lines
 scripts/review-patch.sh: line 273: echo: write error: Broken pipe
   Title (from mbox): [PATCH 0/12] i386, lsi patches for QEMU 11.0-rc2
 [4/7] Applying patches in QEMU worktree...
 Preparing worktree (new branch 'review-20260330115017-256211-13-pbonzini-redhat')
-HEAD is now at e389503 Merge tag 'pull-request-2026-03-30' of https://gitlab.com/thuth/qemu into staging
-/home/runner/work/loupe-web/loupe-web/qemu/.git/worktrees/loupe-worktree-20260330115017-256211-13-pbonzini-redhat/rebase-apply/patch:69: trailing whitespace.
-On x86_64, QEMU's Windows Hypervisor Platform backend is tested 
-/home/runner/work/loupe-web/loupe-web/qemu/.git/worktrees/loupe-worktree-20260330115017-256211-13-pbonzini-redhat/rebase-apply/patch:74: trailing whitespace.
-or May 2025 security updates is the minimum required release. 
-/home/runner/work/loupe-web/loupe-web/qemu/.git/worktrees/loupe-worktree-20260330115017-256211-13-pbonzini-redhat/rebase-apply/patch:76: trailing whitespace.
-Prior releases of Windows 11 version 24H2 on ARM64 shipped 
-/home/runner/work/loupe-web/loupe-web/qemu/.git/worktrees/loupe-worktree-20260330115017-256211-13-pbonzini-redhat/rebase-apply/patch:156: trailing whitespace.
-In this release, -cpu is an ignored argument. 
-warning: 4 lines add whitespace errors.
+HEAD is now at dd3ee9c Merge tag 'for-upstream' of https://gitlab.com/bonzini/qemu into staging
+error: patch failed: meson.build:314
+error: meson.build: patch does not apply
+hint: Use 'git am --show-current-patch=diff' to see the failed patch
+hint: When you have resolved this problem, run "git am --continue".
+hint: If you prefer to skip this patch, run "git am --skip" instead.
+hint: To restore the original branch and stop patching, run "git am --abort".
+hint: Disable this message with "git config set advice.mergeConflict false"
 Applying: meson.build: remove i386-softmmu WHPX support
-Applying: docs: add WHPX section with initial info
-Applying: whpx: i386: trace unsupported MSR accesses
-Applying: target/i386: emulate: remove redundant logging for unmapped MMIO access
-Applying: hpet: fix bounds check for s->timer[]
-Applying: hpet: lower HPET_MAX_TIMERS to 24
-Applying: lsi53c895a: keep a reference to the device while SCRIPTS execute
-Applying: lsi53c895a: do not do anything else if a reset is requested by writing ISTAT0
-Applying: lsi53c895a: keep lsi_request and SCSIRequest in local variables
-Applying: lsi53c895a: keep lsi_request alive as long as the SCSIRequest
-Applying: lsi53c895a: keep SCSIRequest alive during DMA
-Applying: hw/acpi: Do not save/load cpuhp state unconditionally
-  git am: success
+Patch failed at 0001 meson.build: remove i386-softmmu WHPX support
+  git am failed, retrying with --3way...
+Applying: meson.build: remove i386-softmmu WHPX support
+error: sha1 information is lacking or useless (meson.build).
+error: could not build fake ancestor
+hint: Use 'git am --show-current-patch=diff' to see the failed patch
+hint: When you have resolved this problem, run "git am --continue".
+hint: If you prefer to skip this patch, run "git am --skip" instead.
+hint: To restore the original branch and stop patching, run "git am --abort".
+hint: Disable this message with "git config set advice.mergeConflict false"
+Patch failed at 0001 meson.build: remove i386-softmmu WHPX support
+  git am --3way: FAILED
   Running checkpatch...
   checkpatch: issues
-  Quick build check...
-
-Found ninja-1.13.2 at /usr/local/bin/ninja
-Running postconf script '/home/runner/work/loupe-web/loupe-web/loupe-worktree-20260330115017-256211-13-pbonzini-redhat/build/pyvenv/bin/python3 /home/runner/work/loupe-web/loupe-web/loupe-worktree-20260330115017-256211-13-pbonzini-redhat/scripts/symlink-install-tree.py'
-  configure: success
-Deleted branch review-20260330115017-256211-13-pbonzini-redhat (was 11fad87).
-  AM: success, Checkpatch: issues, Build: configure_ok
+  Skipping build (am failed)
+Deleted branch review-20260330115017-256211-13-pbonzini-redhat (was dd3ee9c).
+  AM: failed, Checkpatch: issues, Build: not_run
 [5/7] Running codex code review (Stage A-E protocol)...
 [6/7] Extracting review...
-  Verdict: needs_revision
+  Verdict: ready_to_merge
 [7/7] Assembling JSON...
 Traceback (most recent call last):
   File "<stdin>", line 8, in <module>

@@ -26,7 +26,7 @@ Total patches: 1
   Title (from mbox): [PATCH v4] migration/rdma: add x-rdma-chunk-size parameter
 [4/7] Applying patches in QEMU worktree...
 Preparing worktree (new branch 'review-20260330064758-2816891-1-guoqing-zhang-a')
-HEAD is now at e389503 Merge tag 'pull-request-2026-03-30' of https://gitlab.com/thuth/qemu into staging
+HEAD is now at dd3ee9c Merge tag 'for-upstream' of https://gitlab.com/bonzini/qemu into staging
 Applying: migration/rdma: add x-rdma-chunk-size parameter
   git am: success
   Running checkpatch...
@@ -36,11 +36,11 @@ Applying: migration/rdma: add x-rdma-chunk-size parameter
 Found ninja-1.13.2 at /usr/local/bin/ninja
 Running postconf script '/home/runner/work/loupe-web/loupe-web/loupe-worktree-20260330064758-2816891-1-guoqing-zhang-a/build/pyvenv/bin/python3 /home/runner/work/loupe-web/loupe-web/loupe-worktree-20260330064758-2816891-1-guoqing-zhang-a/scripts/symlink-install-tree.py'
   configure: success
-Deleted branch review-20260330064758-2816891-1-guoqing-zhang-a (was b06d887).
+Deleted branch review-20260330064758-2816891-1-guoqing-zhang-a (was cc783b1).
   AM: success, Checkpatch: clean, Build: configure_ok
 [5/7] Running codex code review (Stage A-E protocol)...
 [6/7] Extracting review...
-  Verdict: blocked
+  Verdict: needs_revision
 [7/7] Assembling JSON...
 Traceback (most recent call last):
   File "<stdin>", line 8, in <module>

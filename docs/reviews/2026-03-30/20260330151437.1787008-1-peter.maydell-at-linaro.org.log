@@ -1,51 +1,45 @@
-=== Reviewing: 20260330-igvm_fixes-v1-3-03587a5a808b@redhat.com ===
+=== Reviewing: 20260330151437.1787008-1-peter.maydell@linaro.org ===
 [1/7] Querying Patchwork...
   Patchwork: 1 result(s)
 [2/7] Metadata OK
-  Title: [0/3] igvm: various fixes
-  Author: Luigi Leonardi, Version: v1, Subsystem: igvm
+  Title: target/i386: Treat qtest like TCG for supported-features
+  Author: Peter Maydell, Version: v1, Subsystem: target/i386
 [2.5/7] Fetching version history and mailing list context...
   v1 patch, no prior versions
 [3/7] Downloading patches with b4...
-Grabbing thread from lore.kernel.org/all/20260330-igvm_fixes-v1-3-03587a5a808b@redhat.com/t.mbox.gz
-Analyzing 4 messages in the thread
+Grabbing thread from lore.kernel.org/all/20260330151437.1787008-1-peter.maydell@linaro.org/t.mbox.gz
+Analyzing 1 messages in the thread
 Looking for additional code-review trailers on lore.kernel.org
 Checking attestation on all messages, may take a moment...
 ---
-  [32m✓[0m [PATCH 1/3] igvm: switch to PRIx64
-  [32m✓[0m [PATCH 2/3] igvm: fix memory leak on failed memory region init
-  [32m✓[0m [PATCH 3/3] igvm: fix parent object type in IgvmCfg struct
+  [32m✓[0m [PATCH] target/i386: Treat qtest like TCG for supported-features
   ---
-  [32m✓[0m Signed: DKIM/redhat.com
+  [32m✓[0m Signed: DKIM/linaro.org
 ---
-Total patches: 3
+Total patches: 1
 ---
-Cover: ./20260330_leonardi_igvm_various_fixes.cover
- Link: https://lore.kernel.org/r/20260330-igvm_fixes-v1-0-03587a5a808b@redhat.com
- Base: base-commit 91f6a9cb1b0f11afa74ef7fb20d5579d9dfbe020 not known, ignoring
+ Link: https://lore.kernel.org/r/20260330151437.1787008-1-peter.maydell@linaro.org
  Base: not specified
-       git am ./20260330_leonardi_igvm_various_fixes.mbx
-  b4: mbx=118 lines
-  Title (from mbox): [PATCH 0/3] igvm: various fixes
+       git am ./20260330_peter_maydell_target_i386_treat_qtest_like_tcg_for_supported_features.mbx
+  b4: mbx=46 lines
+  Title (from mbox): [PATCH] target/i386: Treat qtest like TCG for supported-features
 [4/7] Applying patches in QEMU worktree...
-Preparing worktree (new branch 'review-20260330-igvm-fixes-v1-3-03587a5a808b-re')
+Preparing worktree (new branch 'review-20260330151437-1787008-1-peter-maydell-l')
 HEAD is now at dd3ee9c Merge tag 'for-upstream' of https://gitlab.com/bonzini/qemu into staging
-Applying: igvm: switch to PRIx64
-Applying: igvm: fix memory leak on failed memory region init
-Applying: igvm: fix parent object type in IgvmCfg struct
+Applying: target/i386: Treat qtest like TCG for supported-features
   git am: success
   Running checkpatch...
   checkpatch: clean
   Quick build check...
 
 Found ninja-1.13.2 at /usr/local/bin/ninja
-Running postconf script '/home/runner/work/loupe-web/loupe-web/loupe-worktree-20260330-igvm-fixes-v1-3-03587a5a808b-re/build/pyvenv/bin/python3 /home/runner/work/loupe-web/loupe-web/loupe-worktree-20260330-igvm-fixes-v1-3-03587a5a808b-re/scripts/symlink-install-tree.py'
+Running postconf script '/home/runner/work/loupe-web/loupe-web/loupe-worktree-20260330151437-1787008-1-peter-maydell-l/build/pyvenv/bin/python3 /home/runner/work/loupe-web/loupe-web/loupe-worktree-20260330151437-1787008-1-peter-maydell-l/scripts/symlink-install-tree.py'
   configure: success
-Deleted branch review-20260330-igvm-fixes-v1-3-03587a5a808b-re (was 86fd061).
+Deleted branch review-20260330151437-1787008-1-peter-maydell-l (was 6b85507).
   AM: success, Checkpatch: clean, Build: configure_ok
 [5/7] Running codex code review (Stage A-E protocol)...
 [6/7] Extracting review...
-  Verdict: needs_revision
+  Verdict: ready_to_merge
 [7/7] Assembling JSON...
 Traceback (most recent call last):
   File "<stdin>", line 8, in <module>
