@@ -1,43 +1,39 @@
-=== Reviewing: 20260330053008.2721532-1-zhao1.liu@intel.com ===
+=== Reviewing: 20260330091310.42868-1-zhaoguohan@kylinos.cn ===
 [1/7] Querying Patchwork...
   Patchwork: 1 result(s)
 [2/7] Metadata OK
-  Title: [for,v11.0] hw/acpi: Do not save/load cpuhp state unconditionally
-  Author: Zhao Liu, Version: v11, Subsystem: hw/acpi
+  Title: ui/dbus: tear down clipboard callbacks on display finalize
+  Author: GuoHan Zhao, Version: v1, Subsystem: ui/dbus
 [2.5/7] Fetching version history and mailing list context...
-  Searching for prior versions of: hw/acpi: Do not save/load cpuhp state unconditionally
-  Found 0 prior version(s)
+  v1 patch, no prior versions
 [3/7] Downloading patches with b4...
-Grabbing thread from lore.kernel.org/all/20260330053008.2721532-1-zhao1.liu@intel.com/t.mbox.gz
-Analyzing 2 messages in the thread
+Grabbing thread from lore.kernel.org/all/20260330091310.42868-1-zhaoguohan@kylinos.cn/t.mbox.gz
+Analyzing 1 messages in the thread
 Looking for additional code-review trailers on lore.kernel.org
 Checking attestation on all messages, may take a moment...
 ---
-  [32m✓[0m [PATCH] hw/acpi: Do not save/load cpuhp state unconditionally
-    + Tested-by: Peter Maydell <peter.maydell@linaro.org> ([32m✓[0m DKIM/linaro.org)
-  ---
-  [32m✓[0m Signed: DKIM/intel.com
+  [PATCH] ui/dbus: tear down clipboard callbacks on display finalize
 ---
 Total patches: 1
 ---
- Link: https://lore.kernel.org/r/20260330053008.2721532-1-zhao1.liu@intel.com
+ Link: https://lore.kernel.org/r/20260330091310.42868-1-zhaoguohan@kylinos.cn
  Base: not specified
-       git am ./20260330_zhao1_liu_hw_acpi_do_not_save_load_cpuhp_state_unconditionally.mbx
-  b4: mbx=115 lines
-  Title (from mbox): [PATCH] hw/acpi: Do not save/load cpuhp state unconditionally
+       git am ./20260330_zhaoguohan_ui_dbus_tear_down_clipboard_callbacks_on_display_finalize.mbx
+  b4: mbx=91 lines
+  Title (from mbox): [PATCH] ui/dbus: tear down clipboard callbacks on display finalize
 [4/7] Applying patches in QEMU worktree...
-Preparing worktree (new branch 'review-20260330053008-2721532-1-zhao1-liu-intel')
+Preparing worktree (new branch 'review-20260330091310-42868-1-zhaoguohan-kylino')
 HEAD is now at 91f6a9c Merge tag 'qga-pull-2026-03-27' of https://github.com/kostyanf14/qemu into staging
-Applying: hw/acpi: Do not save/load cpuhp state unconditionally
+Applying: ui/dbus: tear down clipboard callbacks on display finalize
   git am: success
   Running checkpatch...
   checkpatch: clean
   Quick build check...
 
 Found ninja-1.13.2 at /usr/local/bin/ninja
-Running postconf script '/home/runner/work/loupe-web/loupe-web/loupe-worktree-20260330053008-2721532-1-zhao1-liu-intel/build/pyvenv/bin/python3 /home/runner/work/loupe-web/loupe-web/loupe-worktree-20260330053008-2721532-1-zhao1-liu-intel/scripts/symlink-install-tree.py'
+Running postconf script '/home/runner/work/loupe-web/loupe-web/loupe-worktree-20260330091310-42868-1-zhaoguohan-kylino/build/pyvenv/bin/python3 /home/runner/work/loupe-web/loupe-web/loupe-worktree-20260330091310-42868-1-zhaoguohan-kylino/scripts/symlink-install-tree.py'
   configure: success
-Deleted branch review-20260330053008-2721532-1-zhao1-liu-intel (was 4a45729).
+Deleted branch review-20260330091310-42868-1-zhaoguohan-kylino (was 38f2995).
   AM: success, Checkpatch: clean, Build: configure_ok
 [5/7] Running codex code review (Stage A-E protocol)...
 [6/7] Extracting review...
