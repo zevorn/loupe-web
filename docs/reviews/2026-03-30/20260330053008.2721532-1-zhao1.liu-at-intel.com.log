@@ -1,0 +1,60 @@
+=== Reviewing: 20260330053008.2721532-1-zhao1.liu@intel.com ===
+[1/7] Querying Patchwork...
+  Patchwork: 1 result(s)
+[2/7] Metadata OK
+  Title: [for,v11.0] hw/acpi: Do not save/load cpuhp state unconditionally
+  Author: Zhao Liu, Version: v11, Subsystem: hw/acpi
+[2.5/7] Fetching version history and mailing list context...
+  Searching for prior versions of: hw/acpi: Do not save/load cpuhp state unconditionally
+  Found 0 prior version(s)
+[3/7] Downloading patches with b4...
+Grabbing thread from lore.kernel.org/all/20260330053008.2721532-1-zhao1.liu@intel.com/t.mbox.gz
+Analyzing 1 messages in the thread
+Looking for additional code-review trailers on lore.kernel.org
+Checking attestation on all messages, may take a moment...
+---
+  [32m✓[0m [PATCH] hw/acpi: Do not save/load cpuhp state unconditionally
+  ---
+  [32m✓[0m Signed: DKIM/intel.com
+---
+Total patches: 1
+---
+ Link: https://lore.kernel.org/r/20260330053008.2721532-1-zhao1.liu@intel.com
+ Base: not specified
+       git am ./20260330_zhao1_liu_hw_acpi_do_not_save_load_cpuhp_state_unconditionally.mbx
+  b4: mbx=114 lines
+  Title (from mbox): [PATCH] hw/acpi: Do not save/load cpuhp state unconditionally
+[4/7] Applying patches in QEMU worktree...
+Preparing worktree (new branch 'review-20260330053008-2721532-1-zhao1-liu-intel')
+HEAD is now at 91f6a9c Merge tag 'qga-pull-2026-03-27' of https://github.com/kostyanf14/qemu into staging
+Applying: hw/acpi: Do not save/load cpuhp state unconditionally
+  git am: success
+  Running checkpatch...
+  checkpatch: clean
+  Quick build check...
+
+Found ninja-1.13.2 at /usr/local/bin/ninja
+Running postconf script '/home/runner/work/loupe-web/loupe-web/loupe-worktree-20260330053008-2721532-1-zhao1-liu-intel/build/pyvenv/bin/python3 /home/runner/work/loupe-web/loupe-web/loupe-worktree-20260330053008-2721532-1-zhao1-liu-intel/scripts/symlink-install-tree.py'
+  configure: success
+Deleted branch review-20260330053008-2721532-1-zhao1-liu-intel (was fa85449).
+  AM: success, Checkpatch: clean, Build: configure_ok
+[5/7] Running codex code review (Stage A-E protocol)...
+[6/7] Extracting review...
+  Verdict: ready_to_merge
+[7/7] Assembling JSON...
+Traceback (most recent call last):
+  File "<stdin>", line 8, in <module>
+  File "/usr/lib/python3.12/json/__init__.py", line 293, in load
+    return loads(fp.read(),
+           ^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/json/__init__.py", line 346, in loads
+    return _default_decoder.decode(s)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/json/decoder.py", line 337, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/json/decoder.py", line 353, in raw_decode
+    obj, end = self.scan_once(s, idx)
+               ^^^^^^^^^^^^^^^^^^^^^^
+json.decoder.JSONDecodeError: Expecting ',' delimiter: line 3 column 1 (char 24)
+ERROR: invalid JSON output
