@@ -1,47 +1,47 @@
-=== Reviewing: 20260330053008.2721532-1-zhao1.liu@intel.com ===
+=== Reviewing: 20260330114853.638753-3-clg@redhat.com ===
 [1/7] Querying Patchwork...
   Patchwork: 1 result(s)
 [2/7] Metadata OK
-  Title: [for,v11.0] hw/acpi: Do not save/load cpuhp state unconditionally
-  Author: Zhao Liu, Version: v11, Subsystem: hw/acpi
+  Title: [PULL,2/2] net/ftgmac100: preserve full VLAN TCI in TX tag insertion
+  Author: Cédric Le Goater, Version: v1, Subsystem: net/ftgmac100
 [2.5/7] Fetching version history and mailing list context...
-  Searching for prior versions of: hw/acpi: Do not save/load cpuhp state unconditionally
-  Found 1 prior version(s)
+  v1 patch, no prior versions
 [3/7] Downloading patches with b4...
-Grabbing thread from lore.kernel.org/all/20260330053008.2721532-1-zhao1.liu@intel.com/t.mbox.gz
+Grabbing thread from lore.kernel.org/all/20260330114853.638753-3-clg@redhat.com/t.mbox.gz
 Analyzing 3 messages in the thread
-Looking for additional code-review trailers on lore.kernel.org
 Checking attestation on all messages, may take a moment...
 ---
-  [32m✓[0m [PATCH] hw/acpi: Do not save/load cpuhp state unconditionally
-    + Tested-by: Peter Maydell <peter.maydell@linaro.org> ([32m✓[0m DKIM/linaro.org)
+  [32m✓[0m [PATCH 1/2] hw/i2c/aspeed_i2c: reset and migrate pending_intr_sts
+  [32m✓[0m [PATCH 2/2] net/ftgmac100: preserve full VLAN TCI in TX tag insertion
   ---
-  [32m✓[0m Signed: DKIM/intel.com
+  [32m✓[0m Signed: DKIM/redhat.com
 ---
-Total patches: 1
+Total patches: 2
 ---
- Link: https://lore.kernel.org/r/20260330053008.2721532-1-zhao1.liu@intel.com
+Cover: ./20260330_clg_aspeed_queue.cover
+ Link: https://lore.kernel.org/r/20260330114853.638753-1-clg@redhat.com
  Base: not specified
-       git am ./20260330_zhao1_liu_hw_acpi_do_not_save_load_cpuhp_state_unconditionally.mbx
-  b4: mbx=115 lines
-  Title (from mbox): [PATCH] hw/acpi: Do not save/load cpuhp state unconditionally
+       git am ./20260330_clg_aspeed_queue.mbx
+  b4: mbx=101 lines
+  Title (from mbox): [PATCH 0/2] aspeed queue
 [4/7] Applying patches in QEMU worktree...
-Preparing worktree (new branch 'review-20260330053008-2721532-1-zhao1-liu-intel')
+Preparing worktree (new branch 'review-20260330114853-638753-3-clg-redhat-com')
 HEAD is now at e389503 Merge tag 'pull-request-2026-03-30' of https://gitlab.com/thuth/qemu into staging
-Applying: hw/acpi: Do not save/load cpuhp state unconditionally
+Applying: hw/i2c/aspeed_i2c: reset and migrate pending_intr_sts
+Applying: net/ftgmac100: preserve full VLAN TCI in TX tag insertion
   git am: success
   Running checkpatch...
   checkpatch: clean
   Quick build check...
 
 Found ninja-1.13.2 at /usr/local/bin/ninja
-Running postconf script '/home/runner/work/loupe-web/loupe-web/loupe-worktree-20260330053008-2721532-1-zhao1-liu-intel/build/pyvenv/bin/python3 /home/runner/work/loupe-web/loupe-web/loupe-worktree-20260330053008-2721532-1-zhao1-liu-intel/scripts/symlink-install-tree.py'
+Running postconf script '/home/runner/work/loupe-web/loupe-web/loupe-worktree-20260330114853-638753-3-clg-redhat-com/build/pyvenv/bin/python3 /home/runner/work/loupe-web/loupe-web/loupe-worktree-20260330114853-638753-3-clg-redhat-com/scripts/symlink-install-tree.py'
   configure: success
-Deleted branch review-20260330053008-2721532-1-zhao1-liu-intel (was ecbfab6).
+Deleted branch review-20260330114853-638753-3-clg-redhat-com (was 7d8c5b0).
   AM: success, Checkpatch: clean, Build: configure_ok
 [5/7] Running codex code review (Stage A-E protocol)...
 [6/7] Extracting review...
-  Verdict: ready_to_merge
+  Verdict: needs_revision
 [7/7] Assembling JSON...
 Traceback (most recent call last):
   File "<stdin>", line 8, in <module>

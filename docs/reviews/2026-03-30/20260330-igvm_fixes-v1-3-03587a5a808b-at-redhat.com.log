@@ -1,43 +1,47 @@
-=== Reviewing: 20260330053008.2721532-1-zhao1.liu@intel.com ===
+=== Reviewing: 20260330-igvm_fixes-v1-3-03587a5a808b@redhat.com ===
 [1/7] Querying Patchwork...
   Patchwork: 1 result(s)
 [2/7] Metadata OK
-  Title: [for,v11.0] hw/acpi: Do not save/load cpuhp state unconditionally
-  Author: Zhao Liu, Version: v11, Subsystem: hw/acpi
+  Title: [0/3] igvm: various fixes
+  Author: Luigi Leonardi, Version: v1, Subsystem: igvm
 [2.5/7] Fetching version history and mailing list context...
-  Searching for prior versions of: hw/acpi: Do not save/load cpuhp state unconditionally
-  Found 1 prior version(s)
+  v1 patch, no prior versions
 [3/7] Downloading patches with b4...
-Grabbing thread from lore.kernel.org/all/20260330053008.2721532-1-zhao1.liu@intel.com/t.mbox.gz
-Analyzing 3 messages in the thread
+Grabbing thread from lore.kernel.org/all/20260330-igvm_fixes-v1-3-03587a5a808b@redhat.com/t.mbox.gz
+Analyzing 4 messages in the thread
 Looking for additional code-review trailers on lore.kernel.org
 Checking attestation on all messages, may take a moment...
 ---
-  [32m✓[0m [PATCH] hw/acpi: Do not save/load cpuhp state unconditionally
-    + Tested-by: Peter Maydell <peter.maydell@linaro.org> ([32m✓[0m DKIM/linaro.org)
+  [32m✓[0m [PATCH 1/3] igvm: switch to PRIx64
+  [32m✓[0m [PATCH 2/3] igvm: fix memory leak on failed memory region init
+  [32m✓[0m [PATCH 3/3] igvm: fix parent object type in IgvmCfg struct
   ---
-  [32m✓[0m Signed: DKIM/intel.com
+  [32m✓[0m Signed: DKIM/redhat.com
 ---
-Total patches: 1
+Total patches: 3
 ---
- Link: https://lore.kernel.org/r/20260330053008.2721532-1-zhao1.liu@intel.com
+Cover: ./20260330_leonardi_igvm_various_fixes.cover
+ Link: https://lore.kernel.org/r/20260330-igvm_fixes-v1-0-03587a5a808b@redhat.com
+ Base: base-commit 91f6a9cb1b0f11afa74ef7fb20d5579d9dfbe020 not known, ignoring
  Base: not specified
-       git am ./20260330_zhao1_liu_hw_acpi_do_not_save_load_cpuhp_state_unconditionally.mbx
-  b4: mbx=115 lines
-  Title (from mbox): [PATCH] hw/acpi: Do not save/load cpuhp state unconditionally
+       git am ./20260330_leonardi_igvm_various_fixes.mbx
+  b4: mbx=118 lines
+  Title (from mbox): [PATCH 0/3] igvm: various fixes
 [4/7] Applying patches in QEMU worktree...
-Preparing worktree (new branch 'review-20260330053008-2721532-1-zhao1-liu-intel')
+Preparing worktree (new branch 'review-20260330-igvm-fixes-v1-3-03587a5a808b-re')
 HEAD is now at e389503 Merge tag 'pull-request-2026-03-30' of https://gitlab.com/thuth/qemu into staging
-Applying: hw/acpi: Do not save/load cpuhp state unconditionally
+Applying: igvm: switch to PRIx64
+Applying: igvm: fix memory leak on failed memory region init
+Applying: igvm: fix parent object type in IgvmCfg struct
   git am: success
   Running checkpatch...
   checkpatch: clean
   Quick build check...
 
 Found ninja-1.13.2 at /usr/local/bin/ninja
-Running postconf script '/home/runner/work/loupe-web/loupe-web/loupe-worktree-20260330053008-2721532-1-zhao1-liu-intel/build/pyvenv/bin/python3 /home/runner/work/loupe-web/loupe-web/loupe-worktree-20260330053008-2721532-1-zhao1-liu-intel/scripts/symlink-install-tree.py'
+Running postconf script '/home/runner/work/loupe-web/loupe-web/loupe-worktree-20260330-igvm-fixes-v1-3-03587a5a808b-re/build/pyvenv/bin/python3 /home/runner/work/loupe-web/loupe-web/loupe-worktree-20260330-igvm-fixes-v1-3-03587a5a808b-re/scripts/symlink-install-tree.py'
   configure: success
-Deleted branch review-20260330053008-2721532-1-zhao1-liu-intel (was ecbfab6).
+Deleted branch review-20260330-igvm-fixes-v1-3-03587a5a808b-re (was 669b7e1).
   AM: success, Checkpatch: clean, Build: configure_ok
 [5/7] Running codex code review (Stage A-E protocol)...
 [6/7] Extracting review...

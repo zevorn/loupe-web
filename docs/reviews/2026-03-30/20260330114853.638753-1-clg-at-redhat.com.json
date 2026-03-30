@@ -1,0 +1,70 @@
+{
+  "schema_version": "1",
+  "id": "20260330-20260330114853.638753-1-clg-at-redhat.com",
+  "series": {
+    "title": "[PATCH 0/2] aspeed queue",
+    "version": 1,
+    "patch_count": 1,
+    "author": {
+      "name": "Cédric Le Goater",
+      "email": "clg@redhat.com"
+    },
+    "date": "2026-03-30",
+    "subsystem": "riscv",
+    "message_id": "<20260330114853.638753-1-clg@redhat.com>",
+    "lore_url": "https://lore.kernel.org/qemu-devel/20260330114853.638753-1-clg%40redhat.com/",
+    "patchwork_url": "http://patchwork.ozlabs.org/project/qemu-devel/patch/20260330114853.638753-1-clg@redhat.com/",
+    "base_branch": "master"
+  },
+  "version_history": [],
+  "ml_context": {
+    "reviewed_by": [],
+    "acked_by": [],
+    "ci_status": "",
+    "prior_feedback": [],
+    "maintainer_activity": ""
+  },
+  "review": {
+    "verdict": "needs_revision",
+    "summary": "<one-line summary>",
+    "mode": "ci-single",
+    "stages": {
+      "A": "<Stage A one-line summary>",
+      "B": "<Stage B one-line summary>",
+      "C": "<Stage C one-line summary>",
+      "D": "<Stage D one-line summary>",
+      "E": "<Stage E one-line summary>"
+    },
+    "findings": [
+      {
+        "id": 1,
+        "severity": "nit",
+        "stage": "<A/B/C/D or combined e.g. B+D>",
+        "patch_index": "<n/m>",
+        "file": "<file path>",
+        "line": "<line or line-range>",
+        "patch_context": [
+          "<diff lines relevant to this finding>"
+        ],
+        "title": "<short title>",
+        "description": "<explanation>",
+        "suggestion": "<fix suggestion or null>",
+        "confidence": "<high/medium/low>",
+        "confidence_reason": "<why this confidence level>",
+        "source": "ci-single"
+      }
+    ],
+    "checkpatch": {
+      "status": "clean",
+      "issues": []
+    },
+    "build_status": "configure_ok",
+    "am_status": "success"
+  },
+  "cover_letter": "Subject: [PATCH 0/2] aspeed queue\nFrom: Cédric Le Goater <clg@redhat.com>\nDate: Mon, 30 Mar 2026 13:48:51 +0200\nMessage-Id: <20260330114853.638753-1-clg@redhat.com>\nMIME-Version: 1.0\nContent-Type: text/plain; charset=\"utf-8\"\nContent-Transfer-Encoding: 7bit\n\nThe following changes since commit 91f6a9cb1b0f11afa74ef7fb20d5579d9dfbe020:\n\n  Merge tag 'qga-pull-2026-03-27' of https://github.com/kostyanf14/qemu into staging (2026-03-27 18:41:05 +0000)\n\nare available in the Git repository at:\n\n  https://github.com/legoater/qemu/ tags/pull-aspeed-20260330\n\nfor you to fetch changes up to 9160305d92d2750e6ca3ada8f048305c9290f03c:\n\n  net/ftgmac100: preserve full VLAN TCI in TX tag insertion (2026-03-30 07:36:25 +0200)\n\n----------------------------------------------------------------\naspeed queue:\n\n* Complete lost interrupts fix in the Aspeed I2C model\n* Fix a vlan tag insertion issue in the ftgmac100 model\n\n----------------------------------------------------------------\nGuoHan Zhao (1):\n      hw/i2c/aspeed_i2c: reset and migrate pending_intr_sts\n\nlinhuang (1):\n      net/ftgmac100: preserve full VLAN TCI in TX tag insertion\n\n hw/i2c/aspeed_i2c.c | 4 +++-\n hw/net/ftgmac100.c  | 2 +-\n 2 files changed, 4 insertions(+), 2 deletions(-)",
+  "diff": "From git@z Thu Jan  1 00:00:00 1970\nSubject: [PATCH 1/2] hw/i2c/aspeed_i2c: reset and migrate pending_intr_sts\nFrom: GuoHan Zhao <zhaoguohan@kylinos.cn>\nDate: Mon, 30 Mar 2026 13:48:52 +0200\nMessage-Id: <20260330114853.638753-2-clg@redhat.com>\nMIME-Version: 1.0\nContent-Type: text/plain; charset=\"utf-8\"\nContent-Transfer-Encoding: 8bit\n\nCommit 7e82393ed058 (\"hw/i2c/aspeed: fix lost interrupts on\nback-to-back commands\") introduced pending_intr_sts to preserve\ninterrupt bits that collide with already pending status bits.\n\nThat deferred interrupt state is consumed later when the guest clears\nINTR_STS, but it is not reset in aspeed_i2c_bus_reset() and it is not\npart of the bus migration state. A reset can therefore leave stale\ndeferred bits behind, and migration can silently drop them.\n\nClear pending_intr_sts on reset and include it in VMState while keeping\ncompatibility with older migration streams.\n\nFixes: 7e82393ed058 (\"hw/i2c/aspeed: fix lost interrupts on back-to-back commands\")\nSigned-off-by: GuoHan Zhao <zhaoguohan@kylinos.cn>\nLink: https://lore.kernel.org/qemu-devel/20260325085450.126595-1-zhaoguohan@kylinos.cn\nReviewed-by: Cédric Le Goater <clg@redhat.com>\nReviewed-by: Jithu Joseph <jithu.joseph@oss.qualcomm.com>\nSigned-off-by: Cédric Le Goater <clg@redhat.com>\n---\n hw/i2c/aspeed_i2c.c | 4 +++-\n 1 file changed, 3 insertions(+), 1 deletion(-)\n\ndiff --git a/hw/i2c/aspeed_i2c.c b/hw/i2c/aspeed_i2c.c\nindex 5d18f8d49ea4..90f83a03fd4f 100644\n--- a/hw/i2c/aspeed_i2c.c\n+++ b/hw/i2c/aspeed_i2c.c\n@@ -1134,10 +1134,11 @@ static const MemoryRegionOps aspeed_i2c_bus_pool_ops = {\n \n static const VMStateDescription aspeed_i2c_bus_vmstate = {\n     .name = TYPE_ASPEED_I2C,\n-    .version_id = 6,\n+    .version_id = 7,\n     .minimum_version_id = 6,\n     .fields = (const VMStateField[]) {\n         VMSTATE_UINT32_ARRAY(regs, AspeedI2CBus, ASPEED_I2C_NEW_NUM_REG),\n+        VMSTATE_UINT32_V(pending_intr_sts, AspeedI2CBus, 7),\n         VMSTATE_UINT8_ARRAY(pool, AspeedI2CBus, ASPEED_I2C_BUS_POOL_SIZE),\n         VMSTATE_UINT64(dma_dram_offset, AspeedI2CBus),\n         VMSTATE_END_OF_LIST()\n@@ -1510,6 +1511,7 @@ static void aspeed_i2c_bus_reset(DeviceState *dev)\n     AspeedI2CBus *s = ASPEED_I2C_BUS(dev);\n \n     memset(s->regs, 0, sizeof(s->regs));\n+    s->pending_intr_sts = 0;\n     i2c_end_transfer(s->bus);\n }\n \n-- \n2.53.0\n\nFrom git@z Thu Jan  1 00:00:00 1970\nSubject: [PATCH 2/2] net/ftgmac100: preserve full VLAN TCI in TX tag\n insertion\nFrom: linhuang <linhuang@ruijie.com.cn>\nDate: Mon, 30 Mar 2026 13:48:53 +0200\nMessage-Id: <20260330114853.638753-3-clg@redhat.com>\nMIME-Version: 1.0\nContent-Type: text/plain; charset=\"utf-8\"\nContent-Transfer-Encoding: 8bit\n\nThe VLAN tag insertion helper took vlan_tci as an 8-bit value, while\nthe descriptor provides a 16-bit VLAN TCI. This truncated egress tags\nand caused VLAN ID corruption (for example, 4088/0x0ff8 became\n248/0x00f8 at the receiver).\n\nChange vlan_tci to uint16_t in the TX VLAN insertion path so the full\n802.1Q TCI is preserved and transmitted correctly.\n\nFixes: c2ab73fcbe79 (\"ftgmac100: Fix integer overflow in ftgmac100_do_tx()\")\nSigned-off-by: linhuang <linhuang@ruijie.com.cn>\nLink: https://lore.kernel.org/qemu-devel/1471e413d3589b6734819bda2b59b725b74f273a.d551129b.99fc.47f6.86dc.0759227268a2@feishu.cn\nReviewed-by: Cédric Le Goater <clg@redhat.com>\nSigned-off-by: Cédric Le Goater <clg@redhat.com>\n---\n hw/net/ftgmac100.c | 2 +-\n 1 file changed, 1 insertion(+), 1 deletion(-)\n\ndiff --git a/hw/net/ftgmac100.c b/hw/net/ftgmac100.c\nindex 2f05bba11d01..b3da48c343c7 100644\n--- a/hw/net/ftgmac100.c\n+++ b/hw/net/ftgmac100.c\n@@ -498,7 +498,7 @@ static int ftgmac100_write_bd(FTGMAC100Desc *bd, dma_addr_t addr)\n }\n \n static int ftgmac100_insert_vlan(FTGMAC100State *s, int frame_size,\n-                                  uint8_t vlan_tci)\n+                                 uint16_t vlan_tci)\n {\n     uint8_t *vlan_hdr = s->frame + (ETH_ALEN * 2);\n     uint8_t *payload = vlan_hdr + sizeof(struct vlan_header);\n-- \n2.53.0",
+  "patches": [],
+  "generated_at": "2026-03-30T14:00:10Z",
+  "generator": "loupe:patch-review v1.0",
+  "disclaimer": "LLM-generated draft. Not an authoritative review."
+}

@@ -34,7 +34,7 @@ scripts/review-patch.sh: line 273: echo: write error: Broken pipe
   Title (from mbox): [PATCH RFC v3 0/7] net/filter: Add AF_PACKET support for vhost-net
 [4/7] Applying patches in QEMU worktree...
 Preparing worktree (new branch 'review-20260330090944-1008027-8-lulu-redhat-com')
-HEAD is now at 91f6a9c Merge tag 'qga-pull-2026-03-27' of https://github.com/kostyanf14/qemu into staging
+HEAD is now at e389503 Merge tag 'pull-request-2026-03-30' of https://gitlab.com/thuth/qemu into staging
 error: patch failed: net/filter-mirror.c:267
 error: net/filter-mirror.c: patch does not apply
 hint: Use 'git am --show-current-patch=diff' to see the failed patch
@@ -58,7 +58,7 @@ Patch failed at 0001 net/filter-mirror: keep mirroring while stopped
   Running checkpatch...
   checkpatch: clean
   Skipping build (am failed)
-Deleted branch review-20260330090944-1008027-8-lulu-redhat-com (was 91f6a9c).
+Deleted branch review-20260330090944-1008027-8-lulu-redhat-com (was e389503).
   AM: failed, Checkpatch: clean, Build: not_run
 [5/7] Running codex code review (Stage A-E protocol)...
 [6/7] Extracting review...

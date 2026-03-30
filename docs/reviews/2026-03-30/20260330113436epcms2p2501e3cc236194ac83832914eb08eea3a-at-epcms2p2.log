@@ -1,61 +1,64 @@
-=== Reviewing: 20260330053300.2721608-1-zhao1.liu@intel.com ===
+=== Reviewing: 20260330113436epcms2p2501e3cc236194ac83832914eb08eea3a@epcms2p2 ===
 [1/7] Querying Patchwork...
   Patchwork: 1 result(s)
 [2/7] Metadata OK
-  Title: tests/functional/migration.py: Skip migration_with_exec() if socat is not available
-  Author: Zhao Liu, Version: v1, Subsystem: tests/functional/migration.py
+  Title: [5/5] tests/qtest: Add UFS Write Booster QTest
+  Author: Jaemyung Lee, Version: v1, Subsystem: tests/qtest
 [2.5/7] Fetching version history and mailing list context...
   v1 patch, no prior versions
 [3/7] Downloading patches with b4...
-Grabbing thread from lore.kernel.org/all/20260330053300.2721608-1-zhao1.liu@intel.com/t.mbox.gz
+Grabbing thread from lore.kernel.org/all/20260330113436epcms2p2501e3cc236194ac83832914eb08eea3a@epcms2p2/t.mbox.gz
 Analyzing 2 messages in the thread
 Looking for additional code-review trailers on lore.kernel.org
 Checking attestation on all messages, may take a moment...
 ---
-  [32m✓[0m [PATCH] tests/functional/migration.py: Skip migration_with_exec() if socat is not available
-    + Reviewed-by: Thomas Huth <thuth@redhat.com> ([32m✓[0m DKIM/redhat.com)
-  ---
-  [32m✓[0m Signed: DKIM/intel.com
+  ERROR: missing [1/5]!
+  ERROR: missing [2/5]!
+  ERROR: missing [3/5]!
+  [32m✓[0m [PATCH 4/5] hw/ufs: Add UFS Write Booster Support
+    [32m✓[0m Signed: DKIM/samsung.com
+  [32m✓[0m [PATCH 5/5] tests/qtest: Add UFS Write Booster QTest
+    [32m✓[0m Signed: DKIM/samsung.com
 ---
-Total patches: 1
+Total patches: 2
 ---
- Link: https://lore.kernel.org/r/20260330053300.2721608-1-zhao1.liu@intel.com
+WARNING: Thread incomplete!
+ Link: https://lore.kernel.org/r/20260330113348epcms2p2d7a91b4e09f78a4fce6d3cd5514e2871@epcms2p2
  Base: not specified
-       git am ./20260330_zhao1_liu_tests_functional_migration_py_skip_migration_with_exec_if_socat_is_not_available.mbx
-  b4: mbx=41 lines
-  Title (from mbox): [PATCH] tests/functional/migration.py: Skip migration_with_exec()
+       git am ./20260330_jaemyung_lee_hw_ufs_add_ufs_write_booster_support.mbx
+  b4: mbx=958 lines
+scripts/review-patch.sh: line 273: echo: write error: Broken pipe
+  Title (from mbox): [PATCH 4/5] hw/ufs: Add UFS Write Booster Support
 [4/7] Applying patches in QEMU worktree...
-Preparing worktree (new branch 'review-20260330053300-2721608-1-zhao1-liu-intel')
-Updating files:  96% (10683/11019)Updating files:  97% (10689/11019)Updating files:  98% (10799/11019)Updating files:  99% (10909/11019)Updating files: 100% (11019/11019)Updating files: 100% (11019/11019), done.
+Preparing worktree (new branch 'review-20260330113436epcms2p2501e3cc236194ac838')
 HEAD is now at e389503 Merge tag 'pull-request-2026-03-30' of https://gitlab.com/thuth/qemu into staging
-error: patch failed: tests/functional/migration.py:80
-error: tests/functional/migration.py: patch does not apply
+error: corrupt patch at line 253
 hint: Use 'git am --show-current-patch=diff' to see the failed patch
 hint: When you have resolved this problem, run "git am --continue".
 hint: If you prefer to skip this patch, run "git am --skip" instead.
 hint: To restore the original branch and stop patching, run "git am --abort".
 hint: Disable this message with "git config set advice.mergeConflict false"
-Applying: tests/functional/migration.py: Skip migration_with_exec() if socat is not available
-Patch failed at 0001 tests/functional/migration.py: Skip migration_with_exec() if socat is not available
+Applying: hw/ufs: Add UFS Write Booster Support
+Patch failed at 0001 hw/ufs: Add UFS Write Booster Support
   git am failed, retrying with --3way...
-Applying: tests/functional/migration.py: Skip migration_with_exec() if socat is not available
-error: sha1 information is lacking or useless (tests/functional/migration.py).
+Applying: hw/ufs: Add UFS Write Booster Support
+error: corrupt patch at line 253
 error: could not build fake ancestor
 hint: Use 'git am --show-current-patch=diff' to see the failed patch
 hint: When you have resolved this problem, run "git am --continue".
 hint: If you prefer to skip this patch, run "git am --skip" instead.
 hint: To restore the original branch and stop patching, run "git am --abort".
 hint: Disable this message with "git config set advice.mergeConflict false"
-Patch failed at 0001 tests/functional/migration.py: Skip migration_with_exec() if socat is not available
+Patch failed at 0001 hw/ufs: Add UFS Write Booster Support
   git am --3way: FAILED
   Running checkpatch...
-  checkpatch: clean
+  checkpatch: issues
   Skipping build (am failed)
-Deleted branch review-20260330053300-2721608-1-zhao1-liu-intel (was e389503).
-  AM: failed, Checkpatch: clean, Build: not_run
+Deleted branch review-20260330113436epcms2p2501e3cc236194ac838 (was e389503).
+  AM: failed, Checkpatch: issues, Build: not_run
 [5/7] Running codex code review (Stage A-E protocol)...
 [6/7] Extracting review...
-  Verdict: ready_to_merge
+  Verdict: needs_revision
 [7/7] Assembling JSON...
 Traceback (most recent call last):
   File "<stdin>", line 8, in <module>
@@ -71,5 +74,5 @@ Traceback (most recent call last):
   File "/usr/lib/python3.12/json/decoder.py", line 353, in raw_decode
     obj, end = self.scan_once(s, idx)
                ^^^^^^^^^^^^^^^^^^^^^^
-json.decoder.JSONDecodeError: Expecting ',' delimiter: line 6 column 1 (char 93)
+json.decoder.JSONDecodeError: Expecting ',' delimiter: line 3 column 1 (char 24)
 ERROR: invalid JSON output

@@ -1,0 +1,72 @@
+=== Reviewing: 20260330113906.168002-8-kkostiuk@redhat.com ===
+[1/7] Querying Patchwork...
+  Patchwork: 1 result(s)
+[2/7] Metadata OK
+  Title: [0/7] Misc QGA changes to allow building with Windows Clang
+  Author: Kostiantyn Kostiuk, Version: v1, Subsystem: riscv
+[2.5/7] Fetching version history and mailing list context...
+  v1 patch, no prior versions
+[3/7] Downloading patches with b4...
+Grabbing thread from lore.kernel.org/all/20260330113906.168002-8-kkostiuk@redhat.com/t.mbox.gz
+Analyzing 8 messages in the thread
+Looking for additional code-review trailers on lore.kernel.org
+Checking attestation on all messages, may take a moment...
+---
+  [32m✓[0m [PATCH 1/7] qga/win: Use swprintf instead of snwprintf
+  [32m✓[0m [PATCH 2/7] qga/meson: Remove unused lib stdc++
+  [32m✓[0m [PATCH 3/7] qga/meson: Use windows.compile_resources instead of custom_target
+  [32m✓[0m [PATCH 4/7] qga/meson: Allow to use MSVC message compiler 'mc'
+  [32m✓[0m [PATCH 5/7] qga/vss: Use MAX_PATH instead of PATH_MAX
+  [32m✓[0m [PATCH 6/7] qga/vss: Remove unused undefs
+  [32m✓[0m [PATCH 7/7] qga/vss: Drop unused define uuid(x)
+  ---
+  [32m✓[0m Signed: DKIM/redhat.com
+---
+Total patches: 7
+---
+Cover: ./20260330_kkostiuk_misc_qga_changes_to_allow_building_with_windows_clang.cover
+ Link: https://lore.kernel.org/r/20260330113906.168002-1-kkostiuk@redhat.com
+ Base: not specified
+       git am ./20260330_kkostiuk_misc_qga_changes_to_allow_building_with_windows_clang.mbx
+  b4: mbx=257 lines
+  Title (from mbox): [PATCH 0/7] Misc QGA changes to allow building with Windows Clang
+[4/7] Applying patches in QEMU worktree...
+Preparing worktree (new branch 'review-20260330113906-168002-8-kkostiuk-redhat-')
+HEAD is now at e389503 Merge tag 'pull-request-2026-03-30' of https://gitlab.com/thuth/qemu into staging
+Applying: qga/win: Use swprintf instead of snwprintf
+Applying: qga/meson: Remove unused lib stdc++
+Applying: qga/meson: Use windows.compile_resources instead of custom_target
+Applying: qga/meson: Allow to use MSVC message compiler 'mc'
+Applying: qga/vss: Use MAX_PATH instead of PATH_MAX
+Applying: qga/vss: Remove unused undefs
+Applying: qga/vss: Drop unused define uuid(x)
+  git am: success
+  Running checkpatch...
+  checkpatch: clean
+  Quick build check...
+
+Found ninja-1.13.2 at /usr/local/bin/ninja
+Running postconf script '/home/runner/work/loupe-web/loupe-web/loupe-worktree-20260330113906-168002-8-kkostiuk-redhat-/build/pyvenv/bin/python3 /home/runner/work/loupe-web/loupe-web/loupe-worktree-20260330113906-168002-8-kkostiuk-redhat-/scripts/symlink-install-tree.py'
+  configure: success
+Deleted branch review-20260330113906-168002-8-kkostiuk-redhat- (was 5b4d118).
+  AM: success, Checkpatch: clean, Build: configure_ok
+[5/7] Running codex code review (Stage A-E protocol)...
+[6/7] Extracting review...
+  Verdict: ready_to_merge
+[7/7] Assembling JSON...
+Traceback (most recent call last):
+  File "<stdin>", line 8, in <module>
+  File "/usr/lib/python3.12/json/__init__.py", line 293, in load
+    return loads(fp.read(),
+           ^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/json/__init__.py", line 346, in loads
+    return _default_decoder.decode(s)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/json/decoder.py", line 337, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/json/decoder.py", line 353, in raw_decode
+    obj, end = self.scan_once(s, idx)
+               ^^^^^^^^^^^^^^^^^^^^^^
+json.decoder.JSONDecodeError: Expecting ',' delimiter: line 3 column 1 (char 24)
+ERROR: invalid JSON output
