@@ -32,7 +32,6 @@ Cover: ./20260330_thuth_fixes_for_qemu_v11_0_rc2.cover
   Title (from mbox): [PATCH 0/7] Fixes for QEMU v11.0-rc2
 [4/7] Applying patches in QEMU worktree...
 Preparing worktree (new branch 'review-20260330102815-6759-8-thuth-redhat-com')
-Updating files:  85% (9466/11022)Updating files:  86% (9479/11022)Updating files:  87% (9590/11022)Updating files:  88% (9700/11022)Updating files:  89% (9810/11022)Updating files:  90% (9920/11022)Updating files:  91% (10031/11022)Updating files:  92% (10141/11022)Updating files:  93% (10251/11022)Updating files:  94% (10361/11022)Updating files:  95% (10471/11022)Updating files:  96% (10582/11022)Updating files:  97% (10692/11022)Updating files:  98% (10802/11022)Updating files:  99% (10912/11022)Updating files: 100% (11022/11022)Updating files: 100% (11022/11022), done.
 HEAD is now at dd3ee9c Merge tag 'for-upstream' of https://gitlab.com/bonzini/qemu into staging
 error: patch failed: tests/functional/qemu_test/asset.py:1
 error: tests/functional/qemu_test/asset.py: patch does not apply

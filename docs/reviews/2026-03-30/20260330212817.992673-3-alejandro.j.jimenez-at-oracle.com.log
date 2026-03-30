@@ -1,41 +1,45 @@
-=== Reviewing: 20260330151313.66318-1-maxpain@linux.com ===
+=== Reviewing: 20260330212817.992673-3-alejandro.j.jimenez@oracle.com ===
 [1/7] Querying Patchwork...
   Patchwork: 1 result(s)
 [2/7] Metadata OK
-  Title: vhost-user-blk-server: fix size_max=0 breaking Windows guests
-  Author: Max Makarov, Version: v1, Subsystem: vhost-user-blk-server
+  Title: [for-11.0,2/2] amd_iommu: Reject non-decreasing NextLevel in fetch_pte()
+  Author: Alejandro Jimenez, Version: v1, Subsystem: amd_iommu
 [2.5/7] Fetching version history and mailing list context...
   v1 patch, no prior versions
 [3/7] Downloading patches with b4...
-Grabbing thread from lore.kernel.org/all/20260330151313.66318-1-maxpain@linux.com/t.mbox.gz
-Analyzing 1 messages in the thread
+Grabbing thread from lore.kernel.org/all/20260330212817.992673-3-alejandro.j.jimenez@oracle.com/t.mbox.gz
+Analyzing 3 messages in the thread
 Looking for additional code-review trailers on lore.kernel.org
 Checking attestation on all messages, may take a moment...
 ---
-  [32m✓[0m [PATCH] vhost-user-blk-server: fix size_max=0 breaking Windows guests
+  [32m✓[0m [PATCH 1/2] amd_iommu: Follow root pointer before page walk and use 1-based levels
+  [32m✓[0m [PATCH 2/2] amd_iommu: Reject non-decreasing NextLevel in fetch_pte()
   ---
-  [32m✓[0m Signed: DKIM/gmail.com
+  [32m✓[0m Signed: DKIM/oracle.com
 ---
-Total patches: 1
+Total patches: 2
 ---
- Link: https://lore.kernel.org/r/20260330151313.66318-1-maxpain@linux.com
+Cover: ./20260330_alejandro_j_jimenez_amd_iommu_fixes_for_11_0_rc2.cover
+ Link: https://lore.kernel.org/r/20260330212817.992673-1-alejandro.j.jimenez@oracle.com
+ Base: base-commit dd3ee9c63d96b223c8d41bf5d65392eb898be626 not known, ignoring
  Base: not specified
-       git am ./20260330_maxpain177_vhost_user_blk_server_fix_size_max_0_breaking_windows_guests.mbx
-  b4: mbx=53 lines
-  Title (from mbox): [PATCH] vhost-user-blk-server: fix size_max=0 breaking Windows
+       git am ./20260330_alejandro_j_jimenez_amd_iommu_fixes_for_11_0_rc2.mbx
+  b4: mbx=292 lines
+  Title (from mbox): [PATCH 0/2] amd_iommu fixes for 11.0-rc2
 [4/7] Applying patches in QEMU worktree...
-Preparing worktree (new branch 'review-20260330151313-66318-1-maxpain-linux-com')
+Preparing worktree (new branch 'review-20260330212817-992673-3-alejandro-j-jime')
 HEAD is now at dd3ee9c Merge tag 'for-upstream' of https://gitlab.com/bonzini/qemu into staging
-Applying: vhost-user-blk-server: fix size_max=0 breaking Windows guests
+Applying: amd_iommu: Follow root pointer before page walk and use 1-based levels
+Applying: amd_iommu: Reject non-decreasing NextLevel in fetch_pte()
   git am: success
   Running checkpatch...
   checkpatch: clean
   Quick build check...
 
 Found ninja-1.13.2 at /usr/local/bin/ninja
-Running postconf script '/home/runner/work/loupe-web/loupe-web/loupe-worktree-20260330151313-66318-1-maxpain-linux-com/build/pyvenv/bin/python3 /home/runner/work/loupe-web/loupe-web/loupe-worktree-20260330151313-66318-1-maxpain-linux-com/scripts/symlink-install-tree.py'
+Running postconf script '/home/runner/work/loupe-web/loupe-web/loupe-worktree-20260330212817-992673-3-alejandro-j-jime/build/pyvenv/bin/python3 /home/runner/work/loupe-web/loupe-web/loupe-worktree-20260330212817-992673-3-alejandro-j-jime/scripts/symlink-install-tree.py'
   configure: success
-Deleted branch review-20260330151313-66318-1-maxpain-linux-com (was 034d5fd).
+Deleted branch review-20260330212817-992673-3-alejandro-j-jime (was b06a9a3).
   AM: success, Checkpatch: clean, Build: configure_ok
 [5/7] Running codex code review (Stage A-E protocol)...
 [6/7] Extracting review...
