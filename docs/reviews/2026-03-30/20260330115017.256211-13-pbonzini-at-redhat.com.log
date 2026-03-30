@@ -17,17 +17,19 @@ Checking attestation on all messages, may take a moment...
   [32m✓[0m [PATCH 3/12] whpx: i386: trace unsupported MSR accesses
   [32m✓[0m [PATCH 4/12] target/i386: emulate: remove redundant logging for unmapped MMIO access
   [32m✓[0m [PATCH 5/12] hpet: fix bounds check for s->timer[]
-    + Reviewed-by: Philippe Mathieu-Daudé <philmd@linaro.org> ([32m✓[0m DKIM/linaro.org)
     + Reviewed-by: Zhao Liu <zhao1.liu@intel.com> ([32m✓[0m DKIM/intel.com)
     + Reviewed-by: Peter Maydell <peter.maydell@linaro.org> ([32m✓[0m DKIM/linaro.org)
+    + Reviewed-by: Philippe Mathieu-Daudé <philmd@linaro.org> ([32m✓[0m DKIM/linaro.org)
   [32m✓[0m [PATCH 6/12] hpet: lower HPET_MAX_TIMERS to 24
     + Reviewed-by: Peter Maydell <peter.maydell@linaro.org> ([32m✓[0m DKIM/linaro.org)
+    + Reviewed-by: Philippe Mathieu-Daudé <philmd@linaro.org> ([32m✓[0m DKIM/linaro.org)
   [32m✓[0m [PATCH 7/12] lsi53c895a: keep a reference to the device while SCRIPTS execute
   [32m✓[0m [PATCH 8/12] lsi53c895a: do not do anything else if a reset is requested by writing ISTAT0
   [32m✓[0m [PATCH 9/12] lsi53c895a: keep lsi_request and SCSIRequest in local variables
   [32m✓[0m [PATCH 10/12] lsi53c895a: keep lsi_request alive as long as the SCSIRequest
   [32m✓[0m [PATCH 11/12] lsi53c895a: keep SCSIRequest alive during DMA
   [32m✓[0m [PATCH 12/12] hw/acpi: Do not save/load cpuhp state unconditionally
+    + Reviewed-by: Philippe Mathieu-Daudé <philmd@linaro.org> ([32m✓[0m DKIM/linaro.org)
   ---
   [32m✓[0m Signed: DKIM/redhat.com
 ---
@@ -37,7 +39,7 @@ Cover: ./20260330_pbonzini_i386_lsi_patches_for_qemu_11_0_rc2.cover
  Link: https://lore.kernel.org/r/20260330115017.256211-1-pbonzini@redhat.com
  Base: not specified
        git am ./20260330_pbonzini_i386_lsi_patches_for_qemu_11_0_rc2.mbx
-  b4: mbx=945 lines
+  b4: mbx=947 lines
 scripts/review-patch.sh: line 273: echo: write error: Broken pipe
   Title (from mbox): [PATCH 0/12] i386, lsi patches for QEMU 11.0-rc2
 [4/7] Applying patches in QEMU worktree...
@@ -70,7 +72,7 @@ Deleted branch review-20260330115017-256211-13-pbonzini-redhat (was dd3ee9c).
   AM: failed, Checkpatch: issues, Build: not_run
 [5/7] Running codex code review (Stage A-E protocol)...
 [6/7] Extracting review...
-  Verdict: ready_to_merge
+  Verdict: needs_revision
 [7/7] Assembling JSON...
 Traceback (most recent call last):
   File "<stdin>", line 8, in <module>

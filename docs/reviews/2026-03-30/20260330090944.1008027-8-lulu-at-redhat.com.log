@@ -30,6 +30,7 @@ Cover: ./v3_20260330_lulu_net_filter_add_af_packet_support_for_vhost_net.cover
  Base: not specified
        git am ./v3_20260330_lulu_net_filter_add_af_packet_support_for_vhost_net.mbx
   b4: mbx=909 lines
+scripts/review-patch.sh: line 273: echo: write error: Broken pipe
   Title (from mbox): [PATCH RFC v3 0/7] net/filter: Add AF_PACKET support for vhost-net
 [4/7] Applying patches in QEMU worktree...
 Preparing worktree (new branch 'review-20260330090944-1008027-8-lulu-redhat-com')

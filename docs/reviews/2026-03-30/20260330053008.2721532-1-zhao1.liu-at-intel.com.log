@@ -9,11 +9,12 @@
   Found 1 prior version(s)
 [3/7] Downloading patches with b4...
 Grabbing thread from lore.kernel.org/all/20260330053008.2721532-1-zhao1.liu@intel.com/t.mbox.gz
-Analyzing 3 messages in the thread
+Analyzing 4 messages in the thread
 Looking for additional code-review trailers on lore.kernel.org
 Checking attestation on all messages, may take a moment...
 ---
   [32m✓[0m [PATCH] hw/acpi: Do not save/load cpuhp state unconditionally
+    + Reviewed-by: Philippe Mathieu-Daudé <philmd@linaro.org> ([32m✓[0m DKIM/linaro.org)
     + Tested-by: Peter Maydell <peter.maydell@linaro.org> ([32m✓[0m DKIM/linaro.org)
   ---
   [32m✓[0m Signed: DKIM/intel.com
@@ -23,7 +24,7 @@ Total patches: 1
  Link: https://lore.kernel.org/r/20260330053008.2721532-1-zhao1.liu@intel.com
  Base: not specified
        git am ./20260330_zhao1_liu_hw_acpi_do_not_save_load_cpuhp_state_unconditionally.mbx
-  b4: mbx=115 lines
+  b4: mbx=116 lines
   Title (from mbox): [PATCH] hw/acpi: Do not save/load cpuhp state unconditionally
 [4/7] Applying patches in QEMU worktree...
 Preparing worktree (new branch 'review-20260330053008-2721532-1-zhao1-liu-intel')
@@ -57,7 +58,7 @@ Deleted branch review-20260330053008-2721532-1-zhao1-liu-intel (was dd3ee9c).
   AM: failed, Checkpatch: clean, Build: not_run
 [5/7] Running codex code review (Stage A-E protocol)...
 [6/7] Extracting review...
-  Verdict: ready_to_merge
+  Verdict: needs_revision
 [7/7] Assembling JSON...
 Traceback (most recent call last):
   File "<stdin>", line 8, in <module>
@@ -73,5 +74,5 @@ Traceback (most recent call last):
   File "/usr/lib/python3.12/json/decoder.py", line 353, in raw_decode
     obj, end = self.scan_once(s, idx)
                ^^^^^^^^^^^^^^^^^^^^^^
-json.decoder.JSONDecodeError: Expecting ',' delimiter: line 3 column 1 (char 24)
+json.decoder.JSONDecodeError: Expecting ',' delimiter: line 6 column 1 (char 105)
 ERROR: invalid JSON output

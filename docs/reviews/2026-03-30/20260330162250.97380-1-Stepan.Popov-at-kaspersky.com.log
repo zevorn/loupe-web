@@ -1,41 +1,42 @@
-=== Reviewing: 20260330151437.1787008-1-peter.maydell@linaro.org ===
+=== Reviewing: 20260330162250.97380-1-Stepan.Popov@kaspersky.com ===
 [1/7] Querying Patchwork...
   Patchwork: 1 result(s)
 [2/7] Metadata OK
-  Title: target/i386: Treat qtest like TCG for supported-features
-  Author: Peter Maydell, Version: v1, Subsystem: target/i386
+  Title: [v2] meson: add missing semicolon in pthread_condattr_setclock test
+  Author: Stepan Popov, Version: v2, Subsystem: meson
 [2.5/7] Fetching version history and mailing list context...
-  v1 patch, no prior versions
+  Searching for prior versions of: meson: add missing semicolon in pthread_condattr_setclock test
+  Found 1 prior version(s)
 [3/7] Downloading patches with b4...
-Grabbing thread from lore.kernel.org/all/20260330151437.1787008-1-peter.maydell@linaro.org/t.mbox.gz
+Grabbing thread from lore.kernel.org/all/20260330162250.97380-1-Stepan.Popov@kaspersky.com/t.mbox.gz
 Analyzing 1 messages in the thread
-Looking for additional code-review trailers on lore.kernel.org
 Checking attestation on all messages, may take a moment...
 ---
-  [32m✓[0m [PATCH] target/i386: Treat qtest like TCG for supported-features
+  [32m✓[0m [PATCH v2] meson: add missing semicolon in pthread_condattr_setclock test
+    + Fixes: 657ac98b58c (thread-posix: use monotonic clock for QemuCond and QemuSemaphore) ([32m✓[0m DKIM/linaro.org)
   ---
-  [32m✓[0m Signed: DKIM/linaro.org
+  [32m✓[0m Signed: DKIM/kaspersky.com
 ---
 Total patches: 1
 ---
- Link: https://lore.kernel.org/r/20260330151437.1787008-1-peter.maydell@linaro.org
+ Link: https://lore.kernel.org/r/20260330162250.97380-1-Stepan.Popov@kaspersky.com
  Base: not specified
-       git am ./20260330_peter_maydell_target_i386_treat_qtest_like_tcg_for_supported_features.mbx
-  b4: mbx=46 lines
-  Title (from mbox): [PATCH] target/i386: Treat qtest like TCG for supported-features
+       git am ./v2_20260330_stepan_popov_meson_add_missing_semicolon_in_pthread_condattr_setclock_test.mbx
+  b4: mbx=40 lines
+  Title (from mbox): [PATCH v2] meson: add missing semicolon in
 [4/7] Applying patches in QEMU worktree...
-Preparing worktree (new branch 'review-20260330151437-1787008-1-peter-maydell-l')
+Preparing worktree (new branch 'review-20260330162250-97380-1-Stepan-Popov-kasp')
 HEAD is now at dd3ee9c Merge tag 'for-upstream' of https://gitlab.com/bonzini/qemu into staging
-Applying: target/i386: Treat qtest like TCG for supported-features
+Applying: meson: add missing semicolon in pthread_condattr_setclock test
   git am: success
   Running checkpatch...
   checkpatch: clean
   Quick build check...
 
 Found ninja-1.13.2 at /usr/local/bin/ninja
-Running postconf script '/home/runner/work/loupe-web/loupe-web/loupe-worktree-20260330151437-1787008-1-peter-maydell-l/build/pyvenv/bin/python3 /home/runner/work/loupe-web/loupe-web/loupe-worktree-20260330151437-1787008-1-peter-maydell-l/scripts/symlink-install-tree.py'
+Running postconf script '/home/runner/work/loupe-web/loupe-web/loupe-worktree-20260330162250-97380-1-Stepan-Popov-kasp/build/pyvenv/bin/python3 /home/runner/work/loupe-web/loupe-web/loupe-worktree-20260330162250-97380-1-Stepan-Popov-kasp/scripts/symlink-install-tree.py'
   configure: success
-Deleted branch review-20260330151437-1787008-1-peter-maydell-l (was bcd2fc8).
+Deleted branch review-20260330162250-97380-1-Stepan-Popov-kasp (was 98d6d6f).
   AM: success, Checkpatch: clean, Build: configure_ok
 [5/7] Running codex code review (Stage A-E protocol)...
 [6/7] Extracting review...

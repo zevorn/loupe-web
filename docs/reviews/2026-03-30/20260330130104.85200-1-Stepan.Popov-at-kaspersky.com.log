@@ -8,7 +8,7 @@
   v1 patch, no prior versions
 [3/7] Downloading patches with b4...
 Grabbing thread from lore.kernel.org/all/20260330130104.85200-1-Stepan.Popov@kaspersky.com/t.mbox.gz
-Analyzing 2 messages in the thread
+Analyzing 4 messages in the thread
 Looking for additional code-review trailers on lore.kernel.org
 Checking attestation on all messages, may take a moment...
 ---
@@ -35,7 +35,7 @@ Applying: thread-pool: signal condition variable while holding lock
 Found ninja-1.13.2 at /usr/local/bin/ninja
 Running postconf script '/home/runner/work/loupe-web/loupe-web/loupe-worktree-20260330130104-85200-1-Stepan-Popov-kasp/build/pyvenv/bin/python3 /home/runner/work/loupe-web/loupe-web/loupe-worktree-20260330130104-85200-1-Stepan-Popov-kasp/scripts/symlink-install-tree.py'
   configure: success
-Deleted branch review-20260330130104-85200-1-Stepan-Popov-kasp (was 55a39f8).
+Deleted branch review-20260330130104-85200-1-Stepan-Popov-kasp (was 9fbca65).
   AM: success, Checkpatch: clean, Build: configure_ok
 [5/7] Running codex code review (Stage A-E protocol)...
 [6/7] Extracting review...
