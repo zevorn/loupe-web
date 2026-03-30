@@ -1,46 +1,44 @@
-=== Reviewing: 20260330064758.2816891-1-guoqing.zhang@amd.com ===
+=== Reviewing: 20260330204015.963A85969EC@zero.eik.bme.hu ===
 [1/7] Querying Patchwork...
   Patchwork: 1 result(s)
 [2/7] Metadata OK
-  Title: [v4] migration/rdma: add x-rdma-chunk-size parameter
-  Author: Samuel Zhang, Version: v4, Subsystem: migration/rdma
+  Title: [v2] cirrus-vga: Make frame buffer endianness little endian by default
+  Author: BALATON Zoltan, Version: v2, Subsystem: cirrus-vga
 [2.5/7] Fetching version history and mailing list context...
-  Searching for prior versions of: migration/rdma: add x-rdma-chunk-size parameter
-  Found 2 prior version(s)
+  Searching for prior versions of: cirrus-vga: Make frame buffer endianness little endian by default
+  Found 1 prior version(s)
 [3/7] Downloading patches with b4...
-Grabbing thread from lore.kernel.org/all/20260330064758.2816891-1-guoqing.zhang@amd.com/t.mbox.gz
+Grabbing thread from lore.kernel.org/all/20260330204015.963A85969EC@zero.eik.bme.hu/t.mbox.gz
 Analyzing 1 messages in the thread
 Looking for additional code-review trailers on lore.kernel.org
 Checking attestation on all messages, may take a moment...
 ---
-  [32m✓[0m [PATCH v4] migration/rdma: add x-rdma-chunk-size parameter
-  ---
-  [32m✓[0m Signed: DKIM/amd.com
+  [PATCH v2] cirrus-vga: Make frame buffer endianness little endian by default
 ---
 Total patches: 1
 ---
- Link: https://lore.kernel.org/r/20260330064758.2816891-1-guoqing.zhang@amd.com
+ Link: https://lore.kernel.org/r/20260330204015.963A85969EC@zero.eik.bme.hu
  Base: not specified
-       git am ./v4_20260330_guoqing_zhang_migration_rdma_add_x_rdma_chunk_size_parameter.mbx
-  b4: mbx=330 lines
-  Title (from mbox): [PATCH v4] migration/rdma: add x-rdma-chunk-size parameter
+       git am ./v2_20260330_balaton_cirrus_vga_make_frame_buffer_endianness_little_endian_by_default.mbx
+  b4: mbx=96 lines
+  Title (from mbox): [PATCH v2] cirrus-vga: Make frame buffer endianness little endian
 [4/7] Applying patches in QEMU worktree...
-Preparing worktree (new branch 'review-20260330064758-2816891-1-guoqing-zhang-a')
+Preparing worktree (new branch 'review-20260330204015-963A85969EC-zero-eik-bme-')
 HEAD is now at dd3ee9c Merge tag 'for-upstream' of https://gitlab.com/bonzini/qemu into staging
-Applying: migration/rdma: add x-rdma-chunk-size parameter
+Applying: cirrus-vga: Make frame buffer endianness little endian by default
   git am: success
   Running checkpatch...
   checkpatch: clean
   Quick build check...
 
 Found ninja-1.13.2 at /usr/local/bin/ninja
-Running postconf script '/home/runner/work/loupe-web/loupe-web/loupe-worktree-20260330064758-2816891-1-guoqing-zhang-a/build/pyvenv/bin/python3 /home/runner/work/loupe-web/loupe-web/loupe-worktree-20260330064758-2816891-1-guoqing-zhang-a/scripts/symlink-install-tree.py'
+Running postconf script '/home/runner/work/loupe-web/loupe-web/loupe-worktree-20260330204015-963A85969EC-zero-eik-bme-/build/pyvenv/bin/python3 /home/runner/work/loupe-web/loupe-web/loupe-worktree-20260330204015-963A85969EC-zero-eik-bme-/scripts/symlink-install-tree.py'
   configure: success
-Deleted branch review-20260330064758-2816891-1-guoqing-zhang-a (was 3eb7355).
+Deleted branch review-20260330204015-963A85969EC-zero-eik-bme- (was 4cb3cf7).
   AM: success, Checkpatch: clean, Build: configure_ok
 [5/7] Running codex code review (Stage A-E protocol)...
 [6/7] Extracting review...
-  Verdict: blocked
+  Verdict: needs_revision
 [7/7] Assembling JSON...
 Traceback (most recent call last):
   File "<stdin>", line 8, in <module>

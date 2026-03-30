@@ -27,7 +27,6 @@ Total patches: 3
   Title (from mbox): [PATCH 1/3] target/i386: add new AMD EPYC models for GMET
 [4/7] Applying patches in QEMU worktree...
 Preparing worktree (new branch 'review-20260330193428-1663253-4-jon-nutanix-com')
-Updating files: 100% (11022/11022)Updating files: 100% (11022/11022), done.
 HEAD is now at dd3ee9c Merge tag 'for-upstream' of https://gitlab.com/bonzini/qemu into staging
 Applying: target/i386: add new AMD EPYC models for GMET enablement
 Applying: target/i386: add new Intel models for MMIO/GDS/RFDS mitigation status
@@ -40,7 +39,7 @@ Applying: target/i386: add new Intel models for MBEC enablement
 Found ninja-1.13.2 at /usr/local/bin/ninja
 Running postconf script '/home/runner/work/loupe-web/loupe-web/loupe-worktree-20260330193428-1663253-4-jon-nutanix-com/build/pyvenv/bin/python3 /home/runner/work/loupe-web/loupe-web/loupe-worktree-20260330193428-1663253-4-jon-nutanix-com/scripts/symlink-install-tree.py'
   configure: success
-Deleted branch review-20260330193428-1663253-4-jon-nutanix-com (was 77f37fc).
+Deleted branch review-20260330193428-1663253-4-jon-nutanix-com (was 22aa219).
   AM: success, Checkpatch: clean, Build: configure_ok
 [5/7] Running codex code review (Stage A-E protocol)...
 [6/7] Extracting review...

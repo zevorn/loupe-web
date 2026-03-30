@@ -37,7 +37,7 @@ Applying: scsi: Don't consider LOGICAL UNIT NOT SUPPORTED guest recoverable
 Found ninja-1.13.2 at /usr/local/bin/ninja
 Running postconf script '/home/runner/work/loupe-web/loupe-web/loupe-worktree-20260330121635-49205-1-kwolf-redhat-com/build/pyvenv/bin/python3 /home/runner/work/loupe-web/loupe-web/loupe-worktree-20260330121635-49205-1-kwolf-redhat-com/scripts/symlink-install-tree.py'
   configure: success
-Deleted branch review-20260330121635-49205-1-kwolf-redhat-com (was 22400b1).
+Deleted branch review-20260330121635-49205-1-kwolf-redhat-com (was e60508c).
   AM: success, Checkpatch: clean, Build: configure_ok
 [5/7] Running codex code review (Stage A-E protocol)...
 [6/7] Extracting review...
