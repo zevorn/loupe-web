@@ -25,6 +25,7 @@ Total patches: 1
   Title (from mbox): [PATCH] target/i386: Treat qtest like TCG for supported-features
 [4/7] Applying patches in QEMU worktree...
 Preparing worktree (new branch 'review-20260330151437-1787008-1-peter-maydell-l')
+Updating files:  90% (9992/11022)Updating files:  91% (10031/11022)Updating files:  92% (10141/11022)Updating files:  93% (10251/11022)Updating files:  94% (10361/11022)Updating files:  95% (10471/11022)Updating files:  96% (10582/11022)Updating files:  97% (10692/11022)Updating files:  98% (10802/11022)Updating files:  99% (10912/11022)Updating files: 100% (11022/11022)Updating files: 100% (11022/11022), done.
 HEAD is now at dd3ee9c Merge tag 'for-upstream' of https://gitlab.com/bonzini/qemu into staging
 Applying: target/i386: Treat qtest like TCG for supported-features
   git am: success
@@ -35,11 +36,11 @@ Applying: target/i386: Treat qtest like TCG for supported-features
 Found ninja-1.13.2 at /usr/local/bin/ninja
 Running postconf script '/home/runner/work/loupe-web/loupe-web/loupe-worktree-20260330151437-1787008-1-peter-maydell-l/build/pyvenv/bin/python3 /home/runner/work/loupe-web/loupe-web/loupe-worktree-20260330151437-1787008-1-peter-maydell-l/scripts/symlink-install-tree.py'
   configure: success
-Deleted branch review-20260330151437-1787008-1-peter-maydell-l (was bcd2fc8).
+Deleted branch review-20260330151437-1787008-1-peter-maydell-l (was 62289ce).
   AM: success, Checkpatch: clean, Build: configure_ok
 [5/7] Running codex code review (Stage A-E protocol)...
 [6/7] Extracting review...
-  Verdict: ready_to_merge
+  Verdict: needs_revision
 [7/7] Assembling JSON...
 Traceback (most recent call last):
   File "<stdin>", line 8, in <module>

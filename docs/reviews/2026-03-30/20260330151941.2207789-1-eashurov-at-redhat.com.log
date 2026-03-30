@@ -36,7 +36,7 @@ Applying: qga: add security info to guest-get-osinfo
 Found ninja-1.13.2 at /usr/local/bin/ninja
 Running postconf script '/home/runner/work/loupe-web/loupe-web/loupe-worktree-20260330151941-2207789-1-eashurov-redhat/build/pyvenv/bin/python3 /home/runner/work/loupe-web/loupe-web/loupe-worktree-20260330151941-2207789-1-eashurov-redhat/scripts/symlink-install-tree.py'
   configure: success
-Deleted branch review-20260330151941-2207789-1-eashurov-redhat (was ec9adf0).
+Deleted branch review-20260330151941-2207789-1-eashurov-redhat (was 7bfa09d).
   AM: success, Checkpatch: issues, Build: configure_ok
 [5/7] Running codex code review (Stage A-E protocol)...
 [6/7] Extracting review...

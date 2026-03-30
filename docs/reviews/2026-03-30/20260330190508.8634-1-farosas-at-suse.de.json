@@ -1,0 +1,95 @@
+{
+  "schema_version": "1",
+  "id": "20260330-20260330190508.8634-1-farosas-at-suse.de",
+  "series": {
+    "title": "[PATCH 0/3] Migration patches for 2026-03-30",
+    "version": 1,
+    "patch_count": 1,
+    "author": {
+      "name": "Fabiano Rosas",
+      "email": "farosas@suse.de"
+    },
+    "date": "2026-03-30",
+    "subsystem": "riscv",
+    "message_id": "<20260330190508.8634-1-farosas@suse.de>",
+    "lore_url": "https://lore.kernel.org/qemu-devel/20260330190508.8634-1-farosas%40suse.de/",
+    "patchwork_url": "http://patchwork.ozlabs.org/project/qemu-devel/patch/20260330190508.8634-1-farosas@suse.de/",
+    "base_branch": "master"
+  },
+  "version_history": [],
+  "ml_context": {
+    "reviewed_by": [],
+    "acked_by": [],
+    "ci_status": "",
+    "prior_feedback": [],
+    "maintainer_activity": ""
+  },
+  "review": {
+    "verdict": "needs_revision",
+    "summary": "The series is close, but patch 2 still leaves two touched migration error messages inconsistent with the actual validation logic.",
+    "mode": "ci-single",
+    "stages": {
+      "A": "Patch 1 and patch 3 match their stated intent, but patch 2 does not fully fix the touched error messages because two ranges/messages remain inaccurate after the rename cleanup.",
+      "B": "No execution-flow bugs were evident in the behavioral change, but two validation error strings still contradict the conditions that trigger them.",
+      "C": "No resource lifecycle, error-propagation, or concurrency regressions are apparent in the shown changes.",
+      "D": "No new guest-input, DMA, MMIO, or migration-compatibility security issues are introduced by this series.",
+      "E": "After deduplication, two concrete minor findings remain, both in patch 2's touched error-message paths."
+    },
+    "findings": [
+      {
+        "id": 1,
+        "severity": "minor",
+        "stage": "A+B",
+        "patch_index": "2/3",
+        "file": "migration/options.c",
+        "line": "1230-1233",
+        "patch_context": [
+          "     if (params->announce_step < 1 ||",
+          "         params->announce_step > 10000) {",
+          "-        error_setg(errp, \"Option announce_step expects \"",
+          "-                   \"a value between 0 and 10000\");",
+          "+        error_setg(errp, \"Option announce-step expects \"",
+          "+                   \"a value between 0 and 10000\");"
+        ],
+        "title": "announce-step error text still advertises an invalid lower bound",
+        "description": "This patch claims to fix parameter references in error messages, but the touched announce-step message remains inconsistent with the validation it reports. The check rejects any value below 1, yet the emitted text says the valid range is 0 to 10000. A concrete trigger is QMP migrate-set-parameters with announce-step=0: migrate_params_check() takes this branch and returns an error that incorrectly tells the user 0 is in range.",
+        "suggestion": "Change the message to say \"a value between 1 and 10000\".",
+        "confidence": "high",
+        "confidence_reason": "The branch condition and the retained message text are both present in the diff, and announce-step=0 deterministically exercises the mismatch.",
+        "source": "ci-single"
+      },
+      {
+        "id": 2,
+        "severity": "minor",
+        "stage": "A+B",
+        "patch_index": "2/3",
+        "file": "migration/options.c",
+        "line": "1265-1267",
+        "patch_context": [
+          "     if (params->vcpu_dirty_limit < 1) {",
+          "         error_setg(errp,",
+          "-                   \"Parameter 'vcpu_dirty_limit' must be greater than 1 MB/s\");",
+          "+                   \"Parameter 'vcpu-dirty-limit' must be greater than 1 MB/s\");"
+        ],
+        "title": "vcpu-dirty-limit error text still overstates the minimum",
+        "description": "The message updated by patch 2 still does not match the actual constraint. The code rejects only values below 1, so 1 MB/s is accepted, but the error says the parameter must be greater than 1 MB/s, which implies 1 is invalid. A concrete trigger is setting vcpu-dirty-limit=0: migrate_params_check() enters this branch and emits a message that misstates the accepted boundary.",
+        "suggestion": "Change the text to \"must be at least 1 MB/s\" or equivalent.",
+        "confidence": "high",
+        "confidence_reason": "The condition and message are shown together in the patch, and the inconsistency follows directly from the `< 1` test.",
+        "source": "ci-single"
+      }
+    ],
+    "checkpatch": {
+      "status": "clean",
+      "issues": []
+    },
+    "build_status": "configure_ok",
+    "am_status": "success"
+  },
+  "cover_letter": "Subject: [PATCH 0/3] Migration patches for 2026-03-30\nFrom: Fabiano Rosas <farosas@suse.de>\nDate: Mon, 30 Mar 2026 16:05:05 -0300\nMessage-Id: <20260330190508.8634-1-farosas@suse.de>\nMIME-Version: 1.0\nContent-Type: text/plain; charset=\"utf-8\"\nContent-Transfer-Encoding: 7bit\n\nThe following changes since commit e389503e73f1726c997531447288ce154394d07a:\n\n  Merge tag 'pull-request-2026-03-30' of https://gitlab.com/thuth/qemu into staging (2026-03-30 11:50:24 +0100)\n\nare available in the Git repository at:\n\n  https://gitlab.com/farosas/qemu.git tags/migration-20260330-pull-request\n\nfor you to fetch changes up to 6f33b6eebb7d406871150b0285c36454a1b4d0d3:\n\n  tests/qtest/migration: Fix slow test dirty_limit (2026-03-30 10:48:12 -0300)\n\n----------------------------------------------------------------\nMigration pull request\n\n- Fix dirty limit (-m thorough) test\n- Fix a few error message strings\n\n----------------------------------------------------------------\n\nFabiano Rosas (1):\n  tests/qtest/migration: Fix slow test dirty_limit\n\nMarkus Armbruster (2):\n  migration: Fix up error message for max-cpu-throttle\n  migration: Fix references to parameter names in error messages\n\n migration/options.c                   | 36 +++++++++++++--------------\n tests/qtest/migration/precopy-tests.c |  4 +--\n 2 files changed, 20 insertions(+), 20 deletions(-)\n\n-- \n2.51.0",
+  "diff": "From git@z Thu Jan  1 00:00:00 1970\nSubject: [PATCH 1/3] migration: Fix up error message for max-cpu-throttle\nFrom: Markus Armbruster <armbru@redhat.com>\nDate: Mon, 30 Mar 2026 16:05:06 -0300\nMessage-Id: <20260330190508.8634-2-farosas@suse.de>\nMIME-Version: 1.0\nContent-Type: text/plain; charset=\"utf-8\"\nContent-Transfer-Encoding: 7bit\n\nFixes: 1a739d301232 (migration: Do away with usage of QERR_INVALID_PARAMETER_VALUE)\nSigned-off-by: Markus Armbruster <armbru@redhat.com>\nLink: https://lore.kernel.org/qemu-devel/20260326074247.188674-2-armbru@redhat.com\nSigned-off-by: Fabiano Rosas <farosas@suse.de>\n---\n migration/options.c | 2 +-\n 1 file changed, 1 insertion(+), 1 deletion(-)\n\ndiff --git a/migration/options.c b/migration/options.c\nindex 658c578191..3eb5b39186 100644\n--- a/migration/options.c\n+++ b/migration/options.c\n@@ -1207,7 +1207,7 @@ bool migrate_params_check(MigrationParameters *params, Error **errp)\n \n     if (params->max_cpu_throttle < params->cpu_throttle_initial ||\n         params->max_cpu_throttle > 99) {\n-        error_setg(errp, \"max_Option cpu_throttle expects \"\n+        error_setg(errp, \"Option max_cpu_throttle expects \"\n                    \"an integer in the range of cpu_throttle_initial to 99\");\n         return false;\n     }\n-- \n2.51.0\n\nFrom git@z Thu Jan  1 00:00:00 1970\nSubject: [PATCH 2/3] migration: Fix references to parameter names in error\n messages\nFrom: Markus Armbruster <armbru@redhat.com>\nDate: Mon, 30 Mar 2026 16:05:07 -0300\nMessage-Id: <20260330190508.8634-3-farosas@suse.de>\nMIME-Version: 1.0\nContent-Type: text/plain; charset=\"utf-8\"\nContent-Transfer-Encoding: 7bit\n\nMigration parameter names separate words with hyphens.  A number of\nerror messages in migrate_params_check() use underscores instead.\nWrong since day one.  Fix them.\n\nSigned-off-by: Markus Armbruster <armbru@redhat.com>\nLink: https://lore.kernel.org/qemu-devel/20260326074247.188674-3-armbru@redhat.com\nSigned-off-by: Fabiano Rosas <farosas@suse.de>\n---\n migration/options.c | 36 ++++++++++++++++++------------------\n 1 file changed, 18 insertions(+), 18 deletions(-)\n\ndiff --git a/migration/options.c b/migration/options.c\nindex 3eb5b39186..7556fbc06b 100644\n--- a/migration/options.c\n+++ b/migration/options.c\n@@ -1133,103 +1133,103 @@ bool migrate_params_check(MigrationParameters *params, Error **errp)\n \n     if (params->throttle_trigger_threshold < 1 ||\n         params->throttle_trigger_threshold > 100) {\n-        error_setg(errp, \"Option throttle_trigger_threshold expects \"\n+        error_setg(errp, \"Option throttle-trigger-threshold expects \"\n                    \"an integer in the range of 1 to 100\");\n         return false;\n     }\n \n     if (params->cpu_throttle_initial < 1 ||\n         params->cpu_throttle_initial > 99) {\n-        error_setg(errp, \"Option cpu_throttle_initial expects \"\n+        error_setg(errp, \"Option cpu-throttle-initial expects \"\n                    \"an integer in the range of 1 to 99\");\n         return false;\n     }\n \n     if (params->cpu_throttle_increment < 1 ||\n         params->cpu_throttle_increment > 99) {\n-        error_setg(errp, \"Option cpu_throttle_increment expects \"\n+        error_setg(errp, \"Option cpu-throttle-increment expects \"\n                    \"an integer in the range of 1 to 99\");\n         return false;\n     }\n \n     if (params->max_bandwidth > SIZE_MAX) {\n-        error_setg(errp, \"Option max_bandwidth expects \"\n+        error_setg(errp, \"Option max-bandwidth expects \"\n                    \"an integer in the range of 0 to \"stringify(SIZE_MAX)\n                    \" bytes/second\");\n         return false;\n     }\n \n     if (params->avail_switchover_bandwidth > SIZE_MAX) {\n-        error_setg(errp, \"Option avail_switchover_bandwidth expects \"\n+        error_setg(errp, \"Option avail-switchover-bandwidth expects \"\n                    \"an integer in the range of 0 to \"stringify(SIZE_MAX)\n                    \" bytes/second\");\n         return false;\n     }\n \n     if (params->downtime_limit > MAX_MIGRATE_DOWNTIME) {\n-        error_setg(errp, \"Option downtime_limit expects \"\n+        error_setg(errp, \"Option downtime-limit expects \"\n                    \"an integer in the range of 0 to \"\n                     stringify(MAX_MIGRATE_DOWNTIME)\" ms\");\n         return false;\n     }\n \n     if (params->multifd_channels < 1) {\n-        error_setg(errp, \"Option multifd_channels expects \"\n+        error_setg(errp, \"Option multifd-channels expects \"\n                    \"a value between 1 and 255\");\n         return false;\n     }\n \n     if (params->multifd_zlib_level > 9) {\n-        error_setg(errp, \"Option multifd_zlib_level expects \"\n+        error_setg(errp, \"Option multifd-zlib-level expects \"\n                    \"a value between 0 and 9\");\n         return false;\n     }\n \n     if (params->multifd_qatzip_level > 9 ||\n         params->multifd_qatzip_level < 1) {\n-        error_setg(errp, \"Option multifd_qatzip_level expects \"\n+        error_setg(errp, \"Option multifd-qatzip-level expects \"\n                    \"a value between 1 and 9\");\n         return false;\n     }\n \n     if (params->multifd_zstd_level > 20) {\n-        error_setg(errp, \"Option multifd_zstd_level expects \"\n+        error_setg(errp, \"Option multifd-zstd-level expects \"\n                    \"a value between 0 and 20\");\n         return false;\n     }\n \n     if (params->xbzrle_cache_size < qemu_target_page_size() ||\n         !is_power_of_2(params->xbzrle_cache_size)) {\n-        error_setg(errp, \"Option xbzrle_cache_size expects \"\n+        error_setg(errp, \"Option xbzrle-cache-size expects \"\n                    \"a power of two no less than the target page size\");\n         return false;\n     }\n \n     if (params->max_cpu_throttle < params->cpu_throttle_initial ||\n         params->max_cpu_throttle > 99) {\n-        error_setg(errp, \"Option max_cpu_throttle expects \"\n-                   \"an integer in the range of cpu_throttle_initial to 99\");\n+        error_setg(errp, \"Option max-cpu-throttle expects \"\n+                   \"an integer in the range of cpu-throttle-initial to 99\");\n         return false;\n     }\n \n     if (params->announce_initial > 100000) {\n-        error_setg(errp, \"Option announce_initial expects \"\n+        error_setg(errp, \"Option announce-initial expects \"\n                    \"a value between 0 and 100000\");\n         return false;\n     }\n     if (params->announce_max > 100000) {\n-        error_setg(errp, \"Option announce_max expects \"\n+        error_setg(errp, \"Option announce-max expects \"\n                    \"a value between 0 and 100000\");\n         return false;\n     }\n     if (params->announce_rounds > 1000) {\n-        error_setg(errp, \"Option announce_rounds expects \"\n+        error_setg(errp, \"Option announce-rounds expects \"\n                    \"a value between 0 and 1000\");\n         return false;\n     }\n     if (params->announce_step < 1 ||\n         params->announce_step > 10000) {\n-        error_setg(errp, \"Option announce_step expects \"\n+        error_setg(errp, \"Option announce-step expects \"\n                    \"a value between 0 and 10000\");\n         return false;\n     }\n@@ -1264,7 +1264,7 @@ bool migrate_params_check(MigrationParameters *params, Error **errp)\n \n     if (params->vcpu_dirty_limit < 1) {\n         error_setg(errp,\n-                   \"Parameter 'vcpu_dirty_limit' must be greater than 1 MB/s\");\n+                   \"Parameter 'vcpu-dirty-limit' must be greater than 1 MB/s\");\n         return false;\n     }\n \n-- \n2.51.0\n\nFrom git@z Thu Jan  1 00:00:00 1970\nSubject: [PATCH 3/3] tests/qtest/migration: Fix slow test dirty_limit\nFrom: Fabiano Rosas <farosas@suse.de>\nDate: Mon, 30 Mar 2026 16:05:08 -0300\nMessage-Id: <20260330190508.8634-4-farosas@suse.de>\nMIME-Version: 1.0\nContent-Type: text/plain; charset=\"utf-8\"\nContent-Transfer-Encoding: 7bit\n\nAfter the referenced commit, the incoming side doesn't exit\nautomatically after a failure. Tests that expect the destination to\nfail should use -incoming defer, issue QMP migrate-incoming, wait for\nthe failure event and issue QMP quit.\n\nFix the dirty_limit test which wasn't updated properly.\n\nFixes: 4e8c4dda97 (\"tests/qtest/migration: Force exit-on-error=false\")\nReported-by: Thomas Huth <thuth@redhat.com>\nReviewed-by: Peter Xu <peterx@redhat.com>\nLink: https://lore.kernel.org/qemu-devel/20260326164405.1626-1-farosas@suse.de\nSigned-off-by: Fabiano Rosas <farosas@suse.de>\n---\n tests/qtest/migration/precopy-tests.c | 4 ++--\n 1 file changed, 2 insertions(+), 2 deletions(-)\n\ndiff --git a/tests/qtest/migration/precopy-tests.c b/tests/qtest/migration/precopy-tests.c\nindex c6c8ae3004..a0e3ff0547 100644\n--- a/tests/qtest/migration/precopy-tests.c\n+++ b/tests/qtest/migration/precopy-tests.c\n@@ -1070,11 +1070,10 @@ static void test_dirty_limit(char *name, MigrateCommon *args)\n     args->start.hide_stderr = true;\n     args->start.use_dirty_ring = true;\n \n-    args->listen_uri = uri;\n     args->connect_uri = uri;\n \n     /* Start src, dst vm */\n-    if (migrate_start(&from, &to, args->listen_uri, &args->start)) {\n+    if (migrate_start(&from, &to, \"defer\", &args->start)) {\n         return;\n     }\n \n@@ -1082,6 +1081,7 @@ static void test_dirty_limit(char *name, MigrateCommon *args)\n     migrate_dirty_limit_wait_showup(from, dirtylimit_period, dirtylimit_value);\n \n     /* Start migrate */\n+    migrate_incoming_qmp(to, args->connect_uri, NULL, \"{}\");\n     migrate_qmp(from, to, args->connect_uri, NULL, \"{}\");\n \n     /* Wait for dirty limit throttle begin */\n-- \n2.51.0",
+  "patches": [],
+  "generated_at": "2026-03-30T19:18:27Z",
+  "generator": "loupe:patch-review v1.0",
+  "disclaimer": "LLM-generated draft. Not an authoritative review."
+}

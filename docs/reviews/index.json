@@ -1,6 +1,42 @@
 {
-  "updated_at": "2026-03-30T17:21:45Z",
+  "updated_at": "2026-03-30T19:30:49Z",
   "reviews": [
+    {
+      "id": "20260330-20260330190508.8634-1-farosas-at-suse.de",
+      "path": "reviews/2026-03-30/20260330190508.8634-1-farosas-at-suse.de.json",
+      "title": "[PATCH 0/3] Migration patches for 2026-03-30",
+      "author": "Fabiano Rosas",
+      "date": "2026-03-30",
+      "subsystem": "riscv",
+      "version": 1,
+      "patch_count": 1,
+      "message_id": "<20260330190508.8634-1-farosas@suse.de>",
+      "verdict": "needs_revision",
+      "findings": {
+        "critical": 0,
+        "major": 0,
+        "minor": 2,
+        "nit": 0
+      }
+    },
+    {
+      "id": "20260330-20260330185236.1905636-1-peter.maydell-at-linaro.org",
+      "path": "reviews/2026-03-30/20260330185236.1905636-1-peter.maydell-at-linaro.org.json",
+      "title": "[PATCH 0/5] target-arm queue",
+      "author": "Peter Maydell",
+      "date": "2026-03-30",
+      "subsystem": "riscv",
+      "version": 1,
+      "patch_count": 1,
+      "message_id": "<20260330185236.1905636-1-peter.maydell@linaro.org>",
+      "verdict": "ready_to_merge",
+      "findings": {
+        "critical": 0,
+        "major": 0,
+        "minor": 0,
+        "nit": 0
+      }
+    },
     {
       "id": "20260330-20260330115017.256211-1-pbonzini-at-redhat.com",
       "path": "reviews/2026-03-30/20260330115017.256211-1-pbonzini-at-redhat.com.json",

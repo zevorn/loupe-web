@@ -1,0 +1,57 @@
+=== Reviewing: 20260330185236.1905636-1-peter.maydell@linaro.org ===
+[1/7] Querying Patchwork...
+  Patchwork: 1 result(s)
+[2/7] Metadata OK
+  Title: [PULL,0/5] target-arm queue
+  Author: Peter Maydell, Version: v1, Subsystem: riscv
+[2.5/7] Fetching version history and mailing list context...
+  v1 patch, no prior versions
+[3/7] Downloading patches with b4...
+Grabbing thread from lore.kernel.org/all/20260330185236.1905636-1-peter.maydell@linaro.org/t.mbox.gz
+Analyzing 6 messages in the thread
+Looking for additional code-review trailers on lore.kernel.org
+Checking attestation on all messages, may take a moment...
+---
+  [32m✓[0m [PATCH 1/5] target/arm: Don't skip access flag fault for AccessType_AT
+  [32m✓[0m [PATCH 2/5] hw/net/rocker: Avoid double-free of l2_flood.group_ids
+  [32m✓[0m [PATCH 3/5] MAINTAINERS: Remove Riku Voipio
+  [32m✓[0m [PATCH 4/5] MAINTAINERS: Remove Igor Mitsyanko
+  [32m✓[0m [PATCH 5/5] hw/arm/xilinx_zynq: Use strcasecmp to parse boot-mode option values
+  ---
+  [32m✓[0m Signed: DKIM/linaro.org
+---
+Total patches: 5
+---
+Cover: ./20260330_peter_maydell_target_arm_queue.cover
+ Link: https://lore.kernel.org/r/20260330185236.1905636-1-peter.maydell@linaro.org
+ Base: not specified
+       git am ./20260330_peter_maydell_target_arm_queue.mbx
+  b4: mbx=256 lines
+  Title (from mbox): [PATCH 0/5] target-arm queue
+[4/7] Applying patches in QEMU worktree...
+Preparing worktree (new branch 'review-20260330185236-1905636-1-peter-maydell-l')
+HEAD is now at dd3ee9c Merge tag 'for-upstream' of https://gitlab.com/bonzini/qemu into staging
+Applying: target/arm: Don't skip access flag fault for AccessType_AT
+Applying: hw/net/rocker: Avoid double-free of l2_flood.group_ids
+Applying: MAINTAINERS: Remove Riku Voipio
+Applying: MAINTAINERS: Remove Igor Mitsyanko
+Applying: hw/arm/xilinx_zynq: Use strcasecmp to parse boot-mode option values
+  git am: success
+  Running checkpatch...
+  checkpatch: clean
+  Quick build check...
+
+Found ninja-1.13.2 at /usr/local/bin/ninja
+Running postconf script '/home/runner/work/loupe-web/loupe-web/loupe-worktree-20260330185236-1905636-1-peter-maydell-l/build/pyvenv/bin/python3 /home/runner/work/loupe-web/loupe-web/loupe-worktree-20260330185236-1905636-1-peter-maydell-l/scripts/symlink-install-tree.py'
+  configure: success
+Deleted branch review-20260330185236-1905636-1-peter-maydell-l (was ebda883).
+  AM: success, Checkpatch: clean, Build: configure_ok
+[5/7] Running codex code review (Stage A-E protocol)...
+[6/7] Extracting review...
+  Verdict: ready_to_merge
+[7/7] Assembling JSON...
+  Schema validation: normalized
+=== Done ===
+  [PATCH 0/5] target-arm queue
+  Verdict: ready_to_merge | Findings: 0
+  Checkpatch: clean | Build: configure_ok | AM: success
