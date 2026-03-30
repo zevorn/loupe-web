@@ -8,18 +8,19 @@
   v1 patch, no prior versions
 [3/7] Downloading patches with b4...
 Grabbing thread from lore.kernel.org/all/20260330091310.42868-1-zhaoguohan@kylinos.cn/t.mbox.gz
-Analyzing 1 messages in the thread
+Analyzing 2 messages in the thread
 Looking for additional code-review trailers on lore.kernel.org
 Checking attestation on all messages, may take a moment...
 ---
   [PATCH] ui/dbus: tear down clipboard callbacks on display finalize
+    + Reviewed-by: Marc-André Lureau <marcandre.lureau@redhat.com> ([32m✓[0m DKIM/redhat.com)
 ---
 Total patches: 1
 ---
  Link: https://lore.kernel.org/r/20260330091310.42868-1-zhaoguohan@kylinos.cn
  Base: not specified
        git am ./20260330_zhaoguohan_ui_dbus_tear_down_clipboard_callbacks_on_display_finalize.mbx
-  b4: mbx=91 lines
+  b4: mbx=92 lines
   Title (from mbox): [PATCH] ui/dbus: tear down clipboard callbacks on display finalize
 [4/7] Applying patches in QEMU worktree...
 Preparing worktree (new branch 'review-20260330091310-42868-1-zhaoguohan-kylino')
@@ -33,11 +34,11 @@ Applying: ui/dbus: tear down clipboard callbacks on display finalize
 Found ninja-1.13.2 at /usr/local/bin/ninja
 Running postconf script '/home/runner/work/loupe-web/loupe-web/loupe-worktree-20260330091310-42868-1-zhaoguohan-kylino/build/pyvenv/bin/python3 /home/runner/work/loupe-web/loupe-web/loupe-worktree-20260330091310-42868-1-zhaoguohan-kylino/scripts/symlink-install-tree.py'
   configure: success
-Deleted branch review-20260330091310-42868-1-zhaoguohan-kylino (was 38f2995).
+Deleted branch review-20260330091310-42868-1-zhaoguohan-kylino (was bf7c13c).
   AM: success, Checkpatch: clean, Build: configure_ok
 [5/7] Running codex code review (Stage A-E protocol)...
 [6/7] Extracting review...
-  Verdict: needs_revision
+  Verdict: ready_to_merge
 [7/7] Assembling JSON...
 Traceback (most recent call last):
   File "<stdin>", line 8, in <module>
@@ -53,5 +54,5 @@ Traceback (most recent call last):
   File "/usr/lib/python3.12/json/decoder.py", line 353, in raw_decode
     obj, end = self.scan_once(s, idx)
                ^^^^^^^^^^^^^^^^^^^^^^
-json.decoder.JSONDecodeError: Expecting ',' delimiter: line 3 column 1 (char 24)
+json.decoder.JSONDecodeError: Expecting ',' delimiter: line 6 column 1 (char 110)
 ERROR: invalid JSON output

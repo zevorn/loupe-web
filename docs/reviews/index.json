@@ -1,6 +1,24 @@
 {
-  "updated_at": "2026-03-30T09:28:58Z",
+  "updated_at": "2026-03-30T11:18:39Z",
   "reviews": [
+    {
+      "id": "20260330-20260330102815.6759-1-thuth-at-redhat.com",
+      "path": "reviews/2026-03-30/20260330102815.6759-1-thuth-at-redhat.com.json",
+      "title": "[PATCH 0/7] Fixes for QEMU v11.0-rc2",
+      "author": "Thomas Huth",
+      "date": "2026-03-30",
+      "subsystem": "riscv",
+      "version": 11,
+      "patch_count": 1,
+      "message_id": "<20260330102815.6759-1-thuth@redhat.com>",
+      "verdict": "ready_to_merge",
+      "findings": {
+        "critical": 0,
+        "major": 0,
+        "minor": 0,
+        "nit": 0
+      }
+    },
     {
       "id": "20260329-20260329113732.482619-1-vikingtc4-at-gmail.com",
       "path": "reviews/2026-03-29/20260329113732.482619-1-vikingtc4-at-gmail.com.json",

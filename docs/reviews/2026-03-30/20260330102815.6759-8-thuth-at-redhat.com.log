@@ -1,0 +1,90 @@
+=== Reviewing: 20260330102815.6759-8-thuth@redhat.com ===
+[1/7] Querying Patchwork...
+  Patchwork: 1 result(s)
+[2/7] Metadata OK
+  Title: [PULL,7/7] tests/functional/migration.py: Skip migration_with_exec() if socat is not available
+  Author: Thomas Huth, Version: v1, Subsystem: tests/functional/migration.py
+[2.5/7] Fetching version history and mailing list context...
+  v1 patch, no prior versions
+[3/7] Downloading patches with b4...
+Grabbing thread from lore.kernel.org/all/20260330102815.6759-8-thuth@redhat.com/t.mbox.gz
+Analyzing 8 messages in the thread
+Checking attestation on all messages, may take a moment...
+---
+  [32m✓[0m [PATCH 1/7] tests/functional/qemu_test: Silence (most) warnings from pylint in asset.py
+  [32m✓[0m [PATCH 2/7] tests/functional/qemu_test: Split huge fetch() function in asset.py
+  [32m✓[0m [PATCH 3/7] tests/functional/qemu_test: Silence warnings from pylint in config.py
+  [32m✓[0m [PATCH 4/7] hw/display/vga-isa: Fix migration of the isa-vga device
+  [32m✓[0m [PATCH 5/7] hw/display/cirrus_vga_isa: Disable global_vmstate by default for new machines
+  [32m✓[0m [PATCH 6/7] pc-bios: remove obsolete linuxboot.bin prebuilt blob
+  [32m✓[0m [PATCH 7/7] tests/functional/migration.py: Skip migration_with_exec() if socat is not available
+  ---
+  [32m✓[0m Signed: DKIM/redhat.com
+---
+Total patches: 7
+---
+Cover: ./20260330_thuth_fixes_for_qemu_v11_0_rc2.cover
+ Link: https://lore.kernel.org/r/20260330102815.6759-1-thuth@redhat.com
+ Base: not specified
+       git am ./20260330_thuth_fixes_for_qemu_v11_0_rc2.mbx
+  b4: mbx=600 lines
+  Title (from mbox): [PATCH 0/7] Fixes for QEMU v11.0-rc2
+[4/7] Applying patches in QEMU worktree...
+Preparing worktree (new branch 'review-20260330102815-6759-8-thuth-redhat-com')
+HEAD is now at 91f6a9c Merge tag 'qga-pull-2026-03-27' of https://github.com/kostyanf14/qemu into staging
+error: corrupt binary patch at line 23: -- 
+error: No valid patches in input (allow with "--allow-empty")
+hint: Use 'git am --show-current-patch=diff' to see the failed patch
+hint: When you have resolved this problem, run "git am --continue".
+hint: If you prefer to skip this patch, run "git am --skip" instead.
+hint: To restore the original branch and stop patching, run "git am --abort".
+hint: Disable this message with "git config set advice.mergeConflict false"
+Applying: tests/functional/qemu_test: Silence (most) warnings from pylint in asset.py
+Applying: tests/functional/qemu_test: Split huge fetch() function in asset.py
+Applying: tests/functional/qemu_test: Silence warnings from pylint in config.py
+Applying: hw/display/vga-isa: Fix migration of the isa-vga device
+Applying: hw/display/cirrus_vga_isa: Disable global_vmstate by default for new machines
+Applying: pc-bios: remove obsolete linuxboot.bin prebuilt blob
+Patch failed at 0006 pc-bios: remove obsolete linuxboot.bin prebuilt blob
+  git am failed, retrying with --3way...
+Applying: tests/functional/qemu_test: Silence (most) warnings from pylint in asset.py
+Applying: tests/functional/qemu_test: Split huge fetch() function in asset.py
+Applying: tests/functional/qemu_test: Silence warnings from pylint in config.py
+Applying: hw/display/vga-isa: Fix migration of the isa-vga device
+Applying: hw/display/cirrus_vga_isa: Disable global_vmstate by default for new machines
+Applying: pc-bios: remove obsolete linuxboot.bin prebuilt blob
+error: corrupt binary patch at line 23: -- 
+error: No valid patches in input (allow with "--allow-empty")
+error: could not build fake ancestor
+hint: Use 'git am --show-current-patch=diff' to see the failed patch
+hint: When you have resolved this problem, run "git am --continue".
+hint: If you prefer to skip this patch, run "git am --skip" instead.
+hint: To restore the original branch and stop patching, run "git am --abort".
+hint: Disable this message with "git config set advice.mergeConflict false"
+Patch failed at 0006 pc-bios: remove obsolete linuxboot.bin prebuilt blob
+  git am --3way: FAILED
+  Running checkpatch...
+  checkpatch: issues
+  Skipping build (am failed)
+Deleted branch review-20260330102815-6759-8-thuth-redhat-com (was 91f6a9c).
+  AM: failed, Checkpatch: issues, Build: not_run
+[5/7] Running codex code review (Stage A-E protocol)...
+[6/7] Extracting review...
+  Verdict: needs_revision
+[7/7] Assembling JSON...
+Traceback (most recent call last):
+  File "<stdin>", line 8, in <module>
+  File "/usr/lib/python3.12/json/__init__.py", line 293, in load
+    return loads(fp.read(),
+           ^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/json/__init__.py", line 346, in loads
+    return _default_decoder.decode(s)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/json/decoder.py", line 337, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/json/decoder.py", line 353, in raw_decode
+    obj, end = self.scan_once(s, idx)
+               ^^^^^^^^^^^^^^^^^^^^^^
+json.decoder.JSONDecodeError: Expecting ',' delimiter: line 3 column 1 (char 24)
+ERROR: invalid JSON output

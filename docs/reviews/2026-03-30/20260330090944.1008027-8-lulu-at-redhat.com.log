@@ -30,10 +30,10 @@ Cover: ./v3_20260330_lulu_net_filter_add_af_packet_support_for_vhost_net.cover
  Base: not specified
        git am ./v3_20260330_lulu_net_filter_add_af_packet_support_for_vhost_net.mbx
   b4: mbx=909 lines
+scripts/review-patch.sh: line 273: echo: write error: Broken pipe
   Title (from mbox): [PATCH RFC v3 0/7] net/filter: Add AF_PACKET support for vhost-net
 [4/7] Applying patches in QEMU worktree...
 Preparing worktree (new branch 'review-20260330090944-1008027-8-lulu-redhat-com')
-Updating files:  84% (9344/11020)Updating files:  85% (9367/11020)Updating files:  86% (9478/11020)Updating files:  87% (9588/11020)Updating files:  88% (9698/11020)Updating files:  89% (9808/11020)Updating files:  90% (9918/11020)Updating files:  91% (10029/11020)Updating files:  92% (10139/11020)Updating files:  93% (10249/11020)Updating files:  94% (10359/11020)Updating files:  95% (10469/11020)Updating files:  96% (10580/11020)Updating files:  97% (10690/11020)Updating files:  98% (10800/11020)Updating files:  99% (10910/11020)Updating files: 100% (11020/11020)Updating files: 100% (11020/11020), done.
 HEAD is now at 91f6a9c Merge tag 'qga-pull-2026-03-27' of https://github.com/kostyanf14/qemu into staging
 error: patch failed: net/filter-mirror.c:267
 error: net/filter-mirror.c: patch does not apply
