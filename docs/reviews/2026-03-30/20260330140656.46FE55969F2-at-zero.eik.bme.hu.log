@@ -8,36 +8,62 @@
   v1 patch, no prior versions
 [3/7] Downloading patches with b4...
 Grabbing thread from lore.kernel.org/all/20260330140656.46FE55969F2@zero.eik.bme.hu/t.mbox.gz
-Analyzing 3 messages in the thread
+Analyzing 4 messages in the thread
+WARNING: duplicate messages found at index 1
+   Subject 1: hw/display: modernise the vga debug code (!!GenAI!!)
+   Subject 2: hw/display/vga: Fix debug message
+  2 is not a reply... assume additional patch
 Looking for additional code-review trailers on lore.kernel.org
 Checking attestation on all messages, may take a moment...
 ---
+  [32m✓[0m [PATCH RFC] hw/display: modernise the vga debug code (!!GenAI!!)
+    [32m✓[0m Signed: DKIM/linaro.org
   [PATCH] hw/display/vga: Fix debug message
 ---
-Total patches: 1
+Total patches: 2
 ---
- Link: https://lore.kernel.org/r/20260330140656.46FE55969F2@zero.eik.bme.hu
+ Link: https://lore.kernel.org/r/20260330222900.982404-1-alex.bennee@linaro.org
  Base: not specified
-       git am ./20260330_balaton_hw_display_vga_fix_debug_message.mbx
-  b4: mbx=30 lines
-  Title (from mbox): [PATCH] hw/display/vga: Fix debug message
+       git am ./20260330_alex_bennee_hw_display_modernise_the_vga_debug_code_genai.mbx
+  b4: mbx=262 lines
+  Title (from mbox): [PATCH RFC] hw/display: modernise the vga debug code (!!GenAI!!)
 [4/7] Applying patches in QEMU worktree...
 Preparing worktree (new branch 'review-20260330140656-46FE55969F2-zero-eik-bme-')
 HEAD is now at dd3ee9c Merge tag 'for-upstream' of https://gitlab.com/bonzini/qemu into staging
+error: patch failed: hw/display/vga.c:1662
+error: hw/display/vga.c: patch does not apply
+hint: Use 'git am --show-current-patch=diff' to see the failed patch
+hint: When you have resolved this problem, run "git am --continue".
+hint: If you prefer to skip this patch, run "git am --skip" instead.
+hint: To restore the original branch and stop patching, run "git am --abort".
+hint: Disable this message with "git config set advice.mergeConflict false"
+Applying: hw/display: modernise the vga debug code (!!GenAI!!)
 Applying: hw/display/vga: Fix debug message
-  git am: success
+Patch failed at 0002 hw/display/vga: Fix debug message
+  git am failed, retrying with --3way...
+Applying: hw/display: modernise the vga debug code (!!GenAI!!)
+Applying: hw/display/vga: Fix debug message
+Using index info to reconstruct a base tree...
+M	hw/display/vga.c
+Falling back to patching base and 3-way merge...
+Auto-merging hw/display/vga.c
+CONFLICT (content): Merge conflict in hw/display/vga.c
+error: Failed to merge in the changes.
+hint: Use 'git am --show-current-patch=diff' to see the failed patch
+hint: When you have resolved this problem, run "git am --continue".
+hint: If you prefer to skip this patch, run "git am --skip" instead.
+hint: To restore the original branch and stop patching, run "git am --abort".
+hint: Disable this message with "git config set advice.mergeConflict false"
+Patch failed at 0002 hw/display/vga: Fix debug message
+  git am --3way: FAILED
   Running checkpatch...
   checkpatch: issues
-  Quick build check...
-
-Found ninja-1.13.2 at /usr/local/bin/ninja
-Running postconf script '/home/runner/work/loupe-web/loupe-web/loupe-worktree-20260330140656-46FE55969F2-zero-eik-bme-/build/pyvenv/bin/python3 /home/runner/work/loupe-web/loupe-web/loupe-worktree-20260330140656-46FE55969F2-zero-eik-bme-/scripts/symlink-install-tree.py'
-  configure: success
-Deleted branch review-20260330140656-46FE55969F2-zero-eik-bme- (was 882dc0d).
-  AM: success, Checkpatch: issues, Build: configure_ok
+  Skipping build (am failed)
+Deleted branch review-20260330140656-46FE55969F2-zero-eik-bme- (was dd3ee9c).
+  AM: failed, Checkpatch: issues, Build: not_run
 [5/7] Running codex code review (Stage A-E protocol)...
 [6/7] Extracting review...
-  Verdict: ready_to_merge
+  Verdict: needs_revision
 [7/7] Assembling JSON...
 Traceback (most recent call last):
   File "<stdin>", line 8, in <module>

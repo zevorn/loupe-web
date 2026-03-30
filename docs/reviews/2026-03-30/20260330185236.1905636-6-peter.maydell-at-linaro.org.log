@@ -30,6 +30,7 @@ Cover: ./20260330_peter_maydell_target_arm_queue.cover
   Title (from mbox): [PATCH 0/5] target-arm queue
 [4/7] Applying patches in QEMU worktree...
 Preparing worktree (new branch 'review-20260330185236-1905636-6-peter-maydell-l')
+Updating files:  79% (8722/11022)Updating files:  80% (8818/11022)Updating files:  81% (8928/11022)Updating files:  82% (9039/11022)Updating files:  83% (9149/11022)Updating files:  84% (9259/11022)Updating files:  85% (9369/11022)Updating files:  86% (9479/11022)Updating files:  87% (9590/11022)Updating files:  88% (9700/11022)Updating files:  89% (9810/11022)Updating files:  90% (9920/11022)Updating files:  91% (10031/11022)Updating files:  92% (10141/11022)Updating files:  93% (10251/11022)Updating files:  94% (10361/11022)Updating files:  95% (10471/11022)Updating files:  96% (10582/11022)Updating files:  97% (10692/11022)Updating files:  98% (10802/11022)Updating files:  99% (10912/11022)Updating files: 100% (11022/11022)Updating files: 100% (11022/11022), done.
 HEAD is now at dd3ee9c Merge tag 'for-upstream' of https://gitlab.com/bonzini/qemu into staging
 Applying: target/arm: Don't skip access flag fault for AccessType_AT
 Applying: hw/net/rocker: Avoid double-free of l2_flood.group_ids
@@ -44,11 +45,11 @@ Applying: hw/arm/xilinx_zynq: Use strcasecmp to parse boot-mode option values
 Found ninja-1.13.2 at /usr/local/bin/ninja
 Running postconf script '/home/runner/work/loupe-web/loupe-web/loupe-worktree-20260330185236-1905636-6-peter-maydell-l/build/pyvenv/bin/python3 /home/runner/work/loupe-web/loupe-web/loupe-worktree-20260330185236-1905636-6-peter-maydell-l/scripts/symlink-install-tree.py'
   configure: success
-Deleted branch review-20260330185236-1905636-6-peter-maydell-l (was 0d23fef).
+Deleted branch review-20260330185236-1905636-6-peter-maydell-l (was a34a201).
   AM: success, Checkpatch: clean, Build: configure_ok
 [5/7] Running codex code review (Stage A-E protocol)...
 [6/7] Extracting review...
-  Verdict: needs_revision
+  Verdict: ready_to_merge
 [7/7] Assembling JSON...
 Traceback (most recent call last):
   File "<stdin>", line 8, in <module>
