@@ -25,7 +25,7 @@ Total patches: 1
   Title (from mbox): [PATCH] hw: add compat machines for 11.1
 [4/7] Applying patches in QEMU worktree...
 Preparing worktree (new branch 'review-20260331140347-653404-1-cohuck-redhat-co')
-HEAD is now at 9f6c969 Merge tag 'hw-misc-20260331' of https://github.com/philmd/qemu into staging
+HEAD is now at 7a2dc48 Merge tag 'for-upstream' of https://gitlab.com/kmwolf/qemu into staging
 Applying: hw: add compat machines for 11.1
   git am: success
   Running checkpatch...
@@ -35,7 +35,7 @@ Applying: hw: add compat machines for 11.1
 Found ninja-1.13.2 at /usr/local/bin/ninja
 Running postconf script '/home/runner/work/loupe-web/loupe-web/loupe-worktree-20260331140347-653404-1-cohuck-redhat-co/build/pyvenv/bin/python3 /home/runner/work/loupe-web/loupe-web/loupe-worktree-20260331140347-653404-1-cohuck-redhat-co/scripts/symlink-install-tree.py'
   configure: success
-Deleted branch review-20260331140347-653404-1-cohuck-redhat-co (was 76e0790).
+Deleted branch review-20260331140347-653404-1-cohuck-redhat-co (was e5fcc64).
   AM: success, Checkpatch: clean, Build: configure_ok
 [5/7] Running codex code review (Stage A-E protocol)...
 [6/7] Extracting review...

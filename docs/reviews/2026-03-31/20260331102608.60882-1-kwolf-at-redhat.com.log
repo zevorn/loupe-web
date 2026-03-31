@@ -8,12 +8,13 @@
   v1 patch, no prior versions
 [3/7] Downloading patches with b4...
 Grabbing thread from lore.kernel.org/all/20260331102608.60882-1-kwolf@redhat.com/t.mbox.gz
-Analyzing 2 messages in the thread
+Analyzing 3 messages in the thread
 Looking for additional code-review trailers on lore.kernel.org
 Checking attestation on all messages, may take a moment...
 ---
   [32m✓[0m [PATCH] block: Fix crash after setting latency historygram with single bin
     + Reviewed-by: Hanna Czenczek <hreitz@redhat.com> ([32m✓[0m DKIM/redhat.com)
+    + Reviewed-by: Philippe Mathieu-Daudé <philmd@linaro.org> ([32m✓[0m DKIM/linaro.org)
   ---
   [32m✓[0m Signed: DKIM/redhat.com
 ---
@@ -22,22 +23,36 @@ Total patches: 1
  Link: https://lore.kernel.org/r/20260331102608.60882-1-kwolf@redhat.com
  Base: not specified
        git am ./20260331_kwolf_block_fix_crash_after_setting_latency_historygram_with_single_bin.mbx
-  b4: mbx=58 lines
+  b4: mbx=59 lines
   Title (from mbox): [PATCH] block: Fix crash after setting latency historygram with
 [4/7] Applying patches in QEMU worktree...
 Preparing worktree (new branch 'review-20260331102608-60882-1-kwolf-redhat-com')
-HEAD is now at 9f6c969 Merge tag 'hw-misc-20260331' of https://github.com/philmd/qemu into staging
+HEAD is now at 7a2dc48 Merge tag 'for-upstream' of https://gitlab.com/kmwolf/qemu into staging
+error: patch failed: block/accounting.c:185
+error: block/accounting.c: patch does not apply
+hint: Use 'git am --show-current-patch=diff' to see the failed patch
+hint: When you have resolved this problem, run "git am --continue".
+hint: If you prefer to skip this patch, run "git am --skip" instead.
+hint: To restore the original branch and stop patching, run "git am --abort".
+hint: Disable this message with "git config set advice.mergeConflict false"
 Applying: block: Fix crash after setting latency historygram with single bin
-  git am: success
+Patch failed at 0001 block: Fix crash after setting latency historygram with single bin
+  git am failed, retrying with --3way...
+Applying: block: Fix crash after setting latency historygram with single bin
+error: sha1 information is lacking or useless (block/accounting.c).
+error: could not build fake ancestor
+hint: Use 'git am --show-current-patch=diff' to see the failed patch
+hint: When you have resolved this problem, run "git am --continue".
+hint: If you prefer to skip this patch, run "git am --skip" instead.
+hint: To restore the original branch and stop patching, run "git am --abort".
+hint: Disable this message with "git config set advice.mergeConflict false"
+Patch failed at 0001 block: Fix crash after setting latency historygram with single bin
+  git am --3way: FAILED
   Running checkpatch...
   checkpatch: clean
-  Quick build check...
-
-Found ninja-1.13.2 at /usr/local/bin/ninja
-Running postconf script '/home/runner/work/loupe-web/loupe-web/loupe-worktree-20260331102608-60882-1-kwolf-redhat-com/build/pyvenv/bin/python3 /home/runner/work/loupe-web/loupe-web/loupe-worktree-20260331102608-60882-1-kwolf-redhat-com/scripts/symlink-install-tree.py'
-  configure: success
-Deleted branch review-20260331102608-60882-1-kwolf-redhat-com (was 496fb4b).
-  AM: success, Checkpatch: clean, Build: configure_ok
+  Skipping build (am failed)
+Deleted branch review-20260331102608-60882-1-kwolf-redhat-com (was 7a2dc48).
+  AM: failed, Checkpatch: clean, Build: not_run
 [5/7] Running codex code review (Stage A-E protocol)...
 [6/7] Extracting review...
   Verdict: ready_to_merge
@@ -56,5 +71,5 @@ Traceback (most recent call last):
   File "/usr/lib/python3.12/json/decoder.py", line 353, in raw_decode
     obj, end = self.scan_once(s, idx)
                ^^^^^^^^^^^^^^^^^^^^^^
-json.decoder.JSONDecodeError: Expecting ',' delimiter: line 6 column 1 (char 97)
+json.decoder.JSONDecodeError: Expecting ',' delimiter: line 7 column 1 (char 158)
 ERROR: invalid JSON output

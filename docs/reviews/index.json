@@ -1,6 +1,24 @@
 {
-  "updated_at": "2026-03-31T17:25:47Z",
+  "updated_at": "2026-03-31T20:06:48Z",
   "reviews": [
+    {
+      "id": "20260331-20260331185219.12187-1-deller-at-kernel.org",
+      "path": "reviews/2026-03-31/20260331185219.12187-1-deller-at-kernel.org.json",
+      "title": "[PATCH 0/8] Hppa more v11 fixes patches",
+      "author": "Helge Deller",
+      "date": "2026-03-31",
+      "subsystem": "riscv",
+      "version": 11,
+      "patch_count": 1,
+      "message_id": "<20260331185219.12187-1-deller@kernel.org>",
+      "verdict": "needs_revision",
+      "findings": {
+        "critical": 0,
+        "major": 0,
+        "minor": 0,
+        "nit": 1
+      }
+    },
     {
       "id": "20260331-20260331150352.256332-1-kwolf-at-redhat.com",
       "path": "reviews/2026-03-31/20260331150352.256332-1-kwolf-at-redhat.com.json",

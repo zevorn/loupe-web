@@ -8,7 +8,7 @@
   v1 patch, no prior versions
 [3/7] Downloading patches with b4...
 Grabbing thread from lore.kernel.org/all/541ffffdaa4c67b9dcbca6c2498e69b137bce95d.1774904832.git.balaton@eik.bme.hu/t.mbox.gz
-Analyzing 10 messages in the thread
+Analyzing 11 messages in the thread
 Looking for additional code-review trailers on lore.kernel.org
 Checking attestation on all messages, may take a moment...
 ---
@@ -28,7 +28,8 @@ Cover: ./20260330_balaton_ati_vga_coverity_fixes.cover
   Title (from mbox): [PATCH 0/2] ati-vga Coverity fixes
 [4/7] Applying patches in QEMU worktree...
 Preparing worktree (new branch 'review-541ffffdaa4c67b9dcbca6c2498e69b137bce95d')
-HEAD is now at 9f6c969 Merge tag 'hw-misc-20260331' of https://github.com/philmd/qemu into staging
+Updating files:  92% (10246/11023)Updating files:  93% (10252/11023)Updating files:  94% (10362/11023)Updating files:  95% (10472/11023)Updating files:  96% (10583/11023)Updating files:  97% (10693/11023)Updating files:  98% (10803/11023)Updating files:  99% (10913/11023)Updating files: 100% (11023/11023)Updating files: 100% (11023/11023), done.
+HEAD is now at 7a2dc48 Merge tag 'for-upstream' of https://gitlab.com/kmwolf/qemu into staging
 error: patch failed: hw/display/ati_2d.c:91
 error: hw/display/ati_2d.c: patch does not apply
 hint: Use 'git am --show-current-patch=diff' to see the failed patch
@@ -52,7 +53,7 @@ Patch failed at 0001 ati-vga: Silence warning about operator precedence
   Running checkpatch...
   checkpatch: clean
   Skipping build (am failed)
-Deleted branch review-541ffffdaa4c67b9dcbca6c2498e69b137bce95d (was 9f6c969).
+Deleted branch review-541ffffdaa4c67b9dcbca6c2498e69b137bce95d (was 7a2dc48).
   AM: failed, Checkpatch: clean, Build: not_run
 [5/7] Running codex code review (Stage A-E protocol)...
 [6/7] Extracting review...

@@ -30,7 +30,7 @@ Cover: ./20260331_soumyajyotisarkar23_add_high_resolution_2d_mouse_wheel_support
   Title (from mbox): [PATCH RFC 0/5] Add high-resolution 2D mouse wheel support to USB
 [4/7] Applying patches in QEMU worktree...
 Preparing worktree (new branch 'review-20260331170823-72511-6-soumyajyotisarkar')
-HEAD is now at 9f6c969 Merge tag 'hw-misc-20260331' of https://github.com/philmd/qemu into staging
+HEAD is now at 7a2dc48 Merge tag 'for-upstream' of https://gitlab.com/kmwolf/qemu into staging
 Applying: input/hid: add horizontal pan to pointer event path
 Applying: usb/hid: add enhanced wheel mouse report descriptor and packet size
 Applying: input/hid: emit protocol aware mouse reports with pan support
@@ -44,7 +44,7 @@ Applying: input/hid: apply multiplier scaling with residual accumulation
 Found ninja-1.13.2 at /usr/local/bin/ninja
 Running postconf script '/home/runner/work/loupe-web/loupe-web/loupe-worktree-20260331170823-72511-6-soumyajyotisarkar/build/pyvenv/bin/python3 /home/runner/work/loupe-web/loupe-web/loupe-worktree-20260331170823-72511-6-soumyajyotisarkar/scripts/symlink-install-tree.py'
   configure: success
-Deleted branch review-20260331170823-72511-6-soumyajyotisarkar (was 014509f).
+Deleted branch review-20260331170823-72511-6-soumyajyotisarkar (was 246d6a6).
   AM: success, Checkpatch: clean, Build: configure_ok
 [5/7] Running codex code review (Stage A-E protocol)...
 [6/7] Extracting review...

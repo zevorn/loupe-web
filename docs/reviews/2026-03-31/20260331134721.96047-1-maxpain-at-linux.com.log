@@ -26,7 +26,7 @@ Total patches: 1
   Title (from mbox): [PATCH v2] vhost-user-blk: do not force VIRTIO_BLK_F_SIZE_MAX
 [4/7] Applying patches in QEMU worktree...
 Preparing worktree (new branch 'review-20260331134721-96047-1-maxpain-linux-com')
-HEAD is now at 9f6c969 Merge tag 'hw-misc-20260331' of https://github.com/philmd/qemu into staging
+HEAD is now at 7a2dc48 Merge tag 'for-upstream' of https://gitlab.com/kmwolf/qemu into staging
 Applying: vhost-user-blk: do not force VIRTIO_BLK_F_SIZE_MAX
   git am: success
   Running checkpatch...
@@ -36,11 +36,11 @@ Applying: vhost-user-blk: do not force VIRTIO_BLK_F_SIZE_MAX
 Found ninja-1.13.2 at /usr/local/bin/ninja
 Running postconf script '/home/runner/work/loupe-web/loupe-web/loupe-worktree-20260331134721-96047-1-maxpain-linux-com/build/pyvenv/bin/python3 /home/runner/work/loupe-web/loupe-web/loupe-worktree-20260331134721-96047-1-maxpain-linux-com/scripts/symlink-install-tree.py'
   configure: success
-Deleted branch review-20260331134721-96047-1-maxpain-linux-com (was 7359b2b).
+Deleted branch review-20260331134721-96047-1-maxpain-linux-com (was 2b04ce0).
   AM: success, Checkpatch: clean, Build: configure_ok
 [5/7] Running codex code review (Stage A-E protocol)...
 [6/7] Extracting review...
-  Verdict: ready_to_merge
+  Verdict: needs_revision
 [7/7] Assembling JSON...
 Traceback (most recent call last):
   File "<stdin>", line 8, in <module>

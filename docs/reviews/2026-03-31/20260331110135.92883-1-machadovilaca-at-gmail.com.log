@@ -25,7 +25,7 @@ Total patches: 1
   Title (from mbox): [PATCH] qga: implement 'guest-get-nvidia-smi' command
 [4/7] Applying patches in QEMU worktree...
 Preparing worktree (new branch 'review-20260331110135-92883-1-machadovilaca-gma')
-HEAD is now at 9f6c969 Merge tag 'hw-misc-20260331' of https://github.com/philmd/qemu into staging
+HEAD is now at 7a2dc48 Merge tag 'for-upstream' of https://gitlab.com/kmwolf/qemu into staging
 Applying: qga: implement 'guest-get-nvidia-smi' command
   git am: success
   Running checkpatch...
@@ -35,7 +35,7 @@ Applying: qga: implement 'guest-get-nvidia-smi' command
 Found ninja-1.13.2 at /usr/local/bin/ninja
 Running postconf script '/home/runner/work/loupe-web/loupe-web/loupe-worktree-20260331110135-92883-1-machadovilaca-gma/build/pyvenv/bin/python3 /home/runner/work/loupe-web/loupe-web/loupe-worktree-20260331110135-92883-1-machadovilaca-gma/scripts/symlink-install-tree.py'
   configure: success
-Deleted branch review-20260331110135-92883-1-machadovilaca-gma (was a206b54).
+Deleted branch review-20260331110135-92883-1-machadovilaca-gma (was c50f7b5).
   AM: success, Checkpatch: issues, Build: configure_ok
 [5/7] Running codex code review (Stage A-E protocol)...
 [6/7] Extracting review...

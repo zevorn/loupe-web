@@ -26,7 +26,7 @@ Total patches: 1
   Title (from mbox): [PATCH] MAINTAINERS: fix OSUOSL typo
 [4/7] Applying patches in QEMU worktree...
 Preparing worktree (new branch 'review-20260331070401-1125840-1-alex-bennee-lin')
-HEAD is now at 9f6c969 Merge tag 'hw-misc-20260331' of https://github.com/philmd/qemu into staging
+HEAD is now at 7a2dc48 Merge tag 'for-upstream' of https://gitlab.com/kmwolf/qemu into staging
 error: patch failed: MAINTAINERS:4526
 error: MAINTAINERS: patch does not apply
 hint: Use 'git am --show-current-patch=diff' to see the failed patch
@@ -50,7 +50,7 @@ Patch failed at 0001 MAINTAINERS: fix OSUOSL typo
   Running checkpatch...
   checkpatch: clean
   Skipping build (am failed)
-Deleted branch review-20260331070401-1125840-1-alex-bennee-lin (was 9f6c969).
+Deleted branch review-20260331070401-1125840-1-alex-bennee-lin (was 7a2dc48).
   AM: failed, Checkpatch: clean, Build: not_run
 [5/7] Running codex code review (Stage A-E protocol)...
 [6/7] Extracting review...

@@ -1,14 +1,13 @@
-=== Reviewing: 20260330211859.19317-12-deller@kernel.org ===
+=== Reviewing: 20260331185219.12187-9-deller@kernel.org ===
 [1/7] Querying Patchwork...
   Patchwork: 1 result(s)
 [2/7] Metadata OK
-  Title: [00/11] HPPA Patches for qemu-v11
-  Author: Helge Deller, Version: v11, Subsystem: riscv
+  Title: [PULL,8/8] target/hppa: Update SeaBIOS-hppa to version 24
+  Author: Helge Deller, Version: v1, Subsystem: target/hppa
 [2.5/7] Fetching version history and mailing list context...
-  Searching for prior versions of: HPPA Patches for qemu-v11
-  Found 0 prior version(s)
+  v1 patch, no prior versions
 [3/7] Downloading patches with b4...
-Grabbing thread from lore.kernel.org/all/20260330211859.19317-12-deller@kernel.org/t.mbox.gz
+Grabbing thread from lore.kernel.org/all/20260331185219.12187-9-deller@kernel.org/t.mbox.gz
 That message-id is not known.
   b4: mbx=1 lines
   b4 failed, trying curl...
@@ -34,5 +33,5 @@ Traceback (most recent call last):
   File "/usr/lib/python3.12/json/decoder.py", line 353, in raw_decode
     obj, end = self.scan_once(s, idx)
                ^^^^^^^^^^^^^^^^^^^^^^
-json.decoder.JSONDecodeError: Expecting ',' delimiter: line 6 column 1 (char 105)
+json.decoder.JSONDecodeError: Expecting ',' delimiter: line 3 column 1 (char 24)
 ERROR: invalid JSON output

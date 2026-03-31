@@ -36,8 +36,7 @@ Cover: ./20260331_philmd_misc_hw_patches_for_2026_03_31.cover
   Title (from mbox): [PATCH 0/11] Misc HW patches for 2026-03-31
 [4/7] Applying patches in QEMU worktree...
 Preparing worktree (new branch 'review-20260331131514-21152-12-philmd-linaro-or')
-Updating files:  97% (10775/11023)Updating files:  98% (10803/11023)Updating files:  99% (10913/11023)Updating files: 100% (11023/11023)Updating files: 100% (11023/11023), done.
-HEAD is now at 9f6c969 Merge tag 'hw-misc-20260331' of https://github.com/philmd/qemu into staging
+HEAD is now at 7a2dc48 Merge tag 'for-upstream' of https://gitlab.com/kmwolf/qemu into staging
 error: patch failed: include/hw/ppc/pnv.h:111
 error: include/hw/ppc/pnv.h: patch does not apply
 error: patch failed: hw/ppc/pnv.c:748
@@ -63,11 +62,11 @@ Patch failed at 0001 ppc/pnv: generate dtb after machine initialization is compl
   Running checkpatch...
   checkpatch: issues
   Skipping build (am failed)
-Deleted branch review-20260331131514-21152-12-philmd-linaro-or (was 9f6c969).
+Deleted branch review-20260331131514-21152-12-philmd-linaro-or (was 7a2dc48).
   AM: failed, Checkpatch: issues, Build: not_run
 [5/7] Running codex code review (Stage A-E protocol)...
 [6/7] Extracting review...
-  Verdict: needs_revision
+  Verdict: ready_to_merge
 [7/7] Assembling JSON...
 Traceback (most recent call last):
   File "<stdin>", line 8, in <module>
