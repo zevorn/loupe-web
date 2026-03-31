@@ -49,7 +49,7 @@ Auto-merging block/export/vhost-user-blk-server.c
 Found ninja-1.13.2 at /usr/local/bin/ninja
 Running postconf script '/home/runner/work/loupe-web/loupe-web/loupe-worktree-20260330192701-75780-1-maxpain-linux-com/build/pyvenv/bin/python3 /home/runner/work/loupe-web/loupe-web/loupe-worktree-20260330192701-75780-1-maxpain-linux-com/scripts/symlink-install-tree.py'
   configure: success
-Deleted branch review-20260330192701-75780-1-maxpain-linux-com (was bae3159).
+Deleted branch review-20260330192701-75780-1-maxpain-linux-com (was 8612c12).
   AM: success_3way, Checkpatch: clean, Build: configure_ok
 [5/7] Running codex code review (Stage A-E protocol)...
 [6/7] Extracting review...

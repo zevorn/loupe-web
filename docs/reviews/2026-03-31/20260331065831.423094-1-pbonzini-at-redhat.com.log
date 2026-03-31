@@ -36,11 +36,11 @@ Applying: target/i386/tcg: fix decoding of MOVBE and CRC32 in 16-bit mode
 Found ninja-1.13.2 at /usr/local/bin/ninja
 Running postconf script '/home/runner/work/loupe-web/loupe-web/loupe-worktree-20260331065831-423094-1-pbonzini-redhat-/build/pyvenv/bin/python3 /home/runner/work/loupe-web/loupe-web/loupe-worktree-20260331065831-423094-1-pbonzini-redhat-/scripts/symlink-install-tree.py'
   configure: success
-Deleted branch review-20260331065831-423094-1-pbonzini-redhat- (was 695c32e).
+Deleted branch review-20260331065831-423094-1-pbonzini-redhat- (was c42c693).
   AM: success, Checkpatch: issues, Build: configure_ok
 [5/7] Running codex code review (Stage A-E protocol)...
 [6/7] Extracting review...
-  Verdict: ready_to_merge
+  Verdict: needs_revision
 [7/7] Assembling JSON...
 Traceback (most recent call last):
   File "<stdin>", line 8, in <module>
