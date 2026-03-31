@@ -8,7 +8,7 @@
   v1 patch, no prior versions
 [3/7] Downloading patches with b4...
 Grabbing thread from lore.kernel.org/all/20260330140655.31EC55968DE@zero.eik.bme.hu/t.mbox.gz
-Analyzing 5 messages in the thread
+Analyzing 6 messages in the thread
 Looking for additional code-review trailers on lore.kernel.org
 Checking attestation on all messages, may take a moment...
 ---
@@ -23,7 +23,7 @@ Total patches: 1
   Title (from mbox): [PATCH RFC] cirrus-vga: Add property to set frame buffer
 [4/7] Applying patches in QEMU worktree...
 Preparing worktree (new branch 'review-20260330140655-31EC55968DE-zero-eik-bme-')
-HEAD is now at d62e907 Merge tag 'pull-target-arm-20260330' of https://gitlab.com/pm215/qemu into staging
+HEAD is now at 49ea010 Merge tag 'migration-20260330-pull-request' of https://gitlab.com/farosas/qemu into staging
 Applying: cirrus-vga: Add property to set frame buffer endianness and make it default to little endian
   git am: success
   Running checkpatch...
@@ -33,7 +33,7 @@ Applying: cirrus-vga: Add property to set frame buffer endianness and make it de
 Found ninja-1.13.2 at /usr/local/bin/ninja
 Running postconf script '/home/runner/work/loupe-web/loupe-web/loupe-worktree-20260330140655-31EC55968DE-zero-eik-bme-/build/pyvenv/bin/python3 /home/runner/work/loupe-web/loupe-web/loupe-worktree-20260330140655-31EC55968DE-zero-eik-bme-/scripts/symlink-install-tree.py'
   configure: success
-Deleted branch review-20260330140655-31EC55968DE-zero-eik-bme- (was 192887a).
+Deleted branch review-20260330140655-31EC55968DE-zero-eik-bme- (was 2e84359).
   AM: success, Checkpatch: clean, Build: configure_ok
 [5/7] Running codex code review (Stage A-E protocol)...
 [6/7] Extracting review...

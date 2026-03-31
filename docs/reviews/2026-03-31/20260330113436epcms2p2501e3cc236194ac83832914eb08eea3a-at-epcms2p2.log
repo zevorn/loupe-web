@@ -27,11 +27,11 @@ WARNING: Thread incomplete!
  Base: not specified
        git am ./20260330_jaemyung_lee_hw_ufs_add_ufs_write_booster_support.mbx
   b4: mbx=958 lines
-scripts/review-patch.sh: line 273: echo: write error: Broken pipe
   Title (from mbox): [PATCH 4/5] hw/ufs: Add UFS Write Booster Support
 [4/7] Applying patches in QEMU worktree...
 Preparing worktree (new branch 'review-20260330113436epcms2p2501e3cc236194ac838')
-HEAD is now at d62e907 Merge tag 'pull-target-arm-20260330' of https://gitlab.com/pm215/qemu into staging
+Updating files:  85% (9409/11022)Updating files:  86% (9479/11022)Updating files:  87% (9590/11022)Updating files:  88% (9700/11022)Updating files:  89% (9810/11022)Updating files:  90% (9920/11022)Updating files:  91% (10031/11022)Updating files:  92% (10141/11022)Updating files:  93% (10251/11022)Updating files:  94% (10361/11022)Updating files:  95% (10471/11022)Updating files:  96% (10582/11022)Updating files:  97% (10692/11022)Updating files:  98% (10802/11022)Updating files:  99% (10912/11022)Updating files: 100% (11022/11022)Updating files: 100% (11022/11022), done.
+HEAD is now at 49ea010 Merge tag 'migration-20260330-pull-request' of https://gitlab.com/farosas/qemu into staging
 error: corrupt patch at line 253
 hint: Use 'git am --show-current-patch=diff' to see the failed patch
 hint: When you have resolved this problem, run "git am --continue".
@@ -54,7 +54,7 @@ Patch failed at 0001 hw/ufs: Add UFS Write Booster Support
   Running checkpatch...
   checkpatch: issues
   Skipping build (am failed)
-Deleted branch review-20260330113436epcms2p2501e3cc236194ac838 (was d62e907).
+Deleted branch review-20260330113436epcms2p2501e3cc236194ac838 (was 49ea010).
   AM: failed, Checkpatch: issues, Build: not_run
 [5/7] Running codex code review (Stage A-E protocol)...
 [6/7] Extracting review...

@@ -1,6 +1,24 @@
 {
-  "updated_at": "2026-03-31T09:32:18Z",
+  "updated_at": "2026-03-31T11:26:07Z",
   "reviews": [
+    {
+      "id": "20260331-20260331095302.644608-1-marcandre.lureau-at-redhat.com",
+      "path": "reviews/2026-03-31/20260331095302.644608-1-marcandre.lureau-at-redhat.com.json",
+      "title": "[PATCH 0/6] For 11.0 rc patches",
+      "author": "Marc-André Lureau",
+      "date": "2026-03-31",
+      "subsystem": "riscv",
+      "version": 1,
+      "patch_count": 1,
+      "message_id": "<20260331095302.644608-1-marcandre.lureau@redhat.com>",
+      "verdict": "ready_to_merge",
+      "findings": {
+        "critical": 0,
+        "major": 0,
+        "minor": 0,
+        "nit": 1
+      }
+    },
     {
       "id": "20260330-20260330212817.992673-1-alejandro.j.jimenez-at-oracle.com",
       "path": "reviews/2026-03-30/20260330212817.992673-1-alejandro.j.jimenez-at-oracle.com.json",

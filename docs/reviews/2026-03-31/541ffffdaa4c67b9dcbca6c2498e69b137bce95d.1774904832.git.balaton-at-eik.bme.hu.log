@@ -27,7 +27,8 @@ Cover: ./20260330_balaton_ati_vga_coverity_fixes.cover
   Title (from mbox): [PATCH 0/2] ati-vga Coverity fixes
 [4/7] Applying patches in QEMU worktree...
 Preparing worktree (new branch 'review-541ffffdaa4c67b9dcbca6c2498e69b137bce95d')
-HEAD is now at d62e907 Merge tag 'pull-target-arm-20260330' of https://gitlab.com/pm215/qemu into staging
+Updating files:  96% (10624/11022)Updating files:  97% (10692/11022)Updating files:  98% (10802/11022)Updating files:  99% (10912/11022)Updating files: 100% (11022/11022)Updating files: 100% (11022/11022), done.
+HEAD is now at 49ea010 Merge tag 'migration-20260330-pull-request' of https://gitlab.com/farosas/qemu into staging
 Applying: ati-vga: Silence warning about operator precedence
 Applying: ati-vga: Add upper limit to x-linear-aper-size property
   git am: success
@@ -38,7 +39,7 @@ Applying: ati-vga: Add upper limit to x-linear-aper-size property
 Found ninja-1.13.2 at /usr/local/bin/ninja
 Running postconf script '/home/runner/work/loupe-web/loupe-web/loupe-worktree-541ffffdaa4c67b9dcbca6c2498e69b137bce95d/build/pyvenv/bin/python3 /home/runner/work/loupe-web/loupe-web/loupe-worktree-541ffffdaa4c67b9dcbca6c2498e69b137bce95d/scripts/symlink-install-tree.py'
   configure: success
-Deleted branch review-541ffffdaa4c67b9dcbca6c2498e69b137bce95d (was cd64707).
+Deleted branch review-541ffffdaa4c67b9dcbca6c2498e69b137bce95d (was 456da57).
   AM: success, Checkpatch: clean, Build: configure_ok
 [5/7] Running codex code review (Stage A-E protocol)...
 [6/7] Extracting review...

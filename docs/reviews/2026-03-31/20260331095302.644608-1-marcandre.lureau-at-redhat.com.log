@@ -1,0 +1,59 @@
+=== Reviewing: 20260331095302.644608-1-marcandre.lureau@redhat.com ===
+[1/7] Querying Patchwork...
+  Patchwork: 1 result(s)
+[2/7] Metadata OK
+  Title: [PULL,0/6] For 11.0 rc patches
+  Author: Marc-André Lureau, Version: v1, Subsystem: riscv
+[2.5/7] Fetching version history and mailing list context...
+  v1 patch, no prior versions
+[3/7] Downloading patches with b4...
+Grabbing thread from lore.kernel.org/all/20260331095302.644608-1-marcandre.lureau@redhat.com/t.mbox.gz
+Analyzing 7 messages in the thread
+Looking for additional code-review trailers on lore.kernel.org
+Checking attestation on all messages, may take a moment...
+---
+  [32m✓[0m [PATCH 1/6] audio/mixeng: fix sw/hw mixup in audio_pcm_sw_init_
+  [32m✓[0m [PATCH 2/6] ui/dbus: associate add_client completion with its request
+  [32m✓[0m [PATCH 3/6] ui/dbus: tear down clipboard callbacks on display finalize
+  [32m✓[0m [PATCH 4/6] ui/vnc-jobs: fix VncRectEntry leak on job cleanup
+  [32m✓[0m [PATCH 5/6] ui/vnc-jobs: clear source tag
+  [32m✓[0m [PATCH 6/6] tests: don't build audio tests when no audio drivers are enabled
+  ---
+  [32m✓[0m Signed: DKIM/redhat.com
+---
+Total patches: 6
+---
+Cover: ./20260331_marcandre_lureau_for_11_0_rc_patches.cover
+ Link: https://lore.kernel.org/r/20260331095302.644608-1-marcandre.lureau@redhat.com
+ Base: not specified
+       git am ./20260331_marcandre_lureau_for_11_0_rc_patches.mbx
+  b4: mbx=549 lines
+  Title (from mbox): [PATCH 0/6] For 11.0 rc patches
+[4/7] Applying patches in QEMU worktree...
+Preparing worktree (new branch 'review-20260331095302-644608-1-marcandre-lureau')
+HEAD is now at 49ea010 Merge tag 'migration-20260330-pull-request' of https://gitlab.com/farosas/qemu into staging
+Applying: audio/mixeng: fix sw/hw mixup in audio_pcm_sw_init_
+Applying: ui/dbus: associate add_client completion with its request
+Applying: ui/dbus: tear down clipboard callbacks on display finalize
+Applying: ui/vnc-jobs: fix VncRectEntry leak on job cleanup
+Applying: ui/vnc-jobs: clear source tag
+Applying: tests: don't build audio tests when no audio drivers are enabled
+  git am: success
+  Running checkpatch...
+  checkpatch: issues
+  Quick build check...
+
+Found ninja-1.13.2 at /usr/local/bin/ninja
+Running postconf script '/home/runner/work/loupe-web/loupe-web/loupe-worktree-20260331095302-644608-1-marcandre-lureau/build/pyvenv/bin/python3 /home/runner/work/loupe-web/loupe-web/loupe-worktree-20260331095302-644608-1-marcandre-lureau/scripts/symlink-install-tree.py'
+  configure: success
+Deleted branch review-20260331095302-644608-1-marcandre-lureau (was 905ee51).
+  AM: success, Checkpatch: issues, Build: configure_ok
+[5/7] Running codex code review (Stage A-E protocol)...
+[6/7] Extracting review...
+  Verdict: ready_to_merge
+[7/7] Assembling JSON...
+  Schema validation: normalized
+=== Done ===
+  [PATCH 0/6] For 11.0 rc patches
+  Verdict: ready_to_merge | Findings: 1
+  Checkpatch: issues | Build: configure_ok | AM: success

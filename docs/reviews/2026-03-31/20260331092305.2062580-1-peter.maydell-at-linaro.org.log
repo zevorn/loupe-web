@@ -1,45 +1,41 @@
-=== Reviewing: 20260330212817.992673-3-alejandro.j.jimenez@oracle.com ===
+=== Reviewing: 20260331092305.2062580-1-peter.maydell@linaro.org ===
 [1/7] Querying Patchwork...
   Patchwork: 1 result(s)
 [2/7] Metadata OK
-  Title: [for-11.0,2/2] amd_iommu: Reject non-decreasing NextLevel in fetch_pte()
-  Author: Alejandro Jimenez, Version: v1, Subsystem: amd_iommu
+  Title: target/arm: do_ats_write(): avoid assertion when ptw failed
+  Author: Peter Maydell, Version: v1, Subsystem: target/arm
 [2.5/7] Fetching version history and mailing list context...
   v1 patch, no prior versions
 [3/7] Downloading patches with b4...
-Grabbing thread from lore.kernel.org/all/20260330212817.992673-3-alejandro.j.jimenez@oracle.com/t.mbox.gz
-Analyzing 4 messages in the thread
+Grabbing thread from lore.kernel.org/all/20260331092305.2062580-1-peter.maydell@linaro.org/t.mbox.gz
+Analyzing 1 messages in the thread
 Looking for additional code-review trailers on lore.kernel.org
 Checking attestation on all messages, may take a moment...
 ---
-  [32m✓[0m [PATCH 1/2] amd_iommu: Follow root pointer before page walk and use 1-based levels
-  [32m✓[0m [PATCH 2/2] amd_iommu: Reject non-decreasing NextLevel in fetch_pte()
+  [32m✓[0m [PATCH] target/arm: do_ats_write(): avoid assertion when ptw failed
   ---
-  [32m✓[0m Signed: DKIM/oracle.com
+  [32m✓[0m Signed: DKIM/linaro.org
 ---
-Total patches: 2
+Total patches: 1
 ---
-Cover: ./20260330_alejandro_j_jimenez_amd_iommu_fixes_for_11_0_rc2.cover
- Link: https://lore.kernel.org/r/20260330212817.992673-1-alejandro.j.jimenez@oracle.com
- Base: base-commit dd3ee9c63d96b223c8d41bf5d65392eb898be626 not known, ignoring
+ Link: https://lore.kernel.org/r/20260331092305.2062580-1-peter.maydell@linaro.org
  Base: not specified
-       git am ./20260330_alejandro_j_jimenez_amd_iommu_fixes_for_11_0_rc2.mbx
-  b4: mbx=292 lines
-  Title (from mbox): [PATCH 0/2] amd_iommu fixes for 11.0-rc2
+       git am ./20260331_peter_maydell_target_arm_do_ats_write_avoid_assertion_when_ptw_failed.mbx
+  b4: mbx=61 lines
+  Title (from mbox): [PATCH] target/arm: do_ats_write(): avoid assertion when ptw
 [4/7] Applying patches in QEMU worktree...
-Preparing worktree (new branch 'review-20260330212817-992673-3-alejandro-j-jime')
+Preparing worktree (new branch 'review-20260331092305-2062580-1-peter-maydell-l')
 HEAD is now at 49ea010 Merge tag 'migration-20260330-pull-request' of https://gitlab.com/farosas/qemu into staging
-Applying: amd_iommu: Follow root pointer before page walk and use 1-based levels
-Applying: amd_iommu: Reject non-decreasing NextLevel in fetch_pte()
+Applying: target/arm: do_ats_write(): avoid assertion when ptw failed
   git am: success
   Running checkpatch...
   checkpatch: clean
   Quick build check...
 
 Found ninja-1.13.2 at /usr/local/bin/ninja
-Running postconf script '/home/runner/work/loupe-web/loupe-web/loupe-worktree-20260330212817-992673-3-alejandro-j-jime/build/pyvenv/bin/python3 /home/runner/work/loupe-web/loupe-web/loupe-worktree-20260330212817-992673-3-alejandro-j-jime/scripts/symlink-install-tree.py'
+Running postconf script '/home/runner/work/loupe-web/loupe-web/loupe-worktree-20260331092305-2062580-1-peter-maydell-l/build/pyvenv/bin/python3 /home/runner/work/loupe-web/loupe-web/loupe-worktree-20260331092305-2062580-1-peter-maydell-l/scripts/symlink-install-tree.py'
   configure: success
-Deleted branch review-20260330212817-992673-3-alejandro-j-jime (was 670786d).
+Deleted branch review-20260331092305-2062580-1-peter-maydell-l (was 8909093).
   AM: success, Checkpatch: clean, Build: configure_ok
 [5/7] Running codex code review (Stage A-E protocol)...
 [6/7] Extracting review...

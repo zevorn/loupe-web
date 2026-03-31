@@ -29,7 +29,7 @@ Total patches: 1
   Title (from mbox): [PATCH] meson: add missing semicolon in pthread_condattr_setclock
 [4/7] Applying patches in QEMU worktree...
 Preparing worktree (new branch 'review-20260330131406-87080-1-Stepan-Popov-kasp')
-HEAD is now at d62e907 Merge tag 'pull-target-arm-20260330' of https://gitlab.com/pm215/qemu into staging
+HEAD is now at 49ea010 Merge tag 'migration-20260330-pull-request' of https://gitlab.com/farosas/qemu into staging
 Applying: meson: add missing semicolon in pthread_condattr_setclock test
   git am: success
   Running checkpatch...
@@ -39,11 +39,11 @@ Applying: meson: add missing semicolon in pthread_condattr_setclock test
 Found ninja-1.13.2 at /usr/local/bin/ninja
 Running postconf script '/home/runner/work/loupe-web/loupe-web/loupe-worktree-20260330131406-87080-1-Stepan-Popov-kasp/build/pyvenv/bin/python3 /home/runner/work/loupe-web/loupe-web/loupe-worktree-20260330131406-87080-1-Stepan-Popov-kasp/scripts/symlink-install-tree.py'
   configure: success
-Deleted branch review-20260330131406-87080-1-Stepan-Popov-kasp (was af3f86c).
+Deleted branch review-20260330131406-87080-1-Stepan-Popov-kasp (was 3dacc13).
   AM: success, Checkpatch: clean, Build: configure_ok
 [5/7] Running codex code review (Stage A-E protocol)...
 [6/7] Extracting review...
-  Verdict: ready_to_merge
+  Verdict: needs_revision
 [7/7] Assembling JSON...
 Traceback (most recent call last):
   File "<stdin>", line 8, in <module>

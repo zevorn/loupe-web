@@ -29,7 +29,7 @@ Total patches: 2
   Title (from mbox): [PATCH] hw/display/vga: Fix debug message
 [4/7] Applying patches in QEMU worktree...
 Preparing worktree (new branch 'review-20260330222900-982404-1-alex-bennee-lina')
-HEAD is now at d62e907 Merge tag 'pull-target-arm-20260330' of https://gitlab.com/pm215/qemu into staging
+HEAD is now at 49ea010 Merge tag 'migration-20260330-pull-request' of https://gitlab.com/farosas/qemu into staging
 error: patch failed: hw/display/vga.c:1660
 error: hw/display/vga.c: patch does not apply
 hint: Use 'git am --show-current-patch=diff' to see the failed patch
@@ -59,7 +59,7 @@ Patch failed at 0002 hw/display: modernise the vga debug code (!!GenAI!!)
   Running checkpatch...
   checkpatch: issues
   Skipping build (am failed)
-Deleted branch review-20260330222900-982404-1-alex-bennee-lina (was d62e907).
+Deleted branch review-20260330222900-982404-1-alex-bennee-lina (was 49ea010).
   AM: failed, Checkpatch: issues, Build: not_run
 [5/7] Running codex code review (Stage A-E protocol)...
 [6/7] Extracting review...

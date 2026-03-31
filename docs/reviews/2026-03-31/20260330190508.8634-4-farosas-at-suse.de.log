@@ -8,7 +8,7 @@
   v1 patch, no prior versions
 [3/7] Downloading patches with b4...
 Grabbing thread from lore.kernel.org/all/20260330190508.8634-4-farosas@suse.de/t.mbox.gz
-Analyzing 4 messages in the thread
+Analyzing 5 messages in the thread
 Looking for additional code-review trailers on lore.kernel.org
 Checking attestation on all messages, may take a moment...
 ---
@@ -28,20 +28,32 @@ Cover: ./20260330_farosas_migration_patches_for_2026_03_30.cover
   Title (from mbox): [PATCH 0/3] Migration patches for 2026-03-30
 [4/7] Applying patches in QEMU worktree...
 Preparing worktree (new branch 'review-20260330190508-8634-4-farosas-suse-de')
-HEAD is now at d62e907 Merge tag 'pull-target-arm-20260330' of https://gitlab.com/pm215/qemu into staging
+HEAD is now at 49ea010 Merge tag 'migration-20260330-pull-request' of https://gitlab.com/farosas/qemu into staging
+error: patch failed: migration/options.c:1207
+error: migration/options.c: patch does not apply
+hint: Use 'git am --show-current-patch=diff' to see the failed patch
+hint: When you have resolved this problem, run "git am --continue".
+hint: If you prefer to skip this patch, run "git am --skip" instead.
+hint: To restore the original branch and stop patching, run "git am --abort".
+hint: Disable this message with "git config set advice.mergeConflict false"
 Applying: migration: Fix up error message for max-cpu-throttle
-Applying: migration: Fix references to parameter names in error messages
-Applying: tests/qtest/migration: Fix slow test dirty_limit
-  git am: success
+Patch failed at 0001 migration: Fix up error message for max-cpu-throttle
+  git am failed, retrying with --3way...
+Applying: migration: Fix up error message for max-cpu-throttle
+error: sha1 information is lacking or useless (migration/options.c).
+error: could not build fake ancestor
+hint: Use 'git am --show-current-patch=diff' to see the failed patch
+hint: When you have resolved this problem, run "git am --continue".
+hint: If you prefer to skip this patch, run "git am --skip" instead.
+hint: To restore the original branch and stop patching, run "git am --abort".
+hint: Disable this message with "git config set advice.mergeConflict false"
+Patch failed at 0001 migration: Fix up error message for max-cpu-throttle
+  git am --3way: FAILED
   Running checkpatch...
   checkpatch: clean
-  Quick build check...
-
-Found ninja-1.13.2 at /usr/local/bin/ninja
-Running postconf script '/home/runner/work/loupe-web/loupe-web/loupe-worktree-20260330190508-8634-4-farosas-suse-de/build/pyvenv/bin/python3 /home/runner/work/loupe-web/loupe-web/loupe-worktree-20260330190508-8634-4-farosas-suse-de/scripts/symlink-install-tree.py'
-  configure: success
-Deleted branch review-20260330190508-8634-4-farosas-suse-de (was 570935e).
-  AM: success, Checkpatch: clean, Build: configure_ok
+  Skipping build (am failed)
+Deleted branch review-20260330190508-8634-4-farosas-suse-de (was 49ea010).
+  AM: failed, Checkpatch: clean, Build: not_run
 [5/7] Running codex code review (Stage A-E protocol)...
 [6/7] Extracting review...
   Verdict: needs_revision
