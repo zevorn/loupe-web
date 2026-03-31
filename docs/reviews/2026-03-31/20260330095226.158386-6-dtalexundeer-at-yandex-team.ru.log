@@ -31,8 +31,8 @@ Cover: ./v3_20260330_dtalexundeer_vhost_user_blk_fix_compatibility_with_older_qe
   Title (from mbox): [PATCH v3 0/5] vhost-user-blk: fix compatibility with older qemu
 [4/7] Applying patches in QEMU worktree...
 Preparing worktree (new branch 'review-20260330095226-158386-6-dtalexundeer-yan')
-Updating files:  67% (7493/11022)Updating files:  68% (7495/11022)Updating files:  69% (7606/11022)Updating files:  70% (7716/11022)Updating files:  71% (7826/11022)Updating files:  72% (7936/11022)Updating files:  73% (8047/11022)Updating files:  74% (8157/11022)Updating files:  75% (8267/11022)Updating files:  76% (8377/11022)Updating files:  77% (8487/11022)Updating files:  78% (8598/11022)Updating files:  79% (8708/11022)Updating files:  80% (8818/11022)Updating files:  81% (8928/11022)Updating files:  82% (9039/11022)Updating files:  83% (9149/11022)Updating files:  84% (9259/11022)Updating files:  85% (9369/11022)Updating files:  86% (9479/11022)Updating files:  87% (9590/11022)Updating files:  88% (9700/11022)Updating files:  89% (9810/11022)Updating files:  90% (9920/11022)Updating files:  91% (10031/11022)Updating files:  92% (10141/11022)Updating files:  93% (10251/11022)Updating files:  94% (10361/11022)Updating files:  95% (10471/11022)Updating files:  96% (10582/11022)Updating files:  97% (10692/11022)Updating files:  98% (10802/11022)Updating files:  99% (10912/11022)Updating files: 100% (11022/11022)Updating files: 100% (11022/11022), done.
-HEAD is now at dd3ee9c Merge tag 'for-upstream' of https://gitlab.com/bonzini/qemu into staging
+Updating files:  65% (7266/11022)Updating files:  66% (7275/11022)Updating files:  67% (7385/11022)Updating files:  68% (7495/11022)Updating files:  69% (7606/11022)Updating files:  70% (7716/11022)Updating files:  71% (7826/11022)Updating files:  72% (7936/11022)Updating files:  73% (8047/11022)Updating files:  74% (8157/11022)Updating files:  75% (8267/11022)Updating files:  76% (8377/11022)Updating files:  77% (8487/11022)Updating files:  78% (8598/11022)Updating files:  79% (8708/11022)Updating files:  80% (8818/11022)Updating files:  81% (8928/11022)Updating files:  82% (9039/11022)Updating files:  83% (9149/11022)Updating files:  84% (9259/11022)Updating files:  85% (9369/11022)Updating files:  86% (9479/11022)Updating files:  87% (9590/11022)Updating files:  88% (9700/11022)Updating files:  89% (9810/11022)Updating files:  90% (9920/11022)Updating files:  91% (10031/11022)Updating files:  92% (10141/11022)Updating files:  93% (10251/11022)Updating files:  94% (10361/11022)Updating files:  95% (10471/11022)Updating files:  96% (10582/11022)Updating files:  97% (10692/11022)Updating files:  98% (10802/11022)Updating files:  99% (10912/11022)Updating files: 100% (11022/11022)Updating files: 100% (11022/11022), done.
+HEAD is now at d62e907 Merge tag 'pull-target-arm-20260330' of https://gitlab.com/pm215/qemu into staging
 Applying: vhost-user.rst: fix typo
 Applying: vhost-user-blk: make inflight-migration prop mutable
 Applying: vhost-user: add skip_drain param to do_vhost_virtqueue_stop
@@ -46,11 +46,11 @@ Applying: vhost-user: add skip_drain param to GET_VRING_BASE
 Found ninja-1.13.2 at /usr/local/bin/ninja
 Running postconf script '/home/runner/work/loupe-web/loupe-web/loupe-worktree-20260330095226-158386-6-dtalexundeer-yan/build/pyvenv/bin/python3 /home/runner/work/loupe-web/loupe-web/loupe-worktree-20260330095226-158386-6-dtalexundeer-yan/scripts/symlink-install-tree.py'
   configure: success
-Deleted branch review-20260330095226-158386-6-dtalexundeer-yan (was e61a624).
+Deleted branch review-20260330095226-158386-6-dtalexundeer-yan (was 5c9875b).
   AM: success, Checkpatch: clean, Build: configure_ok
 [5/7] Running codex code review (Stage A-E protocol)...
 [6/7] Extracting review...
-  Verdict: blocked
+  Verdict: needs_revision
 [7/7] Assembling JSON...
 Traceback (most recent call last):
   File "<stdin>", line 8, in <module>

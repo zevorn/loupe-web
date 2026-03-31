@@ -26,7 +26,8 @@ Total patches: 1
   Title (from mbox): [PATCH v2] qga: add security info to guest-get-osinfo
 [4/7] Applying patches in QEMU worktree...
 Preparing worktree (new branch 'review-20260330151941-2207789-1-eashurov-redhat')
-HEAD is now at dd3ee9c Merge tag 'for-upstream' of https://gitlab.com/bonzini/qemu into staging
+Updating files:  86% (9552/11022)Updating files:  87% (9590/11022)Updating files:  88% (9700/11022)Updating files:  89% (9810/11022)Updating files:  90% (9920/11022)Updating files:  91% (10031/11022)Updating files:  92% (10141/11022)Updating files:  93% (10251/11022)Updating files:  94% (10361/11022)Updating files:  95% (10471/11022)Updating files:  96% (10582/11022)Updating files:  97% (10692/11022)Updating files:  98% (10802/11022)Updating files:  99% (10912/11022)Updating files: 100% (11022/11022)Updating files: 100% (11022/11022), done.
+HEAD is now at d62e907 Merge tag 'pull-target-arm-20260330' of https://gitlab.com/pm215/qemu into staging
 Applying: qga: add security info to guest-get-osinfo
   git am: success
   Running checkpatch...
@@ -36,7 +37,7 @@ Applying: qga: add security info to guest-get-osinfo
 Found ninja-1.13.2 at /usr/local/bin/ninja
 Running postconf script '/home/runner/work/loupe-web/loupe-web/loupe-worktree-20260330151941-2207789-1-eashurov-redhat/build/pyvenv/bin/python3 /home/runner/work/loupe-web/loupe-web/loupe-worktree-20260330151941-2207789-1-eashurov-redhat/scripts/symlink-install-tree.py'
   configure: success
-Deleted branch review-20260330151941-2207789-1-eashurov-redhat (was 029f86f).
+Deleted branch review-20260330151941-2207789-1-eashurov-redhat (was c7ffa0c).
   AM: success, Checkpatch: issues, Build: configure_ok
 [5/7] Running codex code review (Stage A-E protocol)...
 [6/7] Extracting review...

@@ -44,7 +44,7 @@ scripts/review-patch.sh: line 273: echo: write error: Broken pipe
   Title (from mbox): [PATCH 0/12] i386, lsi patches for QEMU 11.0-rc2
 [4/7] Applying patches in QEMU worktree...
 Preparing worktree (new branch 'review-20260330115017-256211-13-pbonzini-redhat')
-HEAD is now at dd3ee9c Merge tag 'for-upstream' of https://gitlab.com/bonzini/qemu into staging
+HEAD is now at d62e907 Merge tag 'pull-target-arm-20260330' of https://gitlab.com/pm215/qemu into staging
 error: patch failed: meson.build:314
 error: meson.build: patch does not apply
 hint: Use 'git am --show-current-patch=diff' to see the failed patch
@@ -68,11 +68,11 @@ Patch failed at 0001 meson.build: remove i386-softmmu WHPX support
   Running checkpatch...
   checkpatch: issues
   Skipping build (am failed)
-Deleted branch review-20260330115017-256211-13-pbonzini-redhat (was dd3ee9c).
+Deleted branch review-20260330115017-256211-13-pbonzini-redhat (was d62e907).
   AM: failed, Checkpatch: issues, Build: not_run
 [5/7] Running codex code review (Stage A-E protocol)...
 [6/7] Extracting review...
-  Verdict: ready_to_merge
+  Verdict: needs_revision
 [7/7] Assembling JSON...
 Traceback (most recent call last):
   File "<stdin>", line 8, in <module>

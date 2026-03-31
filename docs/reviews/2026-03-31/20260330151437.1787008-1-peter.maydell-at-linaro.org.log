@@ -8,12 +8,13 @@
   v1 patch, no prior versions
 [3/7] Downloading patches with b4...
 Grabbing thread from lore.kernel.org/all/20260330151437.1787008-1-peter.maydell@linaro.org/t.mbox.gz
-Analyzing 2 messages in the thread
+Analyzing 3 messages in the thread
 Looking for additional code-review trailers on lore.kernel.org
 Checking attestation on all messages, may take a moment...
 ---
   [32m✓[0m [PATCH] target/i386: Treat qtest like TCG for supported-features
     + Reviewed-by: Philippe Mathieu-Daudé <philmd@linaro.org> ([32m✓[0m DKIM/linaro.org)
+    + Reviewed-by: Zhao Liu <zhao1.liu@intel.com> ([32m✓[0m DKIM/intel.com)
   ---
   [32m✓[0m Signed: DKIM/linaro.org
 ---
@@ -22,11 +23,11 @@ Total patches: 1
  Link: https://lore.kernel.org/r/20260330151437.1787008-1-peter.maydell@linaro.org
  Base: not specified
        git am ./20260330_peter_maydell_target_i386_treat_qtest_like_tcg_for_supported_features.mbx
-  b4: mbx=47 lines
+  b4: mbx=48 lines
   Title (from mbox): [PATCH] target/i386: Treat qtest like TCG for supported-features
 [4/7] Applying patches in QEMU worktree...
 Preparing worktree (new branch 'review-20260330151437-1787008-1-peter-maydell-l')
-HEAD is now at dd3ee9c Merge tag 'for-upstream' of https://gitlab.com/bonzini/qemu into staging
+HEAD is now at d62e907 Merge tag 'pull-target-arm-20260330' of https://gitlab.com/pm215/qemu into staging
 Applying: target/i386: Treat qtest like TCG for supported-features
   git am: success
   Running checkpatch...
@@ -36,7 +37,7 @@ Applying: target/i386: Treat qtest like TCG for supported-features
 Found ninja-1.13.2 at /usr/local/bin/ninja
 Running postconf script '/home/runner/work/loupe-web/loupe-web/loupe-worktree-20260330151437-1787008-1-peter-maydell-l/build/pyvenv/bin/python3 /home/runner/work/loupe-web/loupe-web/loupe-worktree-20260330151437-1787008-1-peter-maydell-l/scripts/symlink-install-tree.py'
   configure: success
-Deleted branch review-20260330151437-1787008-1-peter-maydell-l (was 4867bf4).
+Deleted branch review-20260330151437-1787008-1-peter-maydell-l (was 5c203e7).
   AM: success, Checkpatch: clean, Build: configure_ok
 [5/7] Running codex code review (Stage A-E protocol)...
 [6/7] Extracting review...
@@ -56,5 +57,5 @@ Traceback (most recent call last):
   File "/usr/lib/python3.12/json/decoder.py", line 353, in raw_decode
     obj, end = self.scan_once(s, idx)
                ^^^^^^^^^^^^^^^^^^^^^^
-json.decoder.JSONDecodeError: Expecting ',' delimiter: line 6 column 1 (char 105)
+json.decoder.JSONDecodeError: Expecting ',' delimiter: line 7 column 1 (char 154)
 ERROR: invalid JSON output

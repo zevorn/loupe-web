@@ -27,7 +27,7 @@ Cover: ./20260330_clg_aspeed_queue.cover
   Title (from mbox): [PATCH 0/2] aspeed queue
 [4/7] Applying patches in QEMU worktree...
 Preparing worktree (new branch 'review-20260330114853-638753-3-clg-redhat-com')
-HEAD is now at dd3ee9c Merge tag 'for-upstream' of https://gitlab.com/bonzini/qemu into staging
+HEAD is now at d62e907 Merge tag 'pull-target-arm-20260330' of https://gitlab.com/pm215/qemu into staging
 error: patch failed: hw/i2c/aspeed_i2c.c:1134
 error: hw/i2c/aspeed_i2c.c: patch does not apply
 hint: Use 'git am --show-current-patch=diff' to see the failed patch
@@ -51,11 +51,11 @@ Patch failed at 0001 hw/i2c/aspeed_i2c: reset and migrate pending_intr_sts
   Running checkpatch...
   checkpatch: clean
   Skipping build (am failed)
-Deleted branch review-20260330114853-638753-3-clg-redhat-com (was dd3ee9c).
+Deleted branch review-20260330114853-638753-3-clg-redhat-com (was d62e907).
   AM: failed, Checkpatch: clean, Build: not_run
 [5/7] Running codex code review (Stage A-E protocol)...
 [6/7] Extracting review...
-  Verdict: ready_to_merge
+  Verdict: needs_revision
 [7/7] Assembling JSON...
 Traceback (most recent call last):
   File "<stdin>", line 8, in <module>

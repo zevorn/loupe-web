@@ -32,8 +32,7 @@ Cover: ./20260330_thuth_fixes_for_qemu_v11_0_rc2.cover
   Title (from mbox): [PATCH 0/7] Fixes for QEMU v11.0-rc2
 [4/7] Applying patches in QEMU worktree...
 Preparing worktree (new branch 'review-20260330102815-6759-8-thuth-redhat-com')
-Updating files:  98% (10872/11022)Updating files:  99% (10912/11022)Updating files: 100% (11022/11022)Updating files: 100% (11022/11022), done.
-HEAD is now at dd3ee9c Merge tag 'for-upstream' of https://gitlab.com/bonzini/qemu into staging
+HEAD is now at d62e907 Merge tag 'pull-target-arm-20260330' of https://gitlab.com/pm215/qemu into staging
 error: patch failed: tests/functional/qemu_test/asset.py:1
 error: tests/functional/qemu_test/asset.py: patch does not apply
 hint: Use 'git am --show-current-patch=diff' to see the failed patch
@@ -57,7 +56,7 @@ Patch failed at 0001 tests/functional/qemu_test: Silence (most) warnings from py
   Running checkpatch...
   checkpatch: issues
   Skipping build (am failed)
-Deleted branch review-20260330102815-6759-8-thuth-redhat-com (was dd3ee9c).
+Deleted branch review-20260330102815-6759-8-thuth-redhat-com (was d62e907).
   AM: failed, Checkpatch: issues, Build: not_run
 [5/7] Running codex code review (Stage A-E protocol)...
 [6/7] Extracting review...

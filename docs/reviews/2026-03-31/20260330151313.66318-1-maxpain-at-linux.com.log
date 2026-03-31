@@ -25,7 +25,7 @@ Total patches: 1
   Title (from mbox): [PATCH] vhost-user-blk-server: fix size_max=0 breaking Windows
 [4/7] Applying patches in QEMU worktree...
 Preparing worktree (new branch 'review-20260330151313-66318-1-maxpain-linux-com')
-HEAD is now at dd3ee9c Merge tag 'for-upstream' of https://gitlab.com/bonzini/qemu into staging
+HEAD is now at d62e907 Merge tag 'pull-target-arm-20260330' of https://gitlab.com/pm215/qemu into staging
 Applying: vhost-user-blk-server: fix size_max=0 breaking Windows guests
   git am: success
   Running checkpatch...
@@ -35,7 +35,7 @@ Applying: vhost-user-blk-server: fix size_max=0 breaking Windows guests
 Found ninja-1.13.2 at /usr/local/bin/ninja
 Running postconf script '/home/runner/work/loupe-web/loupe-web/loupe-worktree-20260330151313-66318-1-maxpain-linux-com/build/pyvenv/bin/python3 /home/runner/work/loupe-web/loupe-web/loupe-worktree-20260330151313-66318-1-maxpain-linux-com/scripts/symlink-install-tree.py'
   configure: success
-Deleted branch review-20260330151313-66318-1-maxpain-linux-com (was e789286).
+Deleted branch review-20260330151313-66318-1-maxpain-linux-com (was b004536).
   AM: success, Checkpatch: clean, Build: configure_ok
 [5/7] Running codex code review (Stage A-E protocol)...
 [6/7] Extracting review...

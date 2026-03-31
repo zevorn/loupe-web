@@ -29,7 +29,8 @@ Total patches: 2
   Title (from mbox): [PATCH RFC] hw/display: modernise the vga debug code (!!GenAI!!)
 [4/7] Applying patches in QEMU worktree...
 Preparing worktree (new branch 'review-20260330140656-46FE55969F2-zero-eik-bme-')
-HEAD is now at dd3ee9c Merge tag 'for-upstream' of https://gitlab.com/bonzini/qemu into staging
+Updating files:  81% (9034/11022)Updating files:  82% (9039/11022)Updating files:  83% (9149/11022)Updating files:  84% (9259/11022)Updating files:  85% (9369/11022)Updating files:  86% (9479/11022)Updating files:  87% (9590/11022)Updating files:  88% (9700/11022)Updating files:  89% (9810/11022)Updating files:  90% (9920/11022)Updating files:  91% (10031/11022)Updating files:  92% (10141/11022)Updating files:  93% (10251/11022)Updating files:  94% (10361/11022)Updating files:  95% (10471/11022)Updating files:  96% (10582/11022)Updating files:  97% (10692/11022)Updating files:  98% (10802/11022)Updating files:  99% (10912/11022)Updating files: 100% (11022/11022)Updating files: 100% (11022/11022), done.
+HEAD is now at d62e907 Merge tag 'pull-target-arm-20260330' of https://gitlab.com/pm215/qemu into staging
 error: patch failed: hw/display/vga.c:1662
 error: hw/display/vga.c: patch does not apply
 hint: Use 'git am --show-current-patch=diff' to see the failed patch
@@ -59,7 +60,7 @@ Patch failed at 0002 hw/display/vga: Fix debug message
   Running checkpatch...
   checkpatch: issues
   Skipping build (am failed)
-Deleted branch review-20260330140656-46FE55969F2-zero-eik-bme- (was dd3ee9c).
+Deleted branch review-20260330140656-46FE55969F2-zero-eik-bme- (was d62e907).
   AM: failed, Checkpatch: issues, Build: not_run
 [5/7] Running codex code review (Stage A-E protocol)...
 [6/7] Extracting review...

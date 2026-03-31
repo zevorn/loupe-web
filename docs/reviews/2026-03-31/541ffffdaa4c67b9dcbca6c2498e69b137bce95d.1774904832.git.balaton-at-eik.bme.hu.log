@@ -8,12 +8,14 @@
   v1 patch, no prior versions
 [3/7] Downloading patches with b4...
 Grabbing thread from lore.kernel.org/all/541ffffdaa4c67b9dcbca6c2498e69b137bce95d.1774904832.git.balaton@eik.bme.hu/t.mbox.gz
-Analyzing 3 messages in the thread
+Analyzing 5 messages in the thread
 Looking for additional code-review trailers on lore.kernel.org
 Checking attestation on all messages, may take a moment...
 ---
   [PATCH 1/2] ati-vga: Silence warning about operator precedence
+    + Reviewed-by: Peter Maydell <peter.maydell@linaro.org> ([32m✓[0m DKIM/linaro.org)
   [PATCH 2/2] ati-vga: Add upper limit to x-linear-aper-size property
+    + Reviewed-by: Peter Maydell <peter.maydell@linaro.org> ([32m✓[0m DKIM/linaro.org)
 ---
 Total patches: 2
 ---
@@ -21,11 +23,11 @@ Cover: ./20260330_balaton_ati_vga_coverity_fixes.cover
  Link: https://lore.kernel.org/r/cover.1774904832.git.balaton@eik.bme.hu
  Base: not specified
        git am ./20260330_balaton_ati_vga_coverity_fixes.mbx
-  b4: mbx=71 lines
+  b4: mbx=73 lines
   Title (from mbox): [PATCH 0/2] ati-vga Coverity fixes
 [4/7] Applying patches in QEMU worktree...
 Preparing worktree (new branch 'review-541ffffdaa4c67b9dcbca6c2498e69b137bce95d')
-HEAD is now at dd3ee9c Merge tag 'for-upstream' of https://gitlab.com/bonzini/qemu into staging
+HEAD is now at d62e907 Merge tag 'pull-target-arm-20260330' of https://gitlab.com/pm215/qemu into staging
 Applying: ati-vga: Silence warning about operator precedence
 Applying: ati-vga: Add upper limit to x-linear-aper-size property
   git am: success
@@ -36,7 +38,7 @@ Applying: ati-vga: Add upper limit to x-linear-aper-size property
 Found ninja-1.13.2 at /usr/local/bin/ninja
 Running postconf script '/home/runner/work/loupe-web/loupe-web/loupe-worktree-541ffffdaa4c67b9dcbca6c2498e69b137bce95d/build/pyvenv/bin/python3 /home/runner/work/loupe-web/loupe-web/loupe-worktree-541ffffdaa4c67b9dcbca6c2498e69b137bce95d/scripts/symlink-install-tree.py'
   configure: success
-Deleted branch review-541ffffdaa4c67b9dcbca6c2498e69b137bce95d (was ce2c814).
+Deleted branch review-541ffffdaa4c67b9dcbca6c2498e69b137bce95d (was cd64707).
   AM: success, Checkpatch: clean, Build: configure_ok
 [5/7] Running codex code review (Stage A-E protocol)...
 [6/7] Extracting review...
@@ -56,5 +58,5 @@ Traceback (most recent call last):
   File "/usr/lib/python3.12/json/decoder.py", line 353, in raw_decode
     obj, end = self.scan_once(s, idx)
                ^^^^^^^^^^^^^^^^^^^^^^
-json.decoder.JSONDecodeError: Expecting ',' delimiter: line 3 column 1 (char 24)
+json.decoder.JSONDecodeError: Expecting ',' delimiter: line 6 column 1 (char 103)
 ERROR: invalid JSON output
