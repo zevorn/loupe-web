@@ -23,6 +23,7 @@ Total patches: 1
   Title (from mbox): [PATCH] cirrus-vga: Make frame buffer endianness little endian by
 [4/7] Applying patches in QEMU worktree...
 Preparing worktree (new branch 'review-20260330203533-B18EE5968DE-zero-eik-bme-')
+Updating files:  86% (9499/11022)Updating files:  87% (9590/11022)Updating files:  88% (9700/11022)Updating files:  89% (9810/11022)Updating files:  90% (9920/11022)Updating files:  91% (10031/11022)Updating files:  92% (10141/11022)Updating files:  93% (10251/11022)Updating files:  94% (10361/11022)Updating files:  95% (10471/11022)Updating files:  96% (10582/11022)Updating files:  97% (10692/11022)Updating files:  98% (10802/11022)Updating files:  99% (10912/11022)Updating files: 100% (11022/11022)Updating files: 100% (11022/11022), done.
 HEAD is now at dd3ee9c Merge tag 'for-upstream' of https://gitlab.com/bonzini/qemu into staging
 Applying: cirrus-vga: Make frame buffer endianness little endian by default
   git am: success
@@ -33,7 +34,7 @@ Applying: cirrus-vga: Make frame buffer endianness little endian by default
 Found ninja-1.13.2 at /usr/local/bin/ninja
 Running postconf script '/home/runner/work/loupe-web/loupe-web/loupe-worktree-20260330203533-B18EE5968DE-zero-eik-bme-/build/pyvenv/bin/python3 /home/runner/work/loupe-web/loupe-web/loupe-worktree-20260330203533-B18EE5968DE-zero-eik-bme-/scripts/symlink-install-tree.py'
   configure: success
-Deleted branch review-20260330203533-B18EE5968DE-zero-eik-bme- (was 2318952).
+Deleted branch review-20260330203533-B18EE5968DE-zero-eik-bme- (was 854f5ce).
   AM: success, Checkpatch: clean, Build: configure_ok
 [5/7] Running codex code review (Stage A-E protocol)...
 [6/7] Extracting review...

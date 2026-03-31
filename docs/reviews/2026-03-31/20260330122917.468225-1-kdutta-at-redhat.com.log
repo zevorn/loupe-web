@@ -36,7 +36,7 @@ Applying: hw/net/virtio-net: add support for notification coalescing
 Found ninja-1.13.2 at /usr/local/bin/ninja
 Running postconf script '/home/runner/work/loupe-web/loupe-web/loupe-worktree-20260330122917-468225-1-kdutta-redhat-co/build/pyvenv/bin/python3 /home/runner/work/loupe-web/loupe-web/loupe-worktree-20260330122917-468225-1-kdutta-redhat-co/scripts/symlink-install-tree.py'
   configure: success
-Deleted branch review-20260330122917-468225-1-kdutta-redhat-co (was dbb80e7).
+Deleted branch review-20260330122917-468225-1-kdutta-redhat-co (was 280c247).
   AM: success, Checkpatch: issues, Build: configure_ok
 [5/7] Running codex code review (Stage A-E protocol)...
 [6/7] Extracting review...

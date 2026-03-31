@@ -1,43 +1,41 @@
-=== Reviewing: 20260330121635.49205-1-kwolf@redhat.com ===
+=== Reviewing: 20260331070401.1125840-1-alex.bennee@linaro.org ===
 [1/7] Querying Patchwork...
   Patchwork: 1 result(s)
 [2/7] Metadata OK
-  Title: [for-11.0] scsi: Don't consider LOGICAL UNIT NOT SUPPORTED guest recoverable
-  Author: Kevin Wolf, Version: v1, Subsystem: scsi
+  Title: MAINTAINERS: fix OSUOSL typo
+  Author: Alex Bennée, Version: v1, Subsystem: MAINTAINERS
 [2.5/7] Fetching version history and mailing list context...
   v1 patch, no prior versions
 [3/7] Downloading patches with b4...
-Grabbing thread from lore.kernel.org/all/20260330121635.49205-1-kwolf@redhat.com/t.mbox.gz
-Analyzing 3 messages in the thread
+Grabbing thread from lore.kernel.org/all/20260331070401.1125840-1-alex.bennee@linaro.org/t.mbox.gz
+Analyzing 1 messages in the thread
 Looking for additional code-review trailers on lore.kernel.org
 Checking attestation on all messages, may take a moment...
 ---
-  [32m✓[0m [PATCH] scsi: Don't consider LOGICAL UNIT NOT SUPPORTED guest recoverable
-    + Reviewed-by: Paolo Bonzini <pbonzini@redhat.com> ([32m✓[0m DKIM/redhat.com)
-    + Reviewed-by: Stefan Hajnoczi <stefanha@redhat.com> ([32m✓[0m DKIM/redhat.com)
+  [32m✓[0m [PATCH] MAINTAINERS: fix OSUOSL typo
   ---
-  [32m✓[0m Signed: DKIM/redhat.com
+  [32m✓[0m Signed: DKIM/linaro.org
 ---
 Total patches: 1
 ---
- Link: https://lore.kernel.org/r/20260330121635.49205-1-kwolf@redhat.com
+ Link: https://lore.kernel.org/r/20260331070401.1125840-1-alex.bennee@linaro.org
  Base: not specified
-       git am ./20260330_kwolf_scsi_don_t_consider_logical_unit_not_supported_guest_recoverable.mbx
-  b4: mbx=53 lines
-  Title (from mbox): [PATCH] scsi: Don't consider LOGICAL UNIT NOT SUPPORTED guest
+       git am ./20260331_alex_bennee_maintainers_fix_osuosl_typo.mbx
+  b4: mbx=31 lines
+  Title (from mbox): [PATCH] MAINTAINERS: fix OSUOSL typo
 [4/7] Applying patches in QEMU worktree...
-Preparing worktree (new branch 'review-20260330121635-49205-1-kwolf-redhat-com')
+Preparing worktree (new branch 'review-20260331070401-1125840-1-alex-bennee-lin')
 HEAD is now at dd3ee9c Merge tag 'for-upstream' of https://gitlab.com/bonzini/qemu into staging
-Applying: scsi: Don't consider LOGICAL UNIT NOT SUPPORTED guest recoverable
+Applying: MAINTAINERS: fix OSUOSL typo
   git am: success
   Running checkpatch...
   checkpatch: clean
   Quick build check...
 
 Found ninja-1.13.2 at /usr/local/bin/ninja
-Running postconf script '/home/runner/work/loupe-web/loupe-web/loupe-worktree-20260330121635-49205-1-kwolf-redhat-com/build/pyvenv/bin/python3 /home/runner/work/loupe-web/loupe-web/loupe-worktree-20260330121635-49205-1-kwolf-redhat-com/scripts/symlink-install-tree.py'
+Running postconf script '/home/runner/work/loupe-web/loupe-web/loupe-worktree-20260331070401-1125840-1-alex-bennee-lin/build/pyvenv/bin/python3 /home/runner/work/loupe-web/loupe-web/loupe-worktree-20260331070401-1125840-1-alex-bennee-lin/scripts/symlink-install-tree.py'
   configure: success
-Deleted branch review-20260330121635-49205-1-kwolf-redhat-com (was f5bc1ab).
+Deleted branch review-20260331070401-1125840-1-alex-bennee-lin (was 2240ad5).
   AM: success, Checkpatch: clean, Build: configure_ok
 [5/7] Running codex code review (Stage A-E protocol)...
 [6/7] Extracting review...
@@ -57,5 +55,5 @@ Traceback (most recent call last):
   File "/usr/lib/python3.12/json/decoder.py", line 353, in raw_decode
     obj, end = self.scan_once(s, idx)
                ^^^^^^^^^^^^^^^^^^^^^^
-json.decoder.JSONDecodeError: Expecting ',' delimiter: line 7 column 1 (char 154)
+json.decoder.JSONDecodeError: Expecting ',' delimiter: line 3 column 1 (char 24)
 ERROR: invalid JSON output

@@ -40,6 +40,7 @@ Cover: ./20260330_pbonzini_i386_lsi_patches_for_qemu_11_0_rc2.cover
  Base: not specified
        git am ./20260330_pbonzini_i386_lsi_patches_for_qemu_11_0_rc2.mbx
   b4: mbx=947 lines
+scripts/review-patch.sh: line 273: echo: write error: Broken pipe
   Title (from mbox): [PATCH 0/12] i386, lsi patches for QEMU 11.0-rc2
 [4/7] Applying patches in QEMU worktree...
 Preparing worktree (new branch 'review-20260330115017-256211-13-pbonzini-redhat')
@@ -71,7 +72,7 @@ Deleted branch review-20260330115017-256211-13-pbonzini-redhat (was dd3ee9c).
   AM: failed, Checkpatch: issues, Build: not_run
 [5/7] Running codex code review (Stage A-E protocol)...
 [6/7] Extracting review...
-  Verdict: needs_revision
+  Verdict: ready_to_merge
 [7/7] Assembling JSON...
 Traceback (most recent call last):
   File "<stdin>", line 8, in <module>
