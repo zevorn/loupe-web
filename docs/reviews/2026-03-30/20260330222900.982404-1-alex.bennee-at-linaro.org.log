@@ -29,6 +29,7 @@ Total patches: 2
   Title (from mbox): [PATCH] hw/display/vga: Fix debug message
 [4/7] Applying patches in QEMU worktree...
 Preparing worktree (new branch 'review-20260330222900-982404-1-alex-bennee-lina')
+Updating files:  89% (9834/11022)Updating files:  90% (9920/11022)Updating files:  91% (10031/11022)Updating files:  92% (10141/11022)Updating files:  93% (10251/11022)Updating files:  94% (10361/11022)Updating files:  95% (10471/11022)Updating files:  96% (10582/11022)Updating files:  97% (10692/11022)Updating files:  98% (10802/11022)Updating files:  99% (10912/11022)Updating files: 100% (11022/11022)Updating files: 100% (11022/11022), done.
 HEAD is now at dd3ee9c Merge tag 'for-upstream' of https://gitlab.com/bonzini/qemu into staging
 error: patch failed: hw/display/vga.c:1660
 error: hw/display/vga.c: patch does not apply

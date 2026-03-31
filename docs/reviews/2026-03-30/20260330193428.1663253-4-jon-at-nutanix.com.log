@@ -39,7 +39,7 @@ Applying: target/i386: add new Intel models for MBEC enablement
 Found ninja-1.13.2 at /usr/local/bin/ninja
 Running postconf script '/home/runner/work/loupe-web/loupe-web/loupe-worktree-20260330193428-1663253-4-jon-nutanix-com/build/pyvenv/bin/python3 /home/runner/work/loupe-web/loupe-web/loupe-worktree-20260330193428-1663253-4-jon-nutanix-com/scripts/symlink-install-tree.py'
   configure: success
-Deleted branch review-20260330193428-1663253-4-jon-nutanix-com (was 8193622).
+Deleted branch review-20260330193428-1663253-4-jon-nutanix-com (was b5c18cf).
   AM: success, Checkpatch: clean, Build: configure_ok
 [5/7] Running codex code review (Stage A-E protocol)...
 [6/7] Extracting review...

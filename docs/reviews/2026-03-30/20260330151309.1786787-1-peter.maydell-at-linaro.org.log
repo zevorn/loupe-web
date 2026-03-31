@@ -36,11 +36,11 @@ Applying: target/i386/cpu.c: Correct minor grammar error in warning
 Found ninja-1.13.2 at /usr/local/bin/ninja
 Running postconf script '/home/runner/work/loupe-web/loupe-web/loupe-worktree-20260330151309-1786787-1-peter-maydell-l/build/pyvenv/bin/python3 /home/runner/work/loupe-web/loupe-web/loupe-worktree-20260330151309-1786787-1-peter-maydell-l/scripts/symlink-install-tree.py'
   configure: success
-Deleted branch review-20260330151309-1786787-1-peter-maydell-l (was f14f989).
+Deleted branch review-20260330151309-1786787-1-peter-maydell-l (was d924baa).
   AM: success, Checkpatch: clean, Build: configure_ok
 [5/7] Running codex code review (Stage A-E protocol)...
 [6/7] Extracting review...
-  Verdict: needs_revision
+  Verdict: ready_to_merge
 [7/7] Assembling JSON...
 Traceback (most recent call last):
   File "<stdin>", line 8, in <module>
