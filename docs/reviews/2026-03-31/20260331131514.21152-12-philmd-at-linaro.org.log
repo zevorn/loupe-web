@@ -36,7 +36,7 @@ Cover: ./20260331_philmd_misc_hw_patches_for_2026_03_31.cover
   Title (from mbox): [PATCH 0/11] Misc HW patches for 2026-03-31
 [4/7] Applying patches in QEMU worktree...
 Preparing worktree (new branch 'review-20260331131514-21152-12-philmd-linaro-or')
-HEAD is now at 7a2dc48 Merge tag 'for-upstream' of https://gitlab.com/kmwolf/qemu into staging
+HEAD is now at 7df28e4 Merge tag 'hppa-more-v11-fixes-pull-request' of https://github.com/hdeller/qemu-hppa into staging
 error: patch failed: include/hw/ppc/pnv.h:111
 error: include/hw/ppc/pnv.h: patch does not apply
 error: patch failed: hw/ppc/pnv.c:748
@@ -62,7 +62,7 @@ Patch failed at 0001 ppc/pnv: generate dtb after machine initialization is compl
   Running checkpatch...
   checkpatch: issues
   Skipping build (am failed)
-Deleted branch review-20260331131514-21152-12-philmd-linaro-or (was 7a2dc48).
+Deleted branch review-20260331131514-21152-12-philmd-linaro-or (was 7df28e4).
   AM: failed, Checkpatch: issues, Build: not_run
 [5/7] Running codex code review (Stage A-E protocol)...
 [6/7] Extracting review...

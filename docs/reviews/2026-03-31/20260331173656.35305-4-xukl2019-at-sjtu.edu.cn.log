@@ -1,0 +1,64 @@
+=== Reviewing: 20260331173656.35305-4-xukl2019@sjtu.edu.cn ===
+[1/7] Querying Patchwork...
+  Patchwork: 1 result(s)
+[2/7] Metadata OK
+  Title: [v1,0/3] contrib/plugins: add syscall-filter local-library demos
+  Author: XU Kailiang, Version: v1, Subsystem: contrib/plugins
+[2.5/7] Fetching version history and mailing list context...
+  v1 patch, no prior versions
+[3/7] Downloading patches with b4...
+Grabbing thread from lore.kernel.org/all/20260331173656.35305-4-xukl2019@sjtu.edu.cn/t.mbox.gz
+Analyzing 4 messages in the thread
+Looking for additional code-review trailers on lore.kernel.org
+Checking attestation on all messages, may take a moment...
+---
+  [PATCH v1 1/3] contrib/plugins: add a zlib compression filter example
+  [PATCH v1 2/3] contrib/plugins: add a callback-capable qsort prototype
+  [PATCH v1 3/3] contrib/plugins: handle more loader open syscalls in the syscall filter demos
+---
+Total patches: 3
+---
+Cover: ./20260401_xukl2019_contrib_plugins_add_syscall_filter_local_library_demos.cover
+ Link: https://lore.kernel.org/r/20260331173656.35305-1-xukl2019@sjtu.edu.cn
+ Base: base-commit 512b794b1091bc4810d28e8ef28addf6344c3889 not known, ignoring
+ Base: not specified
+       git am ./20260401_xukl2019_contrib_plugins_add_syscall_filter_local_library_demos.mbx
+  b4: mbx=1693 lines
+scripts/review-patch.sh: line 273: echo: write error: Broken pipe
+  Title (from mbox): [PATCH v1 0/3] contrib/plugins: add syscall-filter local-library
+[4/7] Applying patches in QEMU worktree...
+Preparing worktree (new branch 'review-20260331173656-35305-4-xukl2019-sjtu-edu')
+HEAD is now at 7df28e4 Merge tag 'hppa-more-v11-fixes-pull-request' of https://github.com/hdeller/qemu-hppa into staging
+Applying: contrib/plugins: add a zlib compression filter example
+Applying: contrib/plugins: add a callback-capable qsort prototype
+Applying: contrib/plugins: handle more loader open syscalls in the syscall filter demos
+  git am: success
+  Running checkpatch...
+  checkpatch: issues
+  Quick build check...
+
+Found ninja-1.13.2 at /usr/local/bin/ninja
+Running postconf script '/home/runner/work/loupe-web/loupe-web/loupe-worktree-20260331173656-35305-4-xukl2019-sjtu-edu/build/pyvenv/bin/python3 /home/runner/work/loupe-web/loupe-web/loupe-worktree-20260331173656-35305-4-xukl2019-sjtu-edu/scripts/symlink-install-tree.py'
+  configure: success
+Deleted branch review-20260331173656-35305-4-xukl2019-sjtu-edu (was 6adb1fc).
+  AM: success, Checkpatch: issues, Build: configure_ok
+[5/7] Running codex code review (Stage A-E protocol)...
+[6/7] Extracting review...
+  Verdict: blocked
+[7/7] Assembling JSON...
+Traceback (most recent call last):
+  File "<stdin>", line 8, in <module>
+  File "/usr/lib/python3.12/json/__init__.py", line 293, in load
+    return loads(fp.read(),
+           ^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/json/__init__.py", line 346, in loads
+    return _default_decoder.decode(s)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/json/decoder.py", line 337, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/json/decoder.py", line 353, in raw_decode
+    obj, end = self.scan_once(s, idx)
+               ^^^^^^^^^^^^^^^^^^^^^^
+json.decoder.JSONDecodeError: Expecting ',' delimiter: line 3 column 1 (char 24)
+ERROR: invalid JSON output

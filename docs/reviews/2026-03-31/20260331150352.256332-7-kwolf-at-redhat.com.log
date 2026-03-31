@@ -34,7 +34,7 @@ Cover: ./20260331_kwolf_block_layer_patches.cover
   Title (from mbox): [PATCH 0/6] Block layer patches
 [4/7] Applying patches in QEMU worktree...
 Preparing worktree (new branch 'review-20260331150352-256332-7-kwolf-redhat-com')
-HEAD is now at 7a2dc48 Merge tag 'for-upstream' of https://gitlab.com/kmwolf/qemu into staging
+HEAD is now at 7df28e4 Merge tag 'hppa-more-v11-fixes-pull-request' of https://github.com/hdeller/qemu-hppa into staging
 error: patch failed: hw/ide/core.c:799
 error: hw/ide/core.c: patch does not apply
 hint: Use 'git am --show-current-patch=diff' to see the failed patch
@@ -58,11 +58,11 @@ Patch failed at 0001 ide: Fix potential assertion failure on VM stop for PIO rea
   Running checkpatch...
   checkpatch: clean
   Skipping build (am failed)
-Deleted branch review-20260331150352-256332-7-kwolf-redhat-com (was 7a2dc48).
+Deleted branch review-20260331150352-256332-7-kwolf-redhat-com (was 7df28e4).
   AM: failed, Checkpatch: clean, Build: not_run
 [5/7] Running codex code review (Stage A-E protocol)...
 [6/7] Extracting review...
-  Verdict: ready_to_merge
+  Verdict: needs_revision
 [7/7] Assembling JSON...
 Traceback (most recent call last):
   File "<stdin>", line 8, in <module>

@@ -25,7 +25,7 @@ Total patches: 1
   Title (from mbox): [PATCH] vhost-user-blk-server: do not advertise
 [4/7] Applying patches in QEMU worktree...
 Preparing worktree (new branch 'review-20260331152856-1802-1-maxpain-linux-com')
-HEAD is now at 7a2dc48 Merge tag 'for-upstream' of https://gitlab.com/kmwolf/qemu into staging
+HEAD is now at 7df28e4 Merge tag 'hppa-more-v11-fixes-pull-request' of https://github.com/hdeller/qemu-hppa into staging
 Applying: vhost-user-blk-server: do not advertise VIRTIO_BLK_F_SIZE_MAX with size_max=0
   git am: success
   Running checkpatch...
@@ -35,7 +35,7 @@ Applying: vhost-user-blk-server: do not advertise VIRTIO_BLK_F_SIZE_MAX with siz
 Found ninja-1.13.2 at /usr/local/bin/ninja
 Running postconf script '/home/runner/work/loupe-web/loupe-web/loupe-worktree-20260331152856-1802-1-maxpain-linux-com/build/pyvenv/bin/python3 /home/runner/work/loupe-web/loupe-web/loupe-worktree-20260331152856-1802-1-maxpain-linux-com/scripts/symlink-install-tree.py'
   configure: success
-Deleted branch review-20260331152856-1802-1-maxpain-linux-com (was 396a2de).
+Deleted branch review-20260331152856-1802-1-maxpain-linux-com (was b691832).
   AM: success, Checkpatch: clean, Build: configure_ok
 [5/7] Running codex code review (Stage A-E protocol)...
 [6/7] Extracting review...

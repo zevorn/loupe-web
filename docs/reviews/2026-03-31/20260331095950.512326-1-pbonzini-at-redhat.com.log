@@ -25,7 +25,7 @@ Total patches: 1
   Title (from mbox): [PATCH] tests: add test for json-streamer.c error recovery
 [4/7] Applying patches in QEMU worktree...
 Preparing worktree (new branch 'review-20260331095950-512326-1-pbonzini-redhat-')
-HEAD is now at 7a2dc48 Merge tag 'for-upstream' of https://gitlab.com/kmwolf/qemu into staging
+HEAD is now at 7df28e4 Merge tag 'hppa-more-v11-fixes-pull-request' of https://github.com/hdeller/qemu-hppa into staging
 Applying: tests: add test for json-streamer.c error recovery
   git am: success
   Running checkpatch...
@@ -35,11 +35,11 @@ Applying: tests: add test for json-streamer.c error recovery
 Found ninja-1.13.2 at /usr/local/bin/ninja
 Running postconf script '/home/runner/work/loupe-web/loupe-web/loupe-worktree-20260331095950-512326-1-pbonzini-redhat-/build/pyvenv/bin/python3 /home/runner/work/loupe-web/loupe-web/loupe-worktree-20260331095950-512326-1-pbonzini-redhat-/scripts/symlink-install-tree.py'
   configure: success
-Deleted branch review-20260331095950-512326-1-pbonzini-redhat- (was 247bb16).
+Deleted branch review-20260331095950-512326-1-pbonzini-redhat- (was cc25e2f).
   AM: success, Checkpatch: issues, Build: configure_ok
 [5/7] Running codex code review (Stage A-E protocol)...
 [6/7] Extracting review...
-  Verdict: needs_revision
+  Verdict: ready_to_merge
 [7/7] Assembling JSON...
 Traceback (most recent call last):
   File "<stdin>", line 8, in <module>

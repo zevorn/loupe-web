@@ -26,7 +26,7 @@ Total patches: 1
   Title (from mbox): [PATCH] target/arm: do_ats_write(): avoid assertion when ptw
 [4/7] Applying patches in QEMU worktree...
 Preparing worktree (new branch 'review-20260331092305-2062580-1-peter-maydell-l')
-HEAD is now at 7a2dc48 Merge tag 'for-upstream' of https://gitlab.com/kmwolf/qemu into staging
+HEAD is now at 7df28e4 Merge tag 'hppa-more-v11-fixes-pull-request' of https://github.com/hdeller/qemu-hppa into staging
 Applying: target/arm: do_ats_write(): avoid assertion when ptw failed
   git am: success
   Running checkpatch...
@@ -36,11 +36,11 @@ Applying: target/arm: do_ats_write(): avoid assertion when ptw failed
 Found ninja-1.13.2 at /usr/local/bin/ninja
 Running postconf script '/home/runner/work/loupe-web/loupe-web/loupe-worktree-20260331092305-2062580-1-peter-maydell-l/build/pyvenv/bin/python3 /home/runner/work/loupe-web/loupe-web/loupe-worktree-20260331092305-2062580-1-peter-maydell-l/scripts/symlink-install-tree.py'
   configure: success
-Deleted branch review-20260331092305-2062580-1-peter-maydell-l (was ab43bf3).
+Deleted branch review-20260331092305-2062580-1-peter-maydell-l (was ca85243).
   AM: success, Checkpatch: clean, Build: configure_ok
 [5/7] Running codex code review (Stage A-E protocol)...
 [6/7] Extracting review...
-  Verdict: ready_to_merge
+  Verdict: needs_revision
 [7/7] Assembling JSON...
 Traceback (most recent call last):
   File "<stdin>", line 8, in <module>
