@@ -8,7 +8,8 @@
   v1 patch, no prior versions
 [3/7] Downloading patches with b4...
 Grabbing thread from lore.kernel.org/all/20260331131514.21152-12-philmd@linaro.org/t.mbox.gz
-Analyzing 12 messages in the thread
+Analyzing 13 messages in the thread
+Looking for additional code-review trailers on lore.kernel.org
 Checking attestation on all messages, may take a moment...
 ---
   [32m✓[0m [PATCH 1/11] ppc/pnv: generate dtb after machine initialization is complete
@@ -35,28 +36,35 @@ Cover: ./20260331_philmd_misc_hw_patches_for_2026_03_31.cover
   Title (from mbox): [PATCH 0/11] Misc HW patches for 2026-03-31
 [4/7] Applying patches in QEMU worktree...
 Preparing worktree (new branch 'review-20260331131514-21152-12-philmd-linaro-or')
-HEAD is now at 6aeb397 Merge tag 'for-11.0-rc-pull-request' of https://gitlab.com/marcandre.lureau/qemu into staging
+Updating files:  97% (10775/11023)Updating files:  98% (10803/11023)Updating files:  99% (10913/11023)Updating files: 100% (11023/11023)Updating files: 100% (11023/11023), done.
+HEAD is now at 9f6c969 Merge tag 'hw-misc-20260331' of https://github.com/philmd/qemu into staging
+error: patch failed: include/hw/ppc/pnv.h:111
+error: include/hw/ppc/pnv.h: patch does not apply
+error: patch failed: hw/ppc/pnv.c:748
+error: hw/ppc/pnv.c: patch does not apply
+hint: Use 'git am --show-current-patch=diff' to see the failed patch
+hint: When you have resolved this problem, run "git am --continue".
+hint: If you prefer to skip this patch, run "git am --skip" instead.
+hint: To restore the original branch and stop patching, run "git am --abort".
+hint: Disable this message with "git config set advice.mergeConflict false"
 Applying: ppc/pnv: generate dtb after machine initialization is complete
-Applying: MAINTAINERS: Separate QDev section from QOM one
-Applying: target/mips: save CP0 timer in vmstate
-Applying: backends/igvm: switch to PRIx64
-Applying: target/i386/cpu.c: Correct minor grammar error in warning
-Applying: target/i386: Treat qtest like TCG for supported-features
-Applying: ati-vga: Silence warning about operator precedence
-Applying: ati-vga: Add upper limit to x-linear-aper-size property
-Applying: hw/pci-host/astro: Update copyright and documentation link
-Applying: hw/hppa: Disable Artist graphics card on 64-bit machines
-Applying: MAINTAINERS: fix OSUOSL typo
-  git am: success
+Patch failed at 0001 ppc/pnv: generate dtb after machine initialization is complete
+  git am failed, retrying with --3way...
+Applying: ppc/pnv: generate dtb after machine initialization is complete
+error: sha1 information is lacking or useless (include/hw/ppc/pnv.h).
+error: could not build fake ancestor
+hint: Use 'git am --show-current-patch=diff' to see the failed patch
+hint: When you have resolved this problem, run "git am --continue".
+hint: If you prefer to skip this patch, run "git am --skip" instead.
+hint: To restore the original branch and stop patching, run "git am --abort".
+hint: Disable this message with "git config set advice.mergeConflict false"
+Patch failed at 0001 ppc/pnv: generate dtb after machine initialization is complete
+  git am --3way: FAILED
   Running checkpatch...
   checkpatch: issues
-  Quick build check...
-
-Found ninja-1.13.2 at /usr/local/bin/ninja
-Running postconf script '/home/runner/work/loupe-web/loupe-web/loupe-worktree-20260331131514-21152-12-philmd-linaro-or/build/pyvenv/bin/python3 /home/runner/work/loupe-web/loupe-web/loupe-worktree-20260331131514-21152-12-philmd-linaro-or/scripts/symlink-install-tree.py'
-  configure: success
-Deleted branch review-20260331131514-21152-12-philmd-linaro-or (was 1356604).
-  AM: success, Checkpatch: issues, Build: configure_ok
+  Skipping build (am failed)
+Deleted branch review-20260331131514-21152-12-philmd-linaro-or (was 9f6c969).
+  AM: failed, Checkpatch: issues, Build: not_run
 [5/7] Running codex code review (Stage A-E protocol)...
 [6/7] Extracting review...
   Verdict: needs_revision

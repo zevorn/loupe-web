@@ -31,7 +31,7 @@ Cover: ./20260331_marcandre_lureau_for_11_0_rc_patches.cover
   Title (from mbox): [PATCH 0/6] For 11.0 rc patches
 [4/7] Applying patches in QEMU worktree...
 Preparing worktree (new branch 'review-20260331095302-644608-7-marcandre-lureau')
-HEAD is now at 6aeb397 Merge tag 'for-11.0-rc-pull-request' of https://gitlab.com/marcandre.lureau/qemu into staging
+HEAD is now at 9f6c969 Merge tag 'hw-misc-20260331' of https://github.com/philmd/qemu into staging
 error: patch failed: audio/audio_template.h:172
 error: audio/audio_template.h: patch does not apply
 hint: Use 'git am --show-current-patch=diff' to see the failed patch
@@ -55,11 +55,11 @@ Patch failed at 0001 audio/mixeng: fix sw/hw mixup in audio_pcm_sw_init_
   Running checkpatch...
   checkpatch: issues
   Skipping build (am failed)
-Deleted branch review-20260331095302-644608-7-marcandre-lureau (was 6aeb397).
+Deleted branch review-20260331095302-644608-7-marcandre-lureau (was 9f6c969).
   AM: failed, Checkpatch: issues, Build: not_run
 [5/7] Running codex code review (Stage A-E protocol)...
 [6/7] Extracting review...
-  Verdict: ready_to_merge
+  Verdict: needs_revision
 [7/7] Assembling JSON...
 Traceback (most recent call last):
   File "<stdin>", line 8, in <module>

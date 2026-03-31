@@ -13,6 +13,7 @@ Looking for additional code-review trailers on lore.kernel.org
 Checking attestation on all messages, may take a moment...
 ---
   [32m✓[0m [PATCH 1/6] ide: Fix potential assertion failure on VM stop for PIO read error
+    + Reviewed-by: Hanna Czenczek <hreitz@redhat.com> ([32m✓[0m DKIM/redhat.com)
   [32m✓[0m [PATCH 2/6] scsi: Don't consider LOGICAL UNIT NOT SUPPORTED guest recoverable
   [32m✓[0m [PATCH 3/6] block: Fix references in bdrv_bsc_*() function comments
   [32m✓[0m [PATCH 4/6] monitor: Fix deadlock in monitor_cleanup
@@ -28,11 +29,11 @@ Cover: ./20260331_kwolf_block_layer_patches.cover
  Link: https://lore.kernel.org/r/20260331150352.256332-1-kwolf@redhat.com
  Base: not specified
        git am ./20260331_kwolf_block_layer_patches.mbx
-  b4: mbx=368 lines
+  b4: mbx=369 lines
   Title (from mbox): [PATCH 0/6] Block layer patches
 [4/7] Applying patches in QEMU worktree...
 Preparing worktree (new branch 'review-20260331150352-256332-7-kwolf-redhat-com')
-HEAD is now at 6aeb397 Merge tag 'for-11.0-rc-pull-request' of https://gitlab.com/marcandre.lureau/qemu into staging
+HEAD is now at 9f6c969 Merge tag 'hw-misc-20260331' of https://github.com/philmd/qemu into staging
 Applying: ide: Fix potential assertion failure on VM stop for PIO read error
 Applying: scsi: Don't consider LOGICAL UNIT NOT SUPPORTED guest recoverable
 Applying: block: Fix references in bdrv_bsc_*() function comments
@@ -47,7 +48,7 @@ Applying: block: Fix crash after setting latency historygram with single bin
 Found ninja-1.13.2 at /usr/local/bin/ninja
 Running postconf script '/home/runner/work/loupe-web/loupe-web/loupe-worktree-20260331150352-256332-7-kwolf-redhat-com/build/pyvenv/bin/python3 /home/runner/work/loupe-web/loupe-web/loupe-worktree-20260331150352-256332-7-kwolf-redhat-com/scripts/symlink-install-tree.py'
   configure: success
-Deleted branch review-20260331150352-256332-7-kwolf-redhat-com (was 9db1846).
+Deleted branch review-20260331150352-256332-7-kwolf-redhat-com (was 729ba52).
   AM: success, Checkpatch: clean, Build: configure_ok
 [5/7] Running codex code review (Stage A-E protocol)...
 [6/7] Extracting review...

@@ -29,7 +29,7 @@ Cover: ./20260330_hayatake396_migration_postcopy_preparatory_refactoring_for_fas
   Title (from mbox): [PATCH 0/3] migration/postcopy: Preparatory refactoring for fast
 [4/7] Applying patches in QEMU worktree...
 Preparing worktree (new branch 'review-20260330-fast-snapshot-refactor-v1-3-221')
-HEAD is now at 6aeb397 Merge tag 'for-11.0-rc-pull-request' of https://gitlab.com/marcandre.lureau/qemu into staging
+HEAD is now at 9f6c969 Merge tag 'hw-misc-20260331' of https://github.com/philmd/qemu into staging
 Applying: migration/postcopy: Extract page fault handler callback
 Applying: migration/postcopy: Factor out uffd_setup_incoming() from postcopy setup
 Applying: migration/ram: Split mapped-ram header and page loading
@@ -41,7 +41,7 @@ Applying: migration/ram: Split mapped-ram header and page loading
 Found ninja-1.13.2 at /usr/local/bin/ninja
 Running postconf script '/home/runner/work/loupe-web/loupe-web/loupe-worktree-20260330-fast-snapshot-refactor-v1-3-221/build/pyvenv/bin/python3 /home/runner/work/loupe-web/loupe-web/loupe-worktree-20260330-fast-snapshot-refactor-v1-3-221/scripts/symlink-install-tree.py'
   configure: success
-Deleted branch review-20260330-fast-snapshot-refactor-v1-3-221 (was 6f577c6).
+Deleted branch review-20260330-fast-snapshot-refactor-v1-3-221 (was 246fba7).
   AM: success, Checkpatch: clean, Build: configure_ok
 [5/7] Running codex code review (Stage A-E protocol)...
 [6/7] Extracting review...
