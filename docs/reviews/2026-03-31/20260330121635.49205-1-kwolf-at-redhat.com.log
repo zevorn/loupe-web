@@ -1,0 +1,61 @@
+=== Reviewing: 20260330121635.49205-1-kwolf@redhat.com ===
+[1/7] Querying Patchwork...
+  Patchwork: 1 result(s)
+[2/7] Metadata OK
+  Title: [for-11.0] scsi: Don't consider LOGICAL UNIT NOT SUPPORTED guest recoverable
+  Author: Kevin Wolf, Version: v1, Subsystem: scsi
+[2.5/7] Fetching version history and mailing list context...
+  v1 patch, no prior versions
+[3/7] Downloading patches with b4...
+Grabbing thread from lore.kernel.org/all/20260330121635.49205-1-kwolf@redhat.com/t.mbox.gz
+Analyzing 3 messages in the thread
+Looking for additional code-review trailers on lore.kernel.org
+Checking attestation on all messages, may take a moment...
+---
+  [32m✓[0m [PATCH] scsi: Don't consider LOGICAL UNIT NOT SUPPORTED guest recoverable
+    + Reviewed-by: Paolo Bonzini <pbonzini@redhat.com> ([32m✓[0m DKIM/redhat.com)
+    + Reviewed-by: Stefan Hajnoczi <stefanha@redhat.com> ([32m✓[0m DKIM/redhat.com)
+  ---
+  [32m✓[0m Signed: DKIM/redhat.com
+---
+Total patches: 1
+---
+ Link: https://lore.kernel.org/r/20260330121635.49205-1-kwolf@redhat.com
+ Base: not specified
+       git am ./20260330_kwolf_scsi_don_t_consider_logical_unit_not_supported_guest_recoverable.mbx
+  b4: mbx=53 lines
+  Title (from mbox): [PATCH] scsi: Don't consider LOGICAL UNIT NOT SUPPORTED guest
+[4/7] Applying patches in QEMU worktree...
+Preparing worktree (new branch 'review-20260330121635-49205-1-kwolf-redhat-com')
+HEAD is now at dd3ee9c Merge tag 'for-upstream' of https://gitlab.com/bonzini/qemu into staging
+Applying: scsi: Don't consider LOGICAL UNIT NOT SUPPORTED guest recoverable
+  git am: success
+  Running checkpatch...
+  checkpatch: clean
+  Quick build check...
+
+Found ninja-1.13.2 at /usr/local/bin/ninja
+Running postconf script '/home/runner/work/loupe-web/loupe-web/loupe-worktree-20260330121635-49205-1-kwolf-redhat-com/build/pyvenv/bin/python3 /home/runner/work/loupe-web/loupe-web/loupe-worktree-20260330121635-49205-1-kwolf-redhat-com/scripts/symlink-install-tree.py'
+  configure: success
+Deleted branch review-20260330121635-49205-1-kwolf-redhat-com (was 55b0e55).
+  AM: success, Checkpatch: clean, Build: configure_ok
+[5/7] Running codex code review (Stage A-E protocol)...
+[6/7] Extracting review...
+  Verdict: ready_to_merge
+[7/7] Assembling JSON...
+Traceback (most recent call last):
+  File "<stdin>", line 8, in <module>
+  File "/usr/lib/python3.12/json/__init__.py", line 293, in load
+    return loads(fp.read(),
+           ^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/json/__init__.py", line 346, in loads
+    return _default_decoder.decode(s)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/json/decoder.py", line 337, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/json/decoder.py", line 353, in raw_decode
+    obj, end = self.scan_once(s, idx)
+               ^^^^^^^^^^^^^^^^^^^^^^
+json.decoder.JSONDecodeError: Expecting ',' delimiter: line 7 column 1 (char 154)
+ERROR: invalid JSON output

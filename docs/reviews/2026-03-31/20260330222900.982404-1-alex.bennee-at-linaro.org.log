@@ -1,0 +1,83 @@
+=== Reviewing: 20260330222900.982404-1-alex.bennee@linaro.org ===
+[1/7] Querying Patchwork...
+  Patchwork: 1 result(s)
+[2/7] Metadata OK
+  Title: [RFC] hw/display: modernise the vga debug code (!!GenAI!!)
+  Author: Alex Bennée, Version: v1, Subsystem: hw/display
+[2.5/7] Fetching version history and mailing list context...
+  v1 patch, no prior versions
+[3/7] Downloading patches with b4...
+Grabbing thread from lore.kernel.org/all/20260330222900.982404-1-alex.bennee@linaro.org/t.mbox.gz
+Analyzing 4 messages in the thread
+WARNING: duplicate messages found at index 1
+   Subject 1: hw/display/vga: Fix debug message
+   Subject 2: hw/display: modernise the vga debug code (!!GenAI!!)
+  2 is not a reply... assume additional patch
+Looking for additional code-review trailers on lore.kernel.org
+Checking attestation on all messages, may take a moment...
+---
+  [PATCH] hw/display/vga: Fix debug message
+  [32m✓[0m [PATCH RFC] hw/display: modernise the vga debug code (!!GenAI!!)
+    [32m✓[0m Signed: DKIM/linaro.org
+---
+Total patches: 2
+---
+ Link: https://lore.kernel.org/r/20260330140656.46FE55969F2@zero.eik.bme.hu
+ Base: not specified
+       git am ./20260330_balaton_hw_display_vga_fix_debug_message.mbx
+  b4: mbx=262 lines
+  Title (from mbox): [PATCH] hw/display/vga: Fix debug message
+[4/7] Applying patches in QEMU worktree...
+Preparing worktree (new branch 'review-20260330222900-982404-1-alex-bennee-lina')
+HEAD is now at dd3ee9c Merge tag 'for-upstream' of https://gitlab.com/bonzini/qemu into staging
+error: patch failed: hw/display/vga.c:1660
+error: hw/display/vga.c: patch does not apply
+hint: Use 'git am --show-current-patch=diff' to see the failed patch
+hint: When you have resolved this problem, run "git am --continue".
+hint: If you prefer to skip this patch, run "git am --skip" instead.
+hint: To restore the original branch and stop patching, run "git am --abort".
+hint: Disable this message with "git config set advice.mergeConflict false"
+Applying: hw/display/vga: Fix debug message
+Applying: hw/display: modernise the vga debug code (!!GenAI!!)
+Patch failed at 0002 hw/display: modernise the vga debug code (!!GenAI!!)
+  git am failed, retrying with --3way...
+Applying: hw/display/vga: Fix debug message
+Applying: hw/display: modernise the vga debug code (!!GenAI!!)
+Using index info to reconstruct a base tree...
+M	hw/display/vga.c
+Falling back to patching base and 3-way merge...
+Auto-merging hw/display/vga.c
+CONFLICT (content): Merge conflict in hw/display/vga.c
+error: Failed to merge in the changes.
+hint: Use 'git am --show-current-patch=diff' to see the failed patch
+hint: When you have resolved this problem, run "git am --continue".
+hint: If you prefer to skip this patch, run "git am --skip" instead.
+hint: To restore the original branch and stop patching, run "git am --abort".
+hint: Disable this message with "git config set advice.mergeConflict false"
+Patch failed at 0002 hw/display: modernise the vga debug code (!!GenAI!!)
+  git am --3way: FAILED
+  Running checkpatch...
+  checkpatch: issues
+  Skipping build (am failed)
+Deleted branch review-20260330222900-982404-1-alex-bennee-lina (was dd3ee9c).
+  AM: failed, Checkpatch: issues, Build: not_run
+[5/7] Running codex code review (Stage A-E protocol)...
+[6/7] Extracting review...
+  Verdict: ready_to_merge
+[7/7] Assembling JSON...
+Traceback (most recent call last):
+  File "<stdin>", line 8, in <module>
+  File "/usr/lib/python3.12/json/__init__.py", line 293, in load
+    return loads(fp.read(),
+           ^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/json/__init__.py", line 346, in loads
+    return _default_decoder.decode(s)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/json/decoder.py", line 337, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/json/decoder.py", line 353, in raw_decode
+    obj, end = self.scan_once(s, idx)
+               ^^^^^^^^^^^^^^^^^^^^^^
+json.decoder.JSONDecodeError: Expecting ',' delimiter: line 3 column 1 (char 24)
+ERROR: invalid JSON output

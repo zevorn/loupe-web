@@ -1,0 +1,82 @@
+=== Reviewing: 20260330090944.1008027-8-lulu@redhat.com ===
+[1/7] Querying Patchwork...
+  Patchwork: 1 result(s)
+[2/7] Metadata OK
+  Title: [RFC,v3,0/7] net/filter: Add AF_PACKET support for vhost-net
+  Author: Cindy Lu, Version: v3, Subsystem: net/filter
+[2.5/7] Fetching version history and mailing list context...
+  Searching for prior versions of: net/filter: Add AF_PACKET support for vhost-net
+  Found 0 prior version(s)
+[3/7] Downloading patches with b4...
+Grabbing thread from lore.kernel.org/all/20260330090944.1008027-8-lulu@redhat.com/t.mbox.gz
+Analyzing 8 messages in the thread
+Looking for additional code-review trailers on lore.kernel.org
+Checking attestation on all messages, may take a moment...
+---
+  [32m✓[0m [PATCH RFC v3 1/7] net/filter-mirror: keep mirroring while stopped
+  [32m✓[0m [PATCH RFC v3 2/7] virtio-net: keep tap read polling disabled while vhost owns RX
+  [32m✓[0m [PATCH RFC v3 3/7] net/filter-redirector: add AF_PACKET netdev setup helpers
+  [32m✓[0m [PATCH RFC v3 4/7] net/filter-redirector: add AF_PACKET capture path
+  [32m✓[0m [PATCH RFC v3 5/7] net/filter-redirector: add AF_PACKET inject path
+  [32m✓[0m [PATCH RFC v3 6/7] net/filter: allow filters on vhost TAP backends
+  [32m✓[0m [PATCH RFC v3 7/7] net/filter-redirector: check CAP_NET_RAW before creating AF_PACKET
+  ---
+  [32m✓[0m Signed: DKIM/redhat.com
+---
+Total patches: 7
+---
+Cover: ./v3_20260330_lulu_net_filter_add_af_packet_support_for_vhost_net.cover
+ Link: https://lore.kernel.org/r/20260330090944.1008027-1-lulu@redhat.com
+ Base: not specified
+       git am ./v3_20260330_lulu_net_filter_add_af_packet_support_for_vhost_net.mbx
+  b4: mbx=909 lines
+  Title (from mbox): [PATCH RFC v3 0/7] net/filter: Add AF_PACKET support for vhost-net
+[4/7] Applying patches in QEMU worktree...
+Preparing worktree (new branch 'review-20260330090944-1008027-8-lulu-redhat-com')
+Updating files:  63% (7018/11022)Updating files:  64% (7055/11022)Updating files:  65% (7165/11022)Updating files:  66% (7275/11022)Updating files:  67% (7385/11022)Updating files:  68% (7495/11022)Updating files:  69% (7606/11022)Updating files:  70% (7716/11022)Updating files:  71% (7826/11022)Updating files:  72% (7936/11022)Updating files:  73% (8047/11022)Updating files:  74% (8157/11022)Updating files:  75% (8267/11022)Updating files:  76% (8377/11022)Updating files:  77% (8487/11022)Updating files:  78% (8598/11022)Updating files:  79% (8708/11022)Updating files:  80% (8818/11022)Updating files:  81% (8928/11022)Updating files:  82% (9039/11022)Updating files:  83% (9149/11022)Updating files:  84% (9259/11022)Updating files:  85% (9369/11022)Updating files:  86% (9479/11022)Updating files:  87% (9590/11022)Updating files:  88% (9700/11022)Updating files:  89% (9810/11022)Updating files:  90% (9920/11022)Updating files:  91% (10031/11022)Updating files:  92% (10141/11022)Updating files:  93% (10251/11022)Updating files:  94% (10361/11022)Updating files:  95% (10471/11022)Updating files:  96% (10582/11022)Updating files:  97% (10692/11022)Updating files:  98% (10802/11022)Updating files:  99% (10912/11022)Updating files: 100% (11022/11022)Updating files: 100% (11022/11022), done.
+HEAD is now at dd3ee9c Merge tag 'for-upstream' of https://gitlab.com/bonzini/qemu into staging
+error: patch failed: net/filter-mirror.c:267
+error: net/filter-mirror.c: patch does not apply
+hint: Use 'git am --show-current-patch=diff' to see the failed patch
+hint: When you have resolved this problem, run "git am --continue".
+hint: If you prefer to skip this patch, run "git am --skip" instead.
+hint: To restore the original branch and stop patching, run "git am --abort".
+hint: Disable this message with "git config set advice.mergeConflict false"
+Applying: net/filter-mirror: keep mirroring while stopped
+Patch failed at 0001 net/filter-mirror: keep mirroring while stopped
+  git am failed, retrying with --3way...
+Applying: net/filter-mirror: keep mirroring while stopped
+error: sha1 information is lacking or useless (include/net/net.h).
+error: could not build fake ancestor
+hint: Use 'git am --show-current-patch=diff' to see the failed patch
+hint: When you have resolved this problem, run "git am --continue".
+hint: If you prefer to skip this patch, run "git am --skip" instead.
+hint: To restore the original branch and stop patching, run "git am --abort".
+hint: Disable this message with "git config set advice.mergeConflict false"
+Patch failed at 0001 net/filter-mirror: keep mirroring while stopped
+  git am --3way: FAILED
+  Running checkpatch...
+  checkpatch: clean
+  Skipping build (am failed)
+Deleted branch review-20260330090944-1008027-8-lulu-redhat-com (was dd3ee9c).
+  AM: failed, Checkpatch: clean, Build: not_run
+[5/7] Running codex code review (Stage A-E protocol)...
+[6/7] Extracting review...
+  Verdict: needs_revision
+[7/7] Assembling JSON...
+Traceback (most recent call last):
+  File "<stdin>", line 8, in <module>
+  File "/usr/lib/python3.12/json/__init__.py", line 293, in load
+    return loads(fp.read(),
+           ^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/json/__init__.py", line 346, in loads
+    return _default_decoder.decode(s)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/json/decoder.py", line 337, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/json/decoder.py", line 353, in raw_decode
+    obj, end = self.scan_once(s, idx)
+               ^^^^^^^^^^^^^^^^^^^^^^
+json.decoder.JSONDecodeError: Expecting ',' delimiter: line 3 column 1 (char 24)
+ERROR: invalid JSON output

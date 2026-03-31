@@ -1,0 +1,78 @@
+=== Reviewing: 20260330113436epcms2p2501e3cc236194ac83832914eb08eea3a@epcms2p2 ===
+[1/7] Querying Patchwork...
+  Patchwork: 1 result(s)
+[2/7] Metadata OK
+  Title: [5/5] tests/qtest: Add UFS Write Booster QTest
+  Author: Jaemyung Lee, Version: v1, Subsystem: tests/qtest
+[2.5/7] Fetching version history and mailing list context...
+  v1 patch, no prior versions
+[3/7] Downloading patches with b4...
+Grabbing thread from lore.kernel.org/all/20260330113436epcms2p2501e3cc236194ac83832914eb08eea3a@epcms2p2/t.mbox.gz
+Analyzing 2 messages in the thread
+Looking for additional code-review trailers on lore.kernel.org
+Checking attestation on all messages, may take a moment...
+---
+  ERROR: missing [1/5]!
+  ERROR: missing [2/5]!
+  ERROR: missing [3/5]!
+  [32m✓[0m [PATCH 4/5] hw/ufs: Add UFS Write Booster Support
+    [32m✓[0m Signed: DKIM/samsung.com
+  [32m✓[0m [PATCH 5/5] tests/qtest: Add UFS Write Booster QTest
+    [32m✓[0m Signed: DKIM/samsung.com
+---
+Total patches: 2
+---
+WARNING: Thread incomplete!
+ Link: https://lore.kernel.org/r/20260330113348epcms2p2d7a91b4e09f78a4fce6d3cd5514e2871@epcms2p2
+ Base: not specified
+       git am ./20260330_jaemyung_lee_hw_ufs_add_ufs_write_booster_support.mbx
+  b4: mbx=958 lines
+scripts/review-patch.sh: line 273: echo: write error: Broken pipe
+  Title (from mbox): [PATCH 4/5] hw/ufs: Add UFS Write Booster Support
+[4/7] Applying patches in QEMU worktree...
+Preparing worktree (new branch 'review-20260330113436epcms2p2501e3cc236194ac838')
+HEAD is now at dd3ee9c Merge tag 'for-upstream' of https://gitlab.com/bonzini/qemu into staging
+error: corrupt patch at line 253
+hint: Use 'git am --show-current-patch=diff' to see the failed patch
+hint: When you have resolved this problem, run "git am --continue".
+hint: If you prefer to skip this patch, run "git am --skip" instead.
+hint: To restore the original branch and stop patching, run "git am --abort".
+hint: Disable this message with "git config set advice.mergeConflict false"
+Applying: hw/ufs: Add UFS Write Booster Support
+Patch failed at 0001 hw/ufs: Add UFS Write Booster Support
+  git am failed, retrying with --3way...
+Applying: hw/ufs: Add UFS Write Booster Support
+error: corrupt patch at line 253
+error: could not build fake ancestor
+hint: Use 'git am --show-current-patch=diff' to see the failed patch
+hint: When you have resolved this problem, run "git am --continue".
+hint: If you prefer to skip this patch, run "git am --skip" instead.
+hint: To restore the original branch and stop patching, run "git am --abort".
+hint: Disable this message with "git config set advice.mergeConflict false"
+Patch failed at 0001 hw/ufs: Add UFS Write Booster Support
+  git am --3way: FAILED
+  Running checkpatch...
+  checkpatch: issues
+  Skipping build (am failed)
+Deleted branch review-20260330113436epcms2p2501e3cc236194ac838 (was dd3ee9c).
+  AM: failed, Checkpatch: issues, Build: not_run
+[5/7] Running codex code review (Stage A-E protocol)...
+[6/7] Extracting review...
+  Verdict: needs_revision
+[7/7] Assembling JSON...
+Traceback (most recent call last):
+  File "<stdin>", line 8, in <module>
+  File "/usr/lib/python3.12/json/__init__.py", line 293, in load
+    return loads(fp.read(),
+           ^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/json/__init__.py", line 346, in loads
+    return _default_decoder.decode(s)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/json/decoder.py", line 337, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/json/decoder.py", line 353, in raw_decode
+    obj, end = self.scan_once(s, idx)
+               ^^^^^^^^^^^^^^^^^^^^^^
+json.decoder.JSONDecodeError: Expecting ',' delimiter: line 3 column 1 (char 24)
+ERROR: invalid JSON output

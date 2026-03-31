@@ -1,0 +1,57 @@
+=== Reviewing: 20260330140655.31EC55968DE@zero.eik.bme.hu ===
+[1/7] Querying Patchwork...
+  Patchwork: 1 result(s)
+[2/7] Metadata OK
+  Title: [RFC] cirrus-vga: Add property to set frame buffer endianness and make it default to little endian
+  Author: BALATON Zoltan, Version: v1, Subsystem: cirrus-vga
+[2.5/7] Fetching version history and mailing list context...
+  v1 patch, no prior versions
+[3/7] Downloading patches with b4...
+Grabbing thread from lore.kernel.org/all/20260330140655.31EC55968DE@zero.eik.bme.hu/t.mbox.gz
+Analyzing 4 messages in the thread
+Looking for additional code-review trailers on lore.kernel.org
+Checking attestation on all messages, may take a moment...
+---
+  [PATCH RFC] cirrus-vga: Add property to set frame buffer endianness and make it default to little endian
+---
+Total patches: 1
+---
+ Link: https://lore.kernel.org/r/20260330140655.31EC55968DE@zero.eik.bme.hu
+ Base: not specified
+       git am ./20260330_balaton_cirrus_vga_add_property_to_set_frame_buffer_endianness_and_make_it_default_to_littl.mbx
+  b4: mbx=93 lines
+  Title (from mbox): [PATCH RFC] cirrus-vga: Add property to set frame buffer
+[4/7] Applying patches in QEMU worktree...
+Preparing worktree (new branch 'review-20260330140655-31EC55968DE-zero-eik-bme-')
+HEAD is now at dd3ee9c Merge tag 'for-upstream' of https://gitlab.com/bonzini/qemu into staging
+Applying: cirrus-vga: Add property to set frame buffer endianness and make it default to little endian
+  git am: success
+  Running checkpatch...
+  checkpatch: clean
+  Quick build check...
+
+Found ninja-1.13.2 at /usr/local/bin/ninja
+Running postconf script '/home/runner/work/loupe-web/loupe-web/loupe-worktree-20260330140655-31EC55968DE-zero-eik-bme-/build/pyvenv/bin/python3 /home/runner/work/loupe-web/loupe-web/loupe-worktree-20260330140655-31EC55968DE-zero-eik-bme-/scripts/symlink-install-tree.py'
+  configure: success
+Deleted branch review-20260330140655-31EC55968DE-zero-eik-bme- (was 0e0c00b).
+  AM: success, Checkpatch: clean, Build: configure_ok
+[5/7] Running codex code review (Stage A-E protocol)...
+[6/7] Extracting review...
+  Verdict: needs_revision
+[7/7] Assembling JSON...
+Traceback (most recent call last):
+  File "<stdin>", line 8, in <module>
+  File "/usr/lib/python3.12/json/__init__.py", line 293, in load
+    return loads(fp.read(),
+           ^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/json/__init__.py", line 346, in loads
+    return _default_decoder.decode(s)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/json/decoder.py", line 337, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/json/decoder.py", line 353, in raw_decode
+    obj, end = self.scan_once(s, idx)
+               ^^^^^^^^^^^^^^^^^^^^^^
+json.decoder.JSONDecodeError: Expecting ',' delimiter: line 3 column 1 (char 24)
+ERROR: invalid JSON output

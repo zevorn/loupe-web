@@ -1,0 +1,65 @@
+=== Reviewing: 20260330-igvm_fixes-v1-3-03587a5a808b@redhat.com ===
+[1/7] Querying Patchwork...
+  Patchwork: 1 result(s)
+[2/7] Metadata OK
+  Title: [0/3] igvm: various fixes
+  Author: Luigi Leonardi, Version: v1, Subsystem: igvm
+[2.5/7] Fetching version history and mailing list context...
+  v1 patch, no prior versions
+[3/7] Downloading patches with b4...
+Grabbing thread from lore.kernel.org/all/20260330-igvm_fixes-v1-3-03587a5a808b@redhat.com/t.mbox.gz
+Analyzing 4 messages in the thread
+Looking for additional code-review trailers on lore.kernel.org
+Checking attestation on all messages, may take a moment...
+---
+  [32m✓[0m [PATCH 1/3] igvm: switch to PRIx64
+  [32m✓[0m [PATCH 2/3] igvm: fix memory leak on failed memory region init
+  [32m✓[0m [PATCH 3/3] igvm: fix parent object type in IgvmCfg struct
+  ---
+  [32m✓[0m Signed: DKIM/redhat.com
+---
+Total patches: 3
+---
+Cover: ./20260330_leonardi_igvm_various_fixes.cover
+ Link: https://lore.kernel.org/r/20260330-igvm_fixes-v1-0-03587a5a808b@redhat.com
+ Base: base-commit 91f6a9cb1b0f11afa74ef7fb20d5579d9dfbe020 not known, ignoring
+ Base: not specified
+       git am ./20260330_leonardi_igvm_various_fixes.mbx
+  b4: mbx=118 lines
+  Title (from mbox): [PATCH 0/3] igvm: various fixes
+[4/7] Applying patches in QEMU worktree...
+Preparing worktree (new branch 'review-20260330-igvm-fixes-v1-3-03587a5a808b-re')
+HEAD is now at dd3ee9c Merge tag 'for-upstream' of https://gitlab.com/bonzini/qemu into staging
+Applying: igvm: switch to PRIx64
+Applying: igvm: fix memory leak on failed memory region init
+Applying: igvm: fix parent object type in IgvmCfg struct
+  git am: success
+  Running checkpatch...
+  checkpatch: clean
+  Quick build check...
+
+Found ninja-1.13.2 at /usr/local/bin/ninja
+Running postconf script '/home/runner/work/loupe-web/loupe-web/loupe-worktree-20260330-igvm-fixes-v1-3-03587a5a808b-re/build/pyvenv/bin/python3 /home/runner/work/loupe-web/loupe-web/loupe-worktree-20260330-igvm-fixes-v1-3-03587a5a808b-re/scripts/symlink-install-tree.py'
+  configure: success
+Deleted branch review-20260330-igvm-fixes-v1-3-03587a5a808b-re (was 7fece36).
+  AM: success, Checkpatch: clean, Build: configure_ok
+[5/7] Running codex code review (Stage A-E protocol)...
+[6/7] Extracting review...
+  Verdict: ready_to_merge
+[7/7] Assembling JSON...
+Traceback (most recent call last):
+  File "<stdin>", line 8, in <module>
+  File "/usr/lib/python3.12/json/__init__.py", line 293, in load
+    return loads(fp.read(),
+           ^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/json/__init__.py", line 346, in loads
+    return _default_decoder.decode(s)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/json/decoder.py", line 337, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/json/decoder.py", line 353, in raw_decode
+    obj, end = self.scan_once(s, idx)
+               ^^^^^^^^^^^^^^^^^^^^^^
+json.decoder.JSONDecodeError: Expecting ',' delimiter: line 3 column 1 (char 24)
+ERROR: invalid JSON output

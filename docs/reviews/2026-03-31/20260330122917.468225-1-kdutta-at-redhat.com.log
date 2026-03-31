@@ -1,0 +1,60 @@
+=== Reviewing: 20260330122917.468225-1-kdutta@redhat.com ===
+[1/7] Querying Patchwork...
+  Patchwork: 1 result(s)
+[2/7] Metadata OK
+  Title: [v4] hw/net/virtio-net: add support for notification coalescing
+  Author: Koushik Dutta, Version: v4, Subsystem: hw/net/virtio-net
+[2.5/7] Fetching version history and mailing list context...
+  Searching for prior versions of: hw/net/virtio-net: add support for notification coalescing
+  Found 3 prior version(s)
+[3/7] Downloading patches with b4...
+Grabbing thread from lore.kernel.org/all/20260330122917.468225-1-kdutta@redhat.com/t.mbox.gz
+Analyzing 1 messages in the thread
+Looking for additional code-review trailers on lore.kernel.org
+Checking attestation on all messages, may take a moment...
+---
+  [32m✓[0m [PATCH v4] hw/net/virtio-net: add support for notification coalescing
+  ---
+  [32m✓[0m Signed: DKIM/redhat.com
+---
+Total patches: 1
+---
+ Link: https://lore.kernel.org/r/20260330122917.468225-1-kdutta@redhat.com
+ Base: not specified
+       git am ./v4_20260330_kdutta_hw_net_virtio_net_add_support_for_notification_coalescing.mbx
+  b4: mbx=308 lines
+  Title (from mbox): [PATCH v4] hw/net/virtio-net: add support for notification
+[4/7] Applying patches in QEMU worktree...
+Preparing worktree (new branch 'review-20260330122917-468225-1-kdutta-redhat-co')
+HEAD is now at dd3ee9c Merge tag 'for-upstream' of https://gitlab.com/bonzini/qemu into staging
+Applying: hw/net/virtio-net: add support for notification coalescing
+  git am: success
+  Running checkpatch...
+  checkpatch: issues
+  Quick build check...
+
+Found ninja-1.13.2 at /usr/local/bin/ninja
+Running postconf script '/home/runner/work/loupe-web/loupe-web/loupe-worktree-20260330122917-468225-1-kdutta-redhat-co/build/pyvenv/bin/python3 /home/runner/work/loupe-web/loupe-web/loupe-worktree-20260330122917-468225-1-kdutta-redhat-co/scripts/symlink-install-tree.py'
+  configure: success
+Deleted branch review-20260330122917-468225-1-kdutta-redhat-co (was 2eb4cb4).
+  AM: success, Checkpatch: issues, Build: configure_ok
+[5/7] Running codex code review (Stage A-E protocol)...
+[6/7] Extracting review...
+  Verdict: needs_revision
+[7/7] Assembling JSON...
+Traceback (most recent call last):
+  File "<stdin>", line 8, in <module>
+  File "/usr/lib/python3.12/json/__init__.py", line 293, in load
+    return loads(fp.read(),
+           ^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/json/__init__.py", line 346, in loads
+    return _default_decoder.decode(s)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/json/decoder.py", line 337, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/json/decoder.py", line 353, in raw_decode
+    obj, end = self.scan_once(s, idx)
+               ^^^^^^^^^^^^^^^^^^^^^^
+json.decoder.JSONDecodeError: Expecting ',' delimiter: line 3 column 1 (char 24)
+ERROR: invalid JSON output
