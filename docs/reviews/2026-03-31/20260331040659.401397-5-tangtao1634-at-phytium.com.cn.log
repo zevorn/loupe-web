@@ -1,0 +1,65 @@
+=== Reviewing: 20260331040659.401397-5-tangtao1634@phytium.com.cn ===
+[1/7] Querying Patchwork...
+  Patchwork: 1 result(s)
+[2/7] Metadata OK
+  Title: [0/4] tests/qtest: Add memory-access attributes (secure/space)
+  Author: Tao Tang, Version: v1, Subsystem: tests/qtest
+[2.5/7] Fetching version history and mailing list context...
+  v1 patch, no prior versions
+[3/7] Downloading patches with b4...
+Grabbing thread from lore.kernel.org/all/20260331040659.401397-5-tangtao1634@phytium.com.cn/t.mbox.gz
+Analyzing 5 messages in the thread
+Looking for additional code-review trailers on lore.kernel.org
+Checking attestation on all messages, may take a moment...
+---
+  [PATCH 1/4] tests/qtest: Add attrs support to qtest server memory commands
+  [PATCH 2/4] tests/qtest: Add libqtest attrs helpers for memory accesses
+  [PATCH 3/4] tests/qtest: Add qtest-attrs-test for memory access attrs
+  [PATCH 4/4] tests/qtest: add q35 SMM-only x86 attrs coverage
+---
+Total patches: 4
+---
+Cover: ./20260331_tangtao1634_tests_qtest_add_memory_access_attributes_secure_space.cover
+ Link: https://lore.kernel.org/r/20260331040659.401397-1-tangtao1634@phytium.com.cn
+ Base: not specified
+       git am ./20260331_tangtao1634_tests_qtest_add_memory_access_attributes_secure_space.mbx
+  b4: mbx=2121 lines
+scripts/review-patch.sh: line 273: echo: write error: Broken pipe
+  Title (from mbox): [PATCH 0/4] tests/qtest: Add memory-access attributes
+[4/7] Applying patches in QEMU worktree...
+Preparing worktree (new branch 'review-20260331040659-401397-5-tangtao1634-phyt')
+HEAD is now at dd3ee9c Merge tag 'for-upstream' of https://gitlab.com/bonzini/qemu into staging
+Applying: tests/qtest: Add attrs support to qtest server memory commands
+Applying: tests/qtest: Add libqtest attrs helpers for memory accesses
+Applying: tests/qtest: Add qtest-attrs-test for memory access attrs
+Applying: tests/qtest: add q35 SMM-only x86 attrs coverage
+  git am: success
+  Running checkpatch...
+  checkpatch: issues
+  Quick build check...
+
+Found ninja-1.13.2 at /usr/local/bin/ninja
+Running postconf script '/home/runner/work/loupe-web/loupe-web/loupe-worktree-20260331040659-401397-5-tangtao1634-phyt/build/pyvenv/bin/python3 /home/runner/work/loupe-web/loupe-web/loupe-worktree-20260331040659-401397-5-tangtao1634-phyt/scripts/symlink-install-tree.py'
+  configure: success
+Deleted branch review-20260331040659-401397-5-tangtao1634-phyt (was 889ef43).
+  AM: success, Checkpatch: issues, Build: configure_ok
+[5/7] Running codex code review (Stage A-E protocol)...
+[6/7] Extracting review...
+  Verdict: needs_revision
+[7/7] Assembling JSON...
+Traceback (most recent call last):
+  File "<stdin>", line 8, in <module>
+  File "/usr/lib/python3.12/json/__init__.py", line 293, in load
+    return loads(fp.read(),
+           ^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/json/__init__.py", line 346, in loads
+    return _default_decoder.decode(s)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/json/decoder.py", line 337, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/json/decoder.py", line 353, in raw_decode
+    obj, end = self.scan_once(s, idx)
+               ^^^^^^^^^^^^^^^^^^^^^^
+json.decoder.JSONDecodeError: Expecting ',' delimiter: line 3 column 1 (char 24)
+ERROR: invalid JSON output

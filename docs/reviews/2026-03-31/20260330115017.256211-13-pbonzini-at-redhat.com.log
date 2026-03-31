@@ -40,7 +40,6 @@ Cover: ./20260330_pbonzini_i386_lsi_patches_for_qemu_11_0_rc2.cover
  Base: not specified
        git am ./20260330_pbonzini_i386_lsi_patches_for_qemu_11_0_rc2.mbx
   b4: mbx=947 lines
-scripts/review-patch.sh: line 273: echo: write error: Broken pipe
   Title (from mbox): [PATCH 0/12] i386, lsi patches for QEMU 11.0-rc2
 [4/7] Applying patches in QEMU worktree...
 Preparing worktree (new branch 'review-20260330115017-256211-13-pbonzini-redhat')

@@ -25,7 +25,6 @@ Total patches: 1
   Title (from mbox): [PATCH] vhost-user-blk-server: fix opt_io_size=1 causing severe
 [4/7] Applying patches in QEMU worktree...
 Preparing worktree (new branch 'review-20260330192701-75780-1-maxpain-linux-com')
-Updating files:  86% (9512/11022)Updating files:  87% (9590/11022)Updating files:  88% (9700/11022)Updating files:  89% (9810/11022)Updating files:  90% (9920/11022)Updating files:  91% (10031/11022)Updating files:  92% (10141/11022)Updating files:  93% (10251/11022)Updating files:  94% (10361/11022)Updating files:  95% (10471/11022)Updating files:  96% (10582/11022)Updating files:  97% (10692/11022)Updating files:  98% (10802/11022)Updating files:  99% (10912/11022)Updating files: 100% (11022/11022)Updating files: 100% (11022/11022), done.
 HEAD is now at dd3ee9c Merge tag 'for-upstream' of https://gitlab.com/bonzini/qemu into staging
 error: patch failed: block/export/vhost-user-blk-server.c:242
 error: block/export/vhost-user-blk-server.c: patch does not apply
@@ -50,7 +49,7 @@ Auto-merging block/export/vhost-user-blk-server.c
 Found ninja-1.13.2 at /usr/local/bin/ninja
 Running postconf script '/home/runner/work/loupe-web/loupe-web/loupe-worktree-20260330192701-75780-1-maxpain-linux-com/build/pyvenv/bin/python3 /home/runner/work/loupe-web/loupe-web/loupe-worktree-20260330192701-75780-1-maxpain-linux-com/scripts/symlink-install-tree.py'
   configure: success
-Deleted branch review-20260330192701-75780-1-maxpain-linux-com (was 8253fde).
+Deleted branch review-20260330192701-75780-1-maxpain-linux-com (was 37d9b72).
   AM: success_3way, Checkpatch: clean, Build: configure_ok
 [5/7] Running codex code review (Stage A-E protocol)...
 [6/7] Extracting review...

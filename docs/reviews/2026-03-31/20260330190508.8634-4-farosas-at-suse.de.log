@@ -40,11 +40,11 @@ Applying: tests/qtest/migration: Fix slow test dirty_limit
 Found ninja-1.13.2 at /usr/local/bin/ninja
 Running postconf script '/home/runner/work/loupe-web/loupe-web/loupe-worktree-20260330190508-8634-4-farosas-suse-de/build/pyvenv/bin/python3 /home/runner/work/loupe-web/loupe-web/loupe-worktree-20260330190508-8634-4-farosas-suse-de/scripts/symlink-install-tree.py'
   configure: success
-Deleted branch review-20260330190508-8634-4-farosas-suse-de (was 0ab0417).
+Deleted branch review-20260330190508-8634-4-farosas-suse-de (was b441478).
   AM: success, Checkpatch: clean, Build: configure_ok
 [5/7] Running codex code review (Stage A-E protocol)...
 [6/7] Extracting review...
-  Verdict: ready_to_merge
+  Verdict: needs_revision
 [7/7] Assembling JSON...
 Traceback (most recent call last):
   File "<stdin>", line 8, in <module>

@@ -35,7 +35,7 @@ Applying: thread-pool: signal condition variable while holding lock
 Found ninja-1.13.2 at /usr/local/bin/ninja
 Running postconf script '/home/runner/work/loupe-web/loupe-web/loupe-worktree-20260330130104-85200-1-Stepan-Popov-kasp/build/pyvenv/bin/python3 /home/runner/work/loupe-web/loupe-web/loupe-worktree-20260330130104-85200-1-Stepan-Popov-kasp/scripts/symlink-install-tree.py'
   configure: success
-Deleted branch review-20260330130104-85200-1-Stepan-Popov-kasp (was ecbb58b).
+Deleted branch review-20260330130104-85200-1-Stepan-Popov-kasp (was 39e7dcf).
   AM: success, Checkpatch: clean, Build: configure_ok
 [5/7] Running codex code review (Stage A-E protocol)...
 [6/7] Extracting review...

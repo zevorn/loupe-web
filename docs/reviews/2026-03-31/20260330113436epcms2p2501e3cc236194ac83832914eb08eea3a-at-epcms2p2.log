@@ -27,7 +27,6 @@ WARNING: Thread incomplete!
  Base: not specified
        git am ./20260330_jaemyung_lee_hw_ufs_add_ufs_write_booster_support.mbx
   b4: mbx=958 lines
-scripts/review-patch.sh: line 273: echo: write error: Broken pipe
   Title (from mbox): [PATCH 4/5] hw/ufs: Add UFS Write Booster Support
 [4/7] Applying patches in QEMU worktree...
 Preparing worktree (new branch 'review-20260330113436epcms2p2501e3cc236194ac838')
