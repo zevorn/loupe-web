@@ -40,7 +40,7 @@ Applying: contrib/plugins: handle more loader open syscalls in the syscall filte
 Found ninja-1.13.2 at /usr/local/bin/ninja
 Running postconf script '/home/runner/work/loupe-web/loupe-web/loupe-worktree-20260331173656-35305-4-xukl2019-sjtu-edu/build/pyvenv/bin/python3 /home/runner/work/loupe-web/loupe-web/loupe-worktree-20260331173656-35305-4-xukl2019-sjtu-edu/scripts/symlink-install-tree.py'
   configure: success
-Deleted branch review-20260331173656-35305-4-xukl2019-sjtu-edu (was 11226cb).
+Deleted branch review-20260331173656-35305-4-xukl2019-sjtu-edu (was 0734ad8).
   AM: success, Checkpatch: issues, Build: configure_ok
 [5/7] Running codex code review (Stage A-E protocol)...
 [6/7] Extracting review...

@@ -36,7 +36,7 @@ Applying: python: bump qemu.qmp to v0.0.6
 Found ninja-1.13.2 at /usr/local/bin/ninja
 Running postconf script '/home/runner/work/loupe-web/loupe-web/loupe-worktree-20260331203337-1376879-1-jsnow-redhat-co/build/pyvenv/bin/python3 /home/runner/work/loupe-web/loupe-web/loupe-worktree-20260331203337-1376879-1-jsnow-redhat-co/scripts/symlink-install-tree.py'
   configure: success
-Deleted branch review-20260331203337-1376879-1-jsnow-redhat-co (was e2d3176).
+Deleted branch review-20260331203337-1376879-1-jsnow-redhat-co (was cfffd40).
   AM: success, Checkpatch: issues, Build: configure_ok
 [5/7] Running codex code review (Stage A-E protocol)...
 [6/7] Extracting review...
