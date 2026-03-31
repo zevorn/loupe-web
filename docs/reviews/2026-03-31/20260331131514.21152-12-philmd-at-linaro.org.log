@@ -1,0 +1,79 @@
+=== Reviewing: 20260331131514.21152-12-philmd@linaro.org ===
+[1/7] Querying Patchwork...
+  Patchwork: 1 result(s)
+[2/7] Metadata OK
+  Title: [PULL,11/11] MAINTAINERS: fix OSUOSL typo
+  Author: Philippe Mathieu-Daudé, Version: v1, Subsystem: MAINTAINERS
+[2.5/7] Fetching version history and mailing list context...
+  v1 patch, no prior versions
+[3/7] Downloading patches with b4...
+Grabbing thread from lore.kernel.org/all/20260331131514.21152-12-philmd@linaro.org/t.mbox.gz
+Analyzing 12 messages in the thread
+Checking attestation on all messages, may take a moment...
+---
+  [32m✓[0m [PATCH 1/11] ppc/pnv: generate dtb after machine initialization is complete
+  [32m✓[0m [PATCH 2/11] MAINTAINERS: Separate QDev section from QOM one
+  [32m✓[0m [PATCH 3/11] target/mips: save CP0 timer in vmstate
+  [32m✓[0m [PATCH 4/11] backends/igvm: switch to PRIx64
+  [32m✓[0m [PATCH 5/11] target/i386/cpu.c: Correct minor grammar error in warning
+  [32m✓[0m [PATCH 6/11] target/i386: Treat qtest like TCG for supported-features
+  [32m✓[0m [PATCH 7/11] ati-vga: Silence warning about operator precedence
+  [32m✓[0m [PATCH 8/11] ati-vga: Add upper limit to x-linear-aper-size property
+  [32m✓[0m [PATCH 9/11] hw/pci-host/astro: Update copyright and documentation link
+  [32m✓[0m [PATCH 10/11] hw/hppa: Disable Artist graphics card on 64-bit machines
+  [32m✓[0m [PATCH 11/11] MAINTAINERS: fix OSUOSL typo
+  ---
+  [32m✓[0m Signed: DKIM/linaro.org
+---
+Total patches: 11
+---
+Cover: ./20260331_philmd_misc_hw_patches_for_2026_03_31.cover
+ Link: https://lore.kernel.org/r/20260331131514.21152-1-philmd@linaro.org
+ Base: not specified
+       git am ./20260331_philmd_misc_hw_patches_for_2026_03_31.mbx
+  b4: mbx=633 lines
+  Title (from mbox): [PATCH 0/11] Misc HW patches for 2026-03-31
+[4/7] Applying patches in QEMU worktree...
+Preparing worktree (new branch 'review-20260331131514-21152-12-philmd-linaro-or')
+HEAD is now at 6aeb397 Merge tag 'for-11.0-rc-pull-request' of https://gitlab.com/marcandre.lureau/qemu into staging
+Applying: ppc/pnv: generate dtb after machine initialization is complete
+Applying: MAINTAINERS: Separate QDev section from QOM one
+Applying: target/mips: save CP0 timer in vmstate
+Applying: backends/igvm: switch to PRIx64
+Applying: target/i386/cpu.c: Correct minor grammar error in warning
+Applying: target/i386: Treat qtest like TCG for supported-features
+Applying: ati-vga: Silence warning about operator precedence
+Applying: ati-vga: Add upper limit to x-linear-aper-size property
+Applying: hw/pci-host/astro: Update copyright and documentation link
+Applying: hw/hppa: Disable Artist graphics card on 64-bit machines
+Applying: MAINTAINERS: fix OSUOSL typo
+  git am: success
+  Running checkpatch...
+  checkpatch: issues
+  Quick build check...
+
+Found ninja-1.13.2 at /usr/local/bin/ninja
+Running postconf script '/home/runner/work/loupe-web/loupe-web/loupe-worktree-20260331131514-21152-12-philmd-linaro-or/build/pyvenv/bin/python3 /home/runner/work/loupe-web/loupe-web/loupe-worktree-20260331131514-21152-12-philmd-linaro-or/scripts/symlink-install-tree.py'
+  configure: success
+Deleted branch review-20260331131514-21152-12-philmd-linaro-or (was 1356604).
+  AM: success, Checkpatch: issues, Build: configure_ok
+[5/7] Running codex code review (Stage A-E protocol)...
+[6/7] Extracting review...
+  Verdict: needs_revision
+[7/7] Assembling JSON...
+Traceback (most recent call last):
+  File "<stdin>", line 8, in <module>
+  File "/usr/lib/python3.12/json/__init__.py", line 293, in load
+    return loads(fp.read(),
+           ^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/json/__init__.py", line 346, in loads
+    return _default_decoder.decode(s)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/json/decoder.py", line 337, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/json/decoder.py", line 353, in raw_decode
+    obj, end = self.scan_once(s, idx)
+               ^^^^^^^^^^^^^^^^^^^^^^
+json.decoder.JSONDecodeError: Expecting ',' delimiter: line 3 column 1 (char 24)
+ERROR: invalid JSON output

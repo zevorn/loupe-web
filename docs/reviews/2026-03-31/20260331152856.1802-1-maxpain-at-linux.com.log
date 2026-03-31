@@ -1,45 +1,41 @@
-=== Reviewing: 20260330212817.992673-3-alejandro.j.jimenez@oracle.com ===
+=== Reviewing: 20260331152856.1802-1-maxpain@linux.com ===
 [1/7] Querying Patchwork...
   Patchwork: 1 result(s)
 [2/7] Metadata OK
-  Title: [for-11.0,2/2] amd_iommu: Reject non-decreasing NextLevel in fetch_pte()
-  Author: Alejandro Jimenez, Version: v1, Subsystem: amd_iommu
+  Title: vhost-user-blk-server: do not advertise VIRTIO_BLK_F_SIZE_MAX with size_max=0
+  Author: Max Makarov, Version: v1, Subsystem: vhost-user-blk-server
 [2.5/7] Fetching version history and mailing list context...
   v1 patch, no prior versions
 [3/7] Downloading patches with b4...
-Grabbing thread from lore.kernel.org/all/20260330212817.992673-3-alejandro.j.jimenez@oracle.com/t.mbox.gz
-Analyzing 5 messages in the thread
+Grabbing thread from lore.kernel.org/all/20260331152856.1802-1-maxpain@linux.com/t.mbox.gz
+Analyzing 1 messages in the thread
 Looking for additional code-review trailers on lore.kernel.org
 Checking attestation on all messages, may take a moment...
 ---
-  [32m✓[0m [PATCH 1/2] amd_iommu: Follow root pointer before page walk and use 1-based levels
-  [32m✓[0m [PATCH 2/2] amd_iommu: Reject non-decreasing NextLevel in fetch_pte()
+  [32m✓[0m [PATCH] vhost-user-blk-server: do not advertise VIRTIO_BLK_F_SIZE_MAX with size_max=0
   ---
-  [32m✓[0m Signed: DKIM/oracle.com
+  [32m✓[0m Signed: DKIM/gmail.com
 ---
-Total patches: 2
+Total patches: 1
 ---
-Cover: ./20260330_alejandro_j_jimenez_amd_iommu_fixes_for_11_0_rc2.cover
- Link: https://lore.kernel.org/r/20260330212817.992673-1-alejandro.j.jimenez@oracle.com
- Base: base-commit dd3ee9c63d96b223c8d41bf5d65392eb898be626 not known, ignoring
+ Link: https://lore.kernel.org/r/20260331152856.1802-1-maxpain@linux.com
  Base: not specified
-       git am ./20260330_alejandro_j_jimenez_amd_iommu_fixes_for_11_0_rc2.mbx
-  b4: mbx=292 lines
-  Title (from mbox): [PATCH 0/2] amd_iommu fixes for 11.0-rc2
+       git am ./20260331_maxpain177_vhost_user_blk_server_do_not_advertise_virtio_blk_f_size_max_with_size_max_0.mbx
+  b4: mbx=49 lines
+  Title (from mbox): [PATCH] vhost-user-blk-server: do not advertise
 [4/7] Applying patches in QEMU worktree...
-Preparing worktree (new branch 'review-20260330212817-992673-3-alejandro-j-jime')
+Preparing worktree (new branch 'review-20260331152856-1802-1-maxpain-linux-com')
 HEAD is now at 6aeb397 Merge tag 'for-11.0-rc-pull-request' of https://gitlab.com/marcandre.lureau/qemu into staging
-Applying: amd_iommu: Follow root pointer before page walk and use 1-based levels
-Applying: amd_iommu: Reject non-decreasing NextLevel in fetch_pte()
+Applying: vhost-user-blk-server: do not advertise VIRTIO_BLK_F_SIZE_MAX with size_max=0
   git am: success
   Running checkpatch...
   checkpatch: clean
   Quick build check...
 
 Found ninja-1.13.2 at /usr/local/bin/ninja
-Running postconf script '/home/runner/work/loupe-web/loupe-web/loupe-worktree-20260330212817-992673-3-alejandro-j-jime/build/pyvenv/bin/python3 /home/runner/work/loupe-web/loupe-web/loupe-worktree-20260330212817-992673-3-alejandro-j-jime/scripts/symlink-install-tree.py'
+Running postconf script '/home/runner/work/loupe-web/loupe-web/loupe-worktree-20260331152856-1802-1-maxpain-linux-com/build/pyvenv/bin/python3 /home/runner/work/loupe-web/loupe-web/loupe-worktree-20260331152856-1802-1-maxpain-linux-com/scripts/symlink-install-tree.py'
   configure: success
-Deleted branch review-20260330212817-992673-3-alejandro-j-jime (was 4eeee61).
+Deleted branch review-20260331152856-1802-1-maxpain-linux-com (was 856fae0).
   AM: success, Checkpatch: clean, Build: configure_ok
 [5/7] Running codex code review (Stage A-E protocol)...
 [6/7] Extracting review...

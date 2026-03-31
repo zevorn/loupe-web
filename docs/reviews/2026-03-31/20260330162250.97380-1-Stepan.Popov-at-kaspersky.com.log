@@ -10,6 +10,7 @@
 [3/7] Downloading patches with b4...
 Grabbing thread from lore.kernel.org/all/20260330162250.97380-1-Stepan.Popov@kaspersky.com/t.mbox.gz
 Analyzing 1 messages in the thread
+Looking for additional code-review trailers on lore.kernel.org
 Checking attestation on all messages, may take a moment...
 ---
   [32m✓[0m [PATCH v2] meson: add missing semicolon in pthread_condattr_setclock test
@@ -26,7 +27,8 @@ Total patches: 1
   Title (from mbox): [PATCH v2] meson: add missing semicolon in
 [4/7] Applying patches in QEMU worktree...
 Preparing worktree (new branch 'review-20260330162250-97380-1-Stepan-Popov-kasp')
-HEAD is now at 49ea010 Merge tag 'migration-20260330-pull-request' of https://gitlab.com/farosas/qemu into staging
+Updating files:  77% (8586/11023)Updating files:  78% (8598/11023)Updating files:  79% (8709/11023)Updating files:  80% (8819/11023)Updating files:  81% (8929/11023)Updating files:  82% (9039/11023)Updating files:  83% (9150/11023)Updating files:  84% (9260/11023)Updating files:  85% (9370/11023)Updating files:  86% (9480/11023)Updating files:  87% (9591/11023)Updating files:  88% (9701/11023)Updating files:  89% (9811/11023)Updating files:  90% (9921/11023)Updating files:  91% (10031/11023)Updating files:  92% (10142/11023)Updating files:  93% (10252/11023)Updating files:  94% (10362/11023)Updating files:  95% (10472/11023)Updating files:  96% (10583/11023)Updating files:  97% (10693/11023)Updating files:  98% (10803/11023)Updating files:  99% (10913/11023)Updating files: 100% (11023/11023)Updating files: 100% (11023/11023), done.
+HEAD is now at 6aeb397 Merge tag 'for-11.0-rc-pull-request' of https://gitlab.com/marcandre.lureau/qemu into staging
 Applying: meson: add missing semicolon in pthread_condattr_setclock test
   git am: success
   Running checkpatch...
@@ -36,7 +38,7 @@ Applying: meson: add missing semicolon in pthread_condattr_setclock test
 Found ninja-1.13.2 at /usr/local/bin/ninja
 Running postconf script '/home/runner/work/loupe-web/loupe-web/loupe-worktree-20260330162250-97380-1-Stepan-Popov-kasp/build/pyvenv/bin/python3 /home/runner/work/loupe-web/loupe-web/loupe-worktree-20260330162250-97380-1-Stepan-Popov-kasp/scripts/symlink-install-tree.py'
   configure: success
-Deleted branch review-20260330162250-97380-1-Stepan-Popov-kasp (was 9520174).
+Deleted branch review-20260330162250-97380-1-Stepan-Popov-kasp (was bebffd3).
   AM: success, Checkpatch: clean, Build: configure_ok
 [5/7] Running codex code review (Stage A-E protocol)...
 [6/7] Extracting review...

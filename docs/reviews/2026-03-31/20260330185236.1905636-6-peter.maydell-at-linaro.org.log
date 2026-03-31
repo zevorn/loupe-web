@@ -30,7 +30,7 @@ Cover: ./20260330_peter_maydell_target_arm_queue.cover
   Title (from mbox): [PATCH 0/5] target-arm queue
 [4/7] Applying patches in QEMU worktree...
 Preparing worktree (new branch 'review-20260330185236-1905636-6-peter-maydell-l')
-HEAD is now at 49ea010 Merge tag 'migration-20260330-pull-request' of https://gitlab.com/farosas/qemu into staging
+HEAD is now at 6aeb397 Merge tag 'for-11.0-rc-pull-request' of https://gitlab.com/marcandre.lureau/qemu into staging
 error: patch failed: target/arm/ptw.c:2118
 error: target/arm/ptw.c: patch does not apply
 hint: Use 'git am --show-current-patch=diff' to see the failed patch
@@ -54,7 +54,7 @@ Patch failed at 0001 target/arm: Don't skip access flag fault for AccessType_AT
   Running checkpatch...
   checkpatch: clean
   Skipping build (am failed)
-Deleted branch review-20260330185236-1905636-6-peter-maydell-l (was 49ea010).
+Deleted branch review-20260330185236-1905636-6-peter-maydell-l (was 6aeb397).
   AM: failed, Checkpatch: clean, Build: not_run
 [5/7] Running codex code review (Stage A-E protocol)...
 [6/7] Extracting review...

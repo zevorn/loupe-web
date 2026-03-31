@@ -8,7 +8,7 @@
   v1 patch, no prior versions
 [3/7] Downloading patches with b4...
 Grabbing thread from lore.kernel.org/all/20260331040659.401397-5-tangtao1634@phytium.com.cn/t.mbox.gz
-Analyzing 8 messages in the thread
+Analyzing 9 messages in the thread
 Looking for additional code-review trailers on lore.kernel.org
 Checking attestation on all messages, may take a moment...
 ---
@@ -28,7 +28,7 @@ scripts/review-patch.sh: line 273: echo: write error: Broken pipe
   Title (from mbox): [PATCH 0/4] tests/qtest: Add memory-access attributes
 [4/7] Applying patches in QEMU worktree...
 Preparing worktree (new branch 'review-20260331040659-401397-5-tangtao1634-phyt')
-HEAD is now at 49ea010 Merge tag 'migration-20260330-pull-request' of https://gitlab.com/farosas/qemu into staging
+HEAD is now at 6aeb397 Merge tag 'for-11.0-rc-pull-request' of https://gitlab.com/marcandre.lureau/qemu into staging
 Applying: tests/qtest: Add attrs support to qtest server memory commands
 Applying: tests/qtest: Add libqtest attrs helpers for memory accesses
 Applying: tests/qtest: Add qtest-attrs-test for memory access attrs
@@ -41,7 +41,7 @@ Applying: tests/qtest: add q35 SMM-only x86 attrs coverage
 Found ninja-1.13.2 at /usr/local/bin/ninja
 Running postconf script '/home/runner/work/loupe-web/loupe-web/loupe-worktree-20260331040659-401397-5-tangtao1634-phyt/build/pyvenv/bin/python3 /home/runner/work/loupe-web/loupe-web/loupe-worktree-20260331040659-401397-5-tangtao1634-phyt/scripts/symlink-install-tree.py'
   configure: success
-Deleted branch review-20260331040659-401397-5-tangtao1634-phyt (was 0166a27).
+Deleted branch review-20260331040659-401397-5-tangtao1634-phyt (was 5ef3cec).
   AM: success, Checkpatch: issues, Build: configure_ok
 [5/7] Running codex code review (Stage A-E protocol)...
 [6/7] Extracting review...

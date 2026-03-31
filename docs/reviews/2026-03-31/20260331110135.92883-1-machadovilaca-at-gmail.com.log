@@ -1,46 +1,45 @@
-=== Reviewing: 20260331070401.1125840-1-alex.bennee@linaro.org ===
+=== Reviewing: 20260331110135.92883-1-machadovilaca@gmail.com ===
 [1/7] Querying Patchwork...
   Patchwork: 1 result(s)
 [2/7] Metadata OK
-  Title: MAINTAINERS: fix OSUOSL typo
-  Author: Alex Bennée, Version: v1, Subsystem: MAINTAINERS
+  Title: qga: implement 'guest-get-nvidia-smi' command
+  Author: João Vilaça, Version: v1, Subsystem: qga
 [2.5/7] Fetching version history and mailing list context...
   v1 patch, no prior versions
 [3/7] Downloading patches with b4...
-Grabbing thread from lore.kernel.org/all/20260331070401.1125840-1-alex.bennee@linaro.org/t.mbox.gz
-Analyzing 2 messages in the thread
+Grabbing thread from lore.kernel.org/all/20260331110135.92883-1-machadovilaca@gmail.com/t.mbox.gz
+Analyzing 3 messages in the thread
 Looking for additional code-review trailers on lore.kernel.org
 Checking attestation on all messages, may take a moment...
 ---
-  [32m✓[0m [PATCH] MAINTAINERS: fix OSUOSL typo
-    + Reviewed-by: Peter Maydell <peter.maydell@linaro.org> ([32m✓[0m DKIM/linaro.org)
+  [32m✓[0m [PATCH] qga: implement 'guest-get-nvidia-smi' command
   ---
-  [32m✓[0m Signed: DKIM/linaro.org
+  [32m✓[0m Signed: DKIM/gmail.com
 ---
 Total patches: 1
 ---
- Link: https://lore.kernel.org/r/20260331070401.1125840-1-alex.bennee@linaro.org
+ Link: https://lore.kernel.org/r/20260331110135.92883-1-machadovilaca@gmail.com
  Base: not specified
-       git am ./20260331_alex_bennee_maintainers_fix_osuosl_typo.mbx
-  b4: mbx=32 lines
-  Title (from mbox): [PATCH] MAINTAINERS: fix OSUOSL typo
+       git am ./20260331_machadovilaca_qga_implement_guest_get_nvidia_smi_command.mbx
+  b4: mbx=233 lines
+  Title (from mbox): [PATCH] qga: implement 'guest-get-nvidia-smi' command
 [4/7] Applying patches in QEMU worktree...
-Preparing worktree (new branch 'review-20260331070401-1125840-1-alex-bennee-lin')
+Preparing worktree (new branch 'review-20260331110135-92883-1-machadovilaca-gma')
 HEAD is now at 6aeb397 Merge tag 'for-11.0-rc-pull-request' of https://gitlab.com/marcandre.lureau/qemu into staging
-Applying: MAINTAINERS: fix OSUOSL typo
+Applying: qga: implement 'guest-get-nvidia-smi' command
   git am: success
   Running checkpatch...
-  checkpatch: clean
+  checkpatch: issues
   Quick build check...
 
 Found ninja-1.13.2 at /usr/local/bin/ninja
-Running postconf script '/home/runner/work/loupe-web/loupe-web/loupe-worktree-20260331070401-1125840-1-alex-bennee-lin/build/pyvenv/bin/python3 /home/runner/work/loupe-web/loupe-web/loupe-worktree-20260331070401-1125840-1-alex-bennee-lin/scripts/symlink-install-tree.py'
+Running postconf script '/home/runner/work/loupe-web/loupe-web/loupe-worktree-20260331110135-92883-1-machadovilaca-gma/build/pyvenv/bin/python3 /home/runner/work/loupe-web/loupe-web/loupe-worktree-20260331110135-92883-1-machadovilaca-gma/scripts/symlink-install-tree.py'
   configure: success
-Deleted branch review-20260331070401-1125840-1-alex-bennee-lin (was 47f8eac).
-  AM: success, Checkpatch: clean, Build: configure_ok
+Deleted branch review-20260331110135-92883-1-machadovilaca-gma (was e08efa8).
+  AM: success, Checkpatch: issues, Build: configure_ok
 [5/7] Running codex code review (Stage A-E protocol)...
 [6/7] Extracting review...
-  Verdict: ready_to_merge
+  Verdict: needs_revision
 [7/7] Assembling JSON...
 Traceback (most recent call last):
   File "<stdin>", line 8, in <module>
@@ -56,5 +55,5 @@ Traceback (most recent call last):
   File "/usr/lib/python3.12/json/decoder.py", line 353, in raw_decode
     obj, end = self.scan_once(s, idx)
                ^^^^^^^^^^^^^^^^^^^^^^
-json.decoder.JSONDecodeError: Expecting ',' delimiter: line 6 column 1 (char 103)
+json.decoder.JSONDecodeError: Expecting ',' delimiter: line 3 column 1 (char 24)
 ERROR: invalid JSON output

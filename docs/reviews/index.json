@@ -1,6 +1,42 @@
 {
-  "updated_at": "2026-03-31T13:04:33Z",
+  "updated_at": "2026-03-31T16:01:36Z",
   "reviews": [
+    {
+      "id": "20260331-20260331150352.256332-1-kwolf-at-redhat.com",
+      "path": "reviews/2026-03-31/20260331150352.256332-1-kwolf-at-redhat.com.json",
+      "title": "[PATCH 0/6] Block layer patches",
+      "author": "Kevin Wolf",
+      "date": "2026-03-31",
+      "subsystem": "riscv",
+      "version": 1,
+      "patch_count": 1,
+      "message_id": "<20260331150352.256332-1-kwolf@redhat.com>",
+      "verdict": "needs_revision",
+      "findings": {
+        "critical": 0,
+        "major": 0,
+        "minor": 0,
+        "nit": 1
+      }
+    },
+    {
+      "id": "20260331-20260331131514.21152-1-philmd-at-linaro.org",
+      "path": "reviews/2026-03-31/20260331131514.21152-1-philmd-at-linaro.org.json",
+      "title": "[PATCH 0/11] Misc HW patches for 2026-03-31",
+      "author": "Philippe Mathieu-Daudé",
+      "date": "2026-03-31",
+      "subsystem": "riscv",
+      "version": 1,
+      "patch_count": 1,
+      "message_id": "<20260331131514.21152-1-philmd@linaro.org>",
+      "verdict": "needs_revision",
+      "findings": {
+        "critical": 0,
+        "major": 1,
+        "minor": 0,
+        "nit": 0
+      }
+    },
     {
       "id": "20260331-20260331095302.644608-1-marcandre.lureau-at-redhat.com",
       "path": "reviews/2026-03-31/20260331095302.644608-1-marcandre.lureau-at-redhat.com.json",
