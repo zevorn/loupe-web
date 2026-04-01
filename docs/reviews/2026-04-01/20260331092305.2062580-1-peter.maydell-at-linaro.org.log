@@ -27,7 +27,6 @@ Total patches: 1
   Title (from mbox): [PATCH] target/arm: do_ats_write(): avoid assertion when ptw
 [4/7] Applying patches in QEMU worktree...
 Preparing worktree (new branch 'review-20260331092305-2062580-1-peter-maydell-l')
-Updating files:  92% (10201/11023)Updating files:  93% (10252/11023)Updating files:  94% (10362/11023)Updating files:  95% (10472/11023)Updating files:  96% (10583/11023)Updating files:  97% (10693/11023)Updating files:  98% (10803/11023)Updating files:  99% (10913/11023)Updating files: 100% (11023/11023)Updating files: 100% (11023/11023), done.
 HEAD is now at 7df28e4 Merge tag 'hppa-more-v11-fixes-pull-request' of https://github.com/hdeller/qemu-hppa into staging
 Applying: target/arm: do_ats_write(): avoid assertion when ptw failed
   git am: success
@@ -38,7 +37,7 @@ Applying: target/arm: do_ats_write(): avoid assertion when ptw failed
 Found ninja-1.13.2 at /usr/local/bin/ninja
 Running postconf script '/home/runner/work/loupe-web/loupe-web/loupe-worktree-20260331092305-2062580-1-peter-maydell-l/build/pyvenv/bin/python3 /home/runner/work/loupe-web/loupe-web/loupe-worktree-20260331092305-2062580-1-peter-maydell-l/scripts/symlink-install-tree.py'
   configure: success
-Deleted branch review-20260331092305-2062580-1-peter-maydell-l (was 26a4b19).
+Deleted branch review-20260331092305-2062580-1-peter-maydell-l (was 5f9d11c).
   AM: success, Checkpatch: clean, Build: configure_ok
 [5/7] Running codex code review (Stage A-E protocol)...
 [6/7] Extracting review...

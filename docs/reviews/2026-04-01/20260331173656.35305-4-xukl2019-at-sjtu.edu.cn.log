@@ -24,7 +24,6 @@ Cover: ./20260401_xukl2019_contrib_plugins_add_syscall_filter_local_library_demo
  Base: not specified
        git am ./20260401_xukl2019_contrib_plugins_add_syscall_filter_local_library_demos.mbx
   b4: mbx=1693 lines
-scripts/review-patch.sh: line 273: echo: write error: Broken pipe
   Title (from mbox): [PATCH v1 0/3] contrib/plugins: add syscall-filter local-library
 [4/7] Applying patches in QEMU worktree...
 Preparing worktree (new branch 'review-20260331173656-35305-4-xukl2019-sjtu-edu')
@@ -40,7 +39,7 @@ Applying: contrib/plugins: handle more loader open syscalls in the syscall filte
 Found ninja-1.13.2 at /usr/local/bin/ninja
 Running postconf script '/home/runner/work/loupe-web/loupe-web/loupe-worktree-20260331173656-35305-4-xukl2019-sjtu-edu/build/pyvenv/bin/python3 /home/runner/work/loupe-web/loupe-web/loupe-worktree-20260331173656-35305-4-xukl2019-sjtu-edu/scripts/symlink-install-tree.py'
   configure: success
-Deleted branch review-20260331173656-35305-4-xukl2019-sjtu-edu (was b17dc2b).
+Deleted branch review-20260331173656-35305-4-xukl2019-sjtu-edu (was 48971d0).
   AM: success, Checkpatch: issues, Build: configure_ok
 [5/7] Running codex code review (Stage A-E protocol)...
 [6/7] Extracting review...

@@ -34,7 +34,6 @@ Cover: ./20260331_nathanc_hw_arm_smmuv3_accel_resolve_auto_properties.cover
  Base: not specified
        git am ./20260331_nathanc_hw_arm_smmuv3_accel_resolve_auto_properties.mbx
   b4: mbx=922 lines
-scripts/review-patch.sh: line 273: echo: write error: Broken pipe
   Title (from mbox): [PATCH 0/11] hw/arm/smmuv3-accel: Resolve AUTO properties
 [4/7] Applying patches in QEMU worktree...
 Preparing worktree (new branch 'review-20260401010231-4166776-12-nathanc-nvidia')
@@ -58,7 +57,7 @@ Applying: qemu-options.hx: Support "auto" for accel SMMUv3 properties
 Found ninja-1.13.2 at /usr/local/bin/ninja
 Running postconf script '/home/runner/work/loupe-web/loupe-web/loupe-worktree-20260401010231-4166776-12-nathanc-nvidia/build/pyvenv/bin/python3 /home/runner/work/loupe-web/loupe-web/loupe-worktree-20260401010231-4166776-12-nathanc-nvidia/scripts/symlink-install-tree.py'
   configure: success
-Deleted branch review-20260401010231-4166776-12-nathanc-nvidia (was 6446425).
+Deleted branch review-20260401010231-4166776-12-nathanc-nvidia (was c59390b).
   AM: success, Checkpatch: clean, Build: configure_ok
 [5/7] Running codex code review (Stage A-E protocol)...
 [6/7] Extracting review...

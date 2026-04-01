@@ -38,7 +38,7 @@ Applying: hw/loongarch/virt: Define versioned virt machine
 Found ninja-1.13.2 at /usr/local/bin/ninja
 Running postconf script '/home/runner/work/loupe-web/loupe-web/loupe-worktree-20260401015705-3009762-3-maobibo-loongso/build/pyvenv/bin/python3 /home/runner/work/loupe-web/loupe-web/loupe-worktree-20260401015705-3009762-3-maobibo-loongso/scripts/symlink-install-tree.py'
   configure: success
-Deleted branch review-20260401015705-3009762-3-maobibo-loongso (was baabd99).
+Deleted branch review-20260401015705-3009762-3-maobibo-loongso (was b90df4d).
   AM: success, Checkpatch: issues, Build: configure_ok
 [5/7] Running codex code review (Stage A-E protocol)...
 [6/7] Extracting review...
