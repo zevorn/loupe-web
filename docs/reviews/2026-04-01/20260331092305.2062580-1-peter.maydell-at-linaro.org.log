@@ -8,12 +8,13 @@
   v1 patch, no prior versions
 [3/7] Downloading patches with b4...
 Grabbing thread from lore.kernel.org/all/20260331092305.2062580-1-peter.maydell@linaro.org/t.mbox.gz
-Analyzing 2 messages in the thread
+Analyzing 3 messages in the thread
 Looking for additional code-review trailers on lore.kernel.org
 Checking attestation on all messages, may take a moment...
 ---
   [32m✓[0m [PATCH] target/arm: do_ats_write(): avoid assertion when ptw failed
     + Reviewed-by: Philippe Mathieu-Daudé <philmd@linaro.org> ([32m✓[0m DKIM/linaro.org)
+    + Reviewed-by: Richard Henderson <richard.henderson@linaro.org> ([32m✓[0m DKIM/linaro.org)
   ---
   [32m✓[0m Signed: DKIM/linaro.org
 ---
@@ -22,10 +23,11 @@ Total patches: 1
  Link: https://lore.kernel.org/r/20260331092305.2062580-1-peter.maydell@linaro.org
  Base: not specified
        git am ./20260331_peter_maydell_target_arm_do_ats_write_avoid_assertion_when_ptw_failed.mbx
-  b4: mbx=62 lines
+  b4: mbx=63 lines
   Title (from mbox): [PATCH] target/arm: do_ats_write(): avoid assertion when ptw
 [4/7] Applying patches in QEMU worktree...
 Preparing worktree (new branch 'review-20260331092305-2062580-1-peter-maydell-l')
+Updating files:  92% (10201/11023)Updating files:  93% (10252/11023)Updating files:  94% (10362/11023)Updating files:  95% (10472/11023)Updating files:  96% (10583/11023)Updating files:  97% (10693/11023)Updating files:  98% (10803/11023)Updating files:  99% (10913/11023)Updating files: 100% (11023/11023)Updating files: 100% (11023/11023), done.
 HEAD is now at 7df28e4 Merge tag 'hppa-more-v11-fixes-pull-request' of https://github.com/hdeller/qemu-hppa into staging
 Applying: target/arm: do_ats_write(): avoid assertion when ptw failed
   git am: success
@@ -36,7 +38,7 @@ Applying: target/arm: do_ats_write(): avoid assertion when ptw failed
 Found ninja-1.13.2 at /usr/local/bin/ninja
 Running postconf script '/home/runner/work/loupe-web/loupe-web/loupe-worktree-20260331092305-2062580-1-peter-maydell-l/build/pyvenv/bin/python3 /home/runner/work/loupe-web/loupe-web/loupe-worktree-20260331092305-2062580-1-peter-maydell-l/scripts/symlink-install-tree.py'
   configure: success
-Deleted branch review-20260331092305-2062580-1-peter-maydell-l (was 2a0dda2).
+Deleted branch review-20260331092305-2062580-1-peter-maydell-l (was 26a4b19).
   AM: success, Checkpatch: clean, Build: configure_ok
 [5/7] Running codex code review (Stage A-E protocol)...
 [6/7] Extracting review...
@@ -56,5 +58,5 @@ Traceback (most recent call last):
   File "/usr/lib/python3.12/json/decoder.py", line 353, in raw_decode
     obj, end = self.scan_once(s, idx)
                ^^^^^^^^^^^^^^^^^^^^^^
-json.decoder.JSONDecodeError: Expecting ',' delimiter: line 6 column 1 (char 105)
+json.decoder.JSONDecodeError: Expecting ',' delimiter: line 7 column 1 (char 172)
 ERROR: invalid JSON output

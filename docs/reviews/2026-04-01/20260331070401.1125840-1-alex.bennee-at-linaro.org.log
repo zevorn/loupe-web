@@ -26,6 +26,7 @@ Total patches: 1
   Title (from mbox): [PATCH] MAINTAINERS: fix OSUOSL typo
 [4/7] Applying patches in QEMU worktree...
 Preparing worktree (new branch 'review-20260331070401-1125840-1-alex-bennee-lin')
+Updating files:  71% (7876/11023)Updating files:  72% (7937/11023)Updating files:  73% (8047/11023)Updating files:  74% (8158/11023)Updating files:  75% (8268/11023)Updating files:  76% (8378/11023)Updating files:  77% (8488/11023)Updating files:  78% (8598/11023)Updating files:  79% (8709/11023)Updating files:  80% (8819/11023)Updating files:  81% (8929/11023)Updating files:  82% (9039/11023)Updating files:  83% (9150/11023)Updating files:  84% (9260/11023)Updating files:  85% (9370/11023)Updating files:  86% (9480/11023)Updating files:  87% (9591/11023)Updating files:  88% (9701/11023)Updating files:  89% (9811/11023)Updating files:  90% (9921/11023)Updating files:  91% (10031/11023)Updating files:  92% (10142/11023)Updating files:  93% (10252/11023)Updating files:  94% (10362/11023)Updating files:  95% (10472/11023)Updating files:  96% (10583/11023)Updating files:  97% (10693/11023)Updating files:  98% (10803/11023)Updating files:  99% (10913/11023)Updating files: 100% (11023/11023)Updating files: 100% (11023/11023), done.
 HEAD is now at 7df28e4 Merge tag 'hppa-more-v11-fixes-pull-request' of https://github.com/hdeller/qemu-hppa into staging
 error: patch failed: MAINTAINERS:4526
 error: MAINTAINERS: patch does not apply
@@ -54,7 +55,7 @@ Deleted branch review-20260331070401-1125840-1-alex-bennee-lin (was 7df28e4).
   AM: failed, Checkpatch: clean, Build: not_run
 [5/7] Running codex code review (Stage A-E protocol)...
 [6/7] Extracting review...
-  Verdict: ready_to_merge
+  Verdict: needs_revision
 [7/7] Assembling JSON...
 Traceback (most recent call last):
   File "<stdin>", line 8, in <module>
