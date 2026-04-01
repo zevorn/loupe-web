@@ -1,48 +1,46 @@
-=== Reviewing: 20260401080354.1347212-1-zhenzhong.duan@intel.com ===
+=== Reviewing: 20260401100005.20651-1-guobin@linux.alibaba.com ===
 [1/7] Querying Patchwork...
   Patchwork: 1 result(s)
 [2/7] Metadata OK
-  Title: iommufd: Rename all the idev and idevc variables to hiod and hiodc
-  Author: Duan, Zhenzhong, Version: v1, Subsystem: iommufd
+  Title: physmem: Simplify dirty memory type checks with loop
+  Author: Bin Guo, Version: v1, Subsystem: physmem
 [2.5/7] Fetching version history and mailing list context...
   v1 patch, no prior versions
 [3/7] Downloading patches with b4...
-Grabbing thread from lore.kernel.org/all/20260401080354.1347212-1-zhenzhong.duan@intel.com/t.mbox.gz
-Analyzing 4 messages in the thread
+Grabbing thread from lore.kernel.org/all/20260401100005.20651-1-guobin@linux.alibaba.com/t.mbox.gz
+Analyzing 2 messages in the thread
 Looking for additional code-review trailers on lore.kernel.org
 Checking attestation on all messages, may take a moment...
 ---
-  [32m✓[0m [PATCH] iommufd: Rename all the idev and idevc variables to hiod and hiodc
+  [32m✓[0m [PATCH] physmem: Simplify dirty memory type checks with loop
     + Reviewed-by: Philippe Mathieu-Daudé <philmd@linaro.org> ([32m✓[0m DKIM/linaro.org)
-    + Reviewed-by: Cédric Le Goater <clg@redhat.com> ([32m✓[0m DKIM/redhat.com)
   ---
-  [32m✓[0m Signed: DKIM/intel.com
+  [32m✓[0m Signed: DKIM/linux.alibaba.com
 ---
 Total patches: 1
 ---
- Link: https://lore.kernel.org/r/20260401080354.1347212-1-zhenzhong.duan@intel.com
+ Link: https://lore.kernel.org/r/20260401100005.20651-1-guobin@linux.alibaba.com
  Base: not specified
-       git am ./20260401_zhenzhong_duan_iommufd_rename_all_the_idev_and_idevc_variables_to_hiod_and_hiodc.mbx
-  b4: mbx=653 lines
-scripts/review-patch.sh: line 273: echo: write error: Broken pipe
-  Title (from mbox): [PATCH] iommufd: Rename all the idev and idevc variables to hiod
+       git am ./20260401_guobin_physmem_simplify_dirty_memory_type_checks_with_loop.mbx
+  b4: mbx=54 lines
+  Title (from mbox): [PATCH] physmem: Simplify dirty memory type checks with loop
 [4/7] Applying patches in QEMU worktree...
-Preparing worktree (new branch 'review-20260401080354-1347212-1-zhenzhong-duan-')
+Preparing worktree (new branch 'review-20260401100005-20651-1-guobin-linux-alib')
 HEAD is now at 7df28e4 Merge tag 'hppa-more-v11-fixes-pull-request' of https://github.com/hdeller/qemu-hppa into staging
-Applying: iommufd: Rename all the idev and idevc variables to hiod and hiodc
+Applying: physmem: Simplify dirty memory type checks with loop
   git am: success
   Running checkpatch...
   checkpatch: clean
   Quick build check...
 
 Found ninja-1.13.2 at /usr/local/bin/ninja
-Running postconf script '/home/runner/work/loupe-web/loupe-web/loupe-worktree-20260401080354-1347212-1-zhenzhong-duan-/build/pyvenv/bin/python3 /home/runner/work/loupe-web/loupe-web/loupe-worktree-20260401080354-1347212-1-zhenzhong-duan-/scripts/symlink-install-tree.py'
+Running postconf script '/home/runner/work/loupe-web/loupe-web/loupe-worktree-20260401100005-20651-1-guobin-linux-alib/build/pyvenv/bin/python3 /home/runner/work/loupe-web/loupe-web/loupe-worktree-20260401100005-20651-1-guobin-linux-alib/scripts/symlink-install-tree.py'
   configure: success
-Deleted branch review-20260401080354-1347212-1-zhenzhong-duan- (was 6218d4a).
+Deleted branch review-20260401100005-20651-1-guobin-linux-alib (was f8ea117).
   AM: success, Checkpatch: clean, Build: configure_ok
 [5/7] Running codex code review (Stage A-E protocol)...
 [6/7] Extracting review...
-  Verdict: ready_to_merge
+  Verdict: needs_revision
 [7/7] Assembling JSON...
 Traceback (most recent call last):
   File "<stdin>", line 8, in <module>
@@ -58,5 +56,5 @@ Traceback (most recent call last):
   File "/usr/lib/python3.12/json/decoder.py", line 353, in raw_decode
     obj, end = self.scan_once(s, idx)
                ^^^^^^^^^^^^^^^^^^^^^^
-json.decoder.JSONDecodeError: Expecting ',' delimiter: line 7 column 1 (char 157)
+json.decoder.JSONDecodeError: Expecting ',' delimiter: line 6 column 1 (char 105)
 ERROR: invalid JSON output

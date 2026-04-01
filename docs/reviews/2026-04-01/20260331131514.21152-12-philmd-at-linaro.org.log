@@ -33,7 +33,6 @@ Cover: ./20260331_philmd_misc_hw_patches_for_2026_03_31.cover
  Base: not specified
        git am ./20260331_philmd_misc_hw_patches_for_2026_03_31.mbx
   b4: mbx=633 lines
-scripts/review-patch.sh: line 273: echo: write error: Broken pipe
   Title (from mbox): [PATCH 0/11] Misc HW patches for 2026-03-31
 [4/7] Applying patches in QEMU worktree...
 Preparing worktree (new branch 'review-20260331131514-21152-12-philmd-linaro-or')

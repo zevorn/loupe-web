@@ -1,6 +1,42 @@
 {
-  "updated_at": "2026-04-01T09:31:23Z",
+  "updated_at": "2026-04-01T11:20:31Z",
   "reviews": [
+    {
+      "id": "20260401-20260401095024.1562621-1-kraxel-at-redhat.com",
+      "path": "reviews/2026-04-01/20260401095024.1562621-1-kraxel-at-redhat.com.json",
+      "title": "[PATCH 0/3] Firmware 20260401 for 11.0 patches",
+      "author": "Gerd Hoffmann",
+      "date": "2026-04-01",
+      "subsystem": "riscv",
+      "version": 1,
+      "patch_count": 1,
+      "message_id": "<20260401095024.1562621-1-kraxel@redhat.com>",
+      "verdict": "needs_revision",
+      "findings": {
+        "critical": 0,
+        "major": 0,
+        "minor": 0,
+        "nit": 1
+      }
+    },
+    {
+      "id": "20260401-20260401094848.2661985-1-peter.maydell-at-linaro.org",
+      "path": "reviews/2026-04-01/20260401094848.2661985-1-peter.maydell-at-linaro.org.json",
+      "title": "[PATCH 0/6] linux-user queue",
+      "author": "Peter Maydell",
+      "date": "2026-04-01",
+      "subsystem": "riscv",
+      "version": 1,
+      "patch_count": 1,
+      "message_id": "<20260401094848.2661985-1-peter.maydell@linaro.org>",
+      "verdict": "needs_revision",
+      "findings": {
+        "critical": 0,
+        "major": 0,
+        "minor": 0,
+        "nit": 1
+      }
+    },
     {
       "id": "20260331-20260331185219.12187-1-deller-at-kernel.org",
       "path": "reviews/2026-03-31/20260331185219.12187-1-deller-at-kernel.org.json",

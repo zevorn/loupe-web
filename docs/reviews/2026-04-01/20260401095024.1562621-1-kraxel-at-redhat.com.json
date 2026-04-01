@@ -1,0 +1,70 @@
+{
+  "schema_version": "1",
+  "id": "20260401-20260401095024.1562621-1-kraxel-at-redhat.com",
+  "series": {
+    "title": "[PATCH 0/3] Firmware 20260401 for 11.0 patches",
+    "version": 1,
+    "patch_count": 1,
+    "author": {
+      "name": "Gerd Hoffmann",
+      "email": "kraxel@redhat.com"
+    },
+    "date": "2026-04-01",
+    "subsystem": "riscv",
+    "message_id": "<20260401095024.1562621-1-kraxel@redhat.com>",
+    "lore_url": "https://lore.kernel.org/qemu-devel/20260401095024.1562621-1-kraxel%40redhat.com/",
+    "patchwork_url": "http://patchwork.ozlabs.org/project/qemu-devel/patch/20260401095024.1562621-1-kraxel@redhat.com/",
+    "base_branch": "master"
+  },
+  "version_history": [],
+  "ml_context": {
+    "reviewed_by": [],
+    "acked_by": [],
+    "ci_status": "",
+    "prior_feedback": [],
+    "maintainer_activity": ""
+  },
+  "review": {
+    "verdict": "needs_revision",
+    "summary": "<one-line summary>",
+    "mode": "ci-single",
+    "stages": {
+      "A": "<Stage A one-line summary>",
+      "B": "<Stage B one-line summary>",
+      "C": "<Stage C one-line summary>",
+      "D": "<Stage D one-line summary>",
+      "E": "<Stage E one-line summary>"
+    },
+    "findings": [
+      {
+        "id": 1,
+        "severity": "nit",
+        "stage": "<A/B/C/D or combined e.g. B+D>",
+        "patch_index": "<n/m>",
+        "file": "<file path>",
+        "line": "<line or line-range>",
+        "patch_context": [
+          "<diff lines relevant to this finding>"
+        ],
+        "title": "<short title>",
+        "description": "<explanation>",
+        "suggestion": "<fix suggestion or null>",
+        "confidence": "<high/medium/low>",
+        "confidence_reason": "<why this confidence level>",
+        "source": "ci-single"
+      }
+    ],
+    "checkpatch": {
+      "status": "clean",
+      "issues": []
+    },
+    "build_status": "not_run",
+    "am_status": "failed"
+  },
+  "cover_letter": "Subject: [PATCH 0/3] Firmware 20260401 for 11.0 patches\nFrom: Gerd Hoffmann <kraxel@redhat.com>\nDate: Wed, 01 Apr 2026 11:50:21 +0200\nMessage-Id: <20260401095024.1562621-1-kraxel@redhat.com>\nMIME-Version: 1.0\nContent-Type: text/plain; charset=\"utf-8\"\nContent-Transfer-Encoding: 7bit\n\nThe following changes since commit dd3ee9c63d96b223c8d41bf5d65392eb898be626:\n\n  Merge tag 'for-upstream' of https://gitlab.com/bonzini/qemu into staging (2026-03-30 13:54:56 +0100)\n\nare available in the Git repository at:\n\n  https://gitlab.com/kraxel/qemu.git tags/firmware-20260401-for-11.0-pull-request\n\nfor you to fetch changes up to 9b4edc3ecacf2f6ef3f2e7e3d423dfe9e67a781a:\n\n  igvm: fix parent object type in IgvmCfg struct (2026-03-31 08:53:47 +0200)\n\n----------------------------------------------------------------\nigvm bugfixes\n\n----------------------------------------------------------------\n\nLuigi Leonardi (3):\n  igvm: switch to PRIx64\n  igvm: fix memory leak on failed memory region init\n  igvm: fix parent object type in IgvmCfg struct\n\n include/system/igvm-internal.h | 2 +-\n backends/igvm.c                | 6 ++++--\n 2 files changed, 5 insertions(+), 3 deletions(-)\n\n-- \n2.53.0",
+  "diff": "From git@z Thu Jan  1 00:00:00 1970\nSubject: [PATCH 1/3] igvm: switch to PRIx64\nFrom: Luigi Leonardi <leonardi@redhat.com>\nDate: Wed, 01 Apr 2026 11:50:22 +0200\nMessage-Id: <20260401095024.1562621-2-kraxel@redhat.com>\nMIME-Version: 1.0\nContent-Type: text/plain; charset=\"utf-8\"\nContent-Transfer-Encoding: 7bit\n\nUse the PRIx64 format macro instead of %lX for uint64_t values.\n\nThis is to improve portability as %lX is not necessarily 64 bit long.\n\nSigned-off-by: Luigi Leonardi <leonardi@redhat.com>\nReviewed-by: Ani Sinha <anisinha@redhat.com>\nMessage-ID: <20260330-igvm_fixes-v1-1-03587a5a808b@redhat.com>\nSigned-off-by: Gerd Hoffmann <kraxel@redhat.com>\n---\n backends/igvm.c | 4 ++--\n 1 file changed, 2 insertions(+), 2 deletions(-)\n\ndiff --git a/backends/igvm.c b/backends/igvm.c\nindex 3b5edf15213c..50f0d6fb9a7b 100644\n--- a/backends/igvm.c\n+++ b/backends/igvm.c\n@@ -187,7 +187,7 @@ static void *qigvm_prepare_memory(QIgvm *ctx, uint64_t addr, uint64_t size,\n             error_setg(\n                 errp,\n                 \"Processing of IGVM file failed: Could not prepare memory \"\n-                \"at address 0x%lX due to existing non-RAM region\",\n+                \"at address 0x%\" PRIx64 \" due to existing non-RAM region\",\n                 addr);\n             return NULL;\n         }\n@@ -198,7 +198,7 @@ static void *qigvm_prepare_memory(QIgvm *ctx, uint64_t addr, uint64_t size,\n             error_setg(\n                 errp,\n                 \"Processing of IGVM file failed: Could not prepare memory \"\n-                \"at address 0x%lX: region size exceeded\",\n+                \"at address 0x%\" PRIx64 \": region size exceeded\",\n                 addr);\n             return NULL;\n         }\n-- \n2.53.0\n\nFrom git@z Thu Jan  1 00:00:00 1970\nSubject: [PATCH 2/3] igvm: fix memory leak on failed memory region init\nFrom: Luigi Leonardi <leonardi@redhat.com>\nDate: Wed, 01 Apr 2026 11:50:23 +0200\nMessage-Id: <20260401095024.1562621-3-kraxel@redhat.com>\nMIME-Version: 1.0\nContent-Type: text/plain; charset=\"utf-8\"\nContent-Transfer-Encoding: 7bit\n\nWhen memory_region_init_* fail, `igvm_pages` is not freed causing a leak.\n\nFree `igvm_pages` in the error path.\n\nFixes: c1d466d267cf (\"backends/igvm: Add IGVM loader and configuration\")\nSigned-off-by: Luigi Leonardi <leonardi@redhat.com>\nMessage-ID: <20260330-igvm_fixes-v1-2-03587a5a808b@redhat.com>\nSigned-off-by: Gerd Hoffmann <kraxel@redhat.com>\n---\n backends/igvm.c | 2 ++\n 1 file changed, 2 insertions(+)\n\ndiff --git a/backends/igvm.c b/backends/igvm.c\nindex 50f0d6fb9a7b..c347d0c17e7e 100644\n--- a/backends/igvm.c\n+++ b/backends/igvm.c\n@@ -216,11 +216,13 @@ static void *qigvm_prepare_memory(QIgvm *ctx, uint64_t addr, uint64_t size,\n             ctx->machine_state->cgs->require_guest_memfd) {\n             if (!memory_region_init_ram_guest_memfd(igvm_pages, NULL,\n                                                     region_name, size, errp)) {\n+                g_free(igvm_pages);\n                 return NULL;\n             }\n         } else {\n             if (!memory_region_init_ram(igvm_pages, NULL, region_name, size,\n                                         errp)) {\n+                g_free(igvm_pages);\n                 return NULL;\n             }\n         }\n-- \n2.53.0\n\nFrom git@z Thu Jan  1 00:00:00 1970\nSubject: [PATCH 3/3] igvm: fix parent object type in IgvmCfg struct\nFrom: Luigi Leonardi <leonardi@redhat.com>\nDate: Wed, 01 Apr 2026 11:50:24 +0200\nMessage-Id: <20260401095024.1562621-4-kraxel@redhat.com>\nMIME-Version: 1.0\nContent-Type: text/plain; charset=\"utf-8\"\nContent-Transfer-Encoding: 8bit\n\nIgvmCfg is defined as an Object but, currently, its first member is an\nObjectClass.\n\nReplace ObjectClass with Object.\n\nFixes: c1d466d267cf (\"backends/igvm: Add IGVM loader and configuration\")\nSigned-off-by: Luigi Leonardi <leonardi@redhat.com>\nReviewed-by: Ani Sinha <anisinha@redhat.com>\nMessage-ID: <20260330-igvm_fixes-v1-3-03587a5a808b@redhat.com>\nSigned-off-by: Gerd Hoffmann <kraxel@redhat.com>\nReviewed-by: Philippe Mathieu-Daudé <philmd@linaro.org>\n---\n include/system/igvm-internal.h | 2 +-\n 1 file changed, 1 insertion(+), 1 deletion(-)\n\ndiff --git a/include/system/igvm-internal.h b/include/system/igvm-internal.h\nindex 76ae1bc3be92..7f131c4d0392 100644\n--- a/include/system/igvm-internal.h\n+++ b/include/system/igvm-internal.h\n@@ -19,7 +19,7 @@\n #include <igvm/igvm.h>\n \n struct IgvmCfg {\n-    ObjectClass parent_class;\n+    Object parent_obj;\n \n     /*\n      * filename: Filename that specifies a file that contains the configuration\n-- \n2.53.0",
+  "patches": [],
+  "generated_at": "2026-04-01T11:11:49Z",
+  "generator": "loupe:patch-review v1.0",
+  "disclaimer": "LLM-generated draft. Not an authoritative review."
+}
