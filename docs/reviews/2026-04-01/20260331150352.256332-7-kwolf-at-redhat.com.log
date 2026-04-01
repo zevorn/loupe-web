@@ -1,0 +1,83 @@
+=== Reviewing: 20260331150352.256332-7-kwolf@redhat.com ===
+[1/7] Querying Patchwork...
+  Patchwork: 1 result(s)
+[2/7] Metadata OK
+  Title: [PULL,6/6] block: Fix crash after setting latency historygram with single bin
+  Author: Kevin Wolf, Version: v1, Subsystem: block
+[2.5/7] Fetching version history and mailing list context...
+  v1 patch, no prior versions
+[3/7] Downloading patches with b4...
+Grabbing thread from lore.kernel.org/all/20260331150352.256332-7-kwolf@redhat.com/t.mbox.gz
+Analyzing 8 messages in the thread
+Looking for additional code-review trailers on lore.kernel.org
+Checking attestation on all messages, may take a moment...
+---
+  [32m✓[0m [PATCH 1/6] ide: Fix potential assertion failure on VM stop for PIO read error
+    + Reviewed-by: Hanna Czenczek <hreitz@redhat.com> ([32m✓[0m DKIM/redhat.com)
+  [32m✓[0m [PATCH 2/6] scsi: Don't consider LOGICAL UNIT NOT SUPPORTED guest recoverable
+  [32m✓[0m [PATCH 3/6] block: Fix references in bdrv_bsc_*() function comments
+  [32m✓[0m [PATCH 4/6] monitor: Fix deadlock in monitor_cleanup
+  [32m✓[0m [PATCH 5/6] vhost-user-blk-server: fix opt_io_size=1 causing severe Windows I/O degradation
+  [32m✓[0m [PATCH 6/6] block: Fix crash after setting latency historygram with single bin
+    + Reviewed-by: Philippe Mathieu-Daudé <philmd@linaro.org> ([32m✓[0m DKIM/linaro.org)
+    + Reviewed-by: Hanna Czenczek <hreitz@redhat.com> ([32m✓[0m DKIM/redhat.com)
+  ---
+  [32m✓[0m Signed: DKIM/redhat.com
+---
+Total patches: 6
+---
+Cover: ./20260331_kwolf_block_layer_patches.cover
+ Link: https://lore.kernel.org/r/20260331150352.256332-1-kwolf@redhat.com
+ Base: not specified
+       git am ./20260331_kwolf_block_layer_patches.mbx
+  b4: mbx=370 lines
+  Title (from mbox): [PATCH 0/6] Block layer patches
+[4/7] Applying patches in QEMU worktree...
+Preparing worktree (new branch 'review-20260331150352-256332-7-kwolf-redhat-com')
+Updating files:  89% (9892/11023)Updating files:  90% (9921/11023)Updating files:  91% (10031/11023)Updating files:  92% (10142/11023)Updating files:  93% (10252/11023)Updating files:  94% (10362/11023)Updating files:  95% (10472/11023)Updating files:  96% (10583/11023)Updating files:  97% (10693/11023)Updating files:  98% (10803/11023)Updating files:  99% (10913/11023)Updating files: 100% (11023/11023)Updating files: 100% (11023/11023), done.
+HEAD is now at 7df28e4 Merge tag 'hppa-more-v11-fixes-pull-request' of https://github.com/hdeller/qemu-hppa into staging
+error: patch failed: hw/ide/core.c:799
+error: hw/ide/core.c: patch does not apply
+hint: Use 'git am --show-current-patch=diff' to see the failed patch
+hint: When you have resolved this problem, run "git am --continue".
+hint: If you prefer to skip this patch, run "git am --skip" instead.
+hint: To restore the original branch and stop patching, run "git am --abort".
+hint: Disable this message with "git config set advice.mergeConflict false"
+Applying: ide: Fix potential assertion failure on VM stop for PIO read error
+Patch failed at 0001 ide: Fix potential assertion failure on VM stop for PIO read error
+  git am failed, retrying with --3way...
+Applying: ide: Fix potential assertion failure on VM stop for PIO read error
+error: sha1 information is lacking or useless (hw/ide/core.c).
+error: could not build fake ancestor
+hint: Use 'git am --show-current-patch=diff' to see the failed patch
+hint: When you have resolved this problem, run "git am --continue".
+hint: If you prefer to skip this patch, run "git am --skip" instead.
+hint: To restore the original branch and stop patching, run "git am --abort".
+hint: Disable this message with "git config set advice.mergeConflict false"
+Patch failed at 0001 ide: Fix potential assertion failure on VM stop for PIO read error
+  git am --3way: FAILED
+  Running checkpatch...
+  checkpatch: clean
+  Skipping build (am failed)
+Deleted branch review-20260331150352-256332-7-kwolf-redhat-com (was 7df28e4).
+  AM: failed, Checkpatch: clean, Build: not_run
+[5/7] Running codex code review (Stage A-E protocol)...
+[6/7] Extracting review...
+  Verdict: needs_revision
+[7/7] Assembling JSON...
+Traceback (most recent call last):
+  File "<stdin>", line 8, in <module>
+  File "/usr/lib/python3.12/json/__init__.py", line 293, in load
+    return loads(fp.read(),
+           ^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/json/__init__.py", line 346, in loads
+    return _default_decoder.decode(s)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/json/decoder.py", line 337, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/json/decoder.py", line 353, in raw_decode
+    obj, end = self.scan_once(s, idx)
+               ^^^^^^^^^^^^^^^^^^^^^^
+json.decoder.JSONDecodeError: Expecting ',' delimiter: line 3 column 1 (char 24)
+ERROR: invalid JSON output

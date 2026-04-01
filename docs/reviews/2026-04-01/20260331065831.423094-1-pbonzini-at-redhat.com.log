@@ -1,0 +1,60 @@
+=== Reviewing: 20260331065831.423094-1-pbonzini@redhat.com ===
+[1/7] Querying Patchwork...
+  Patchwork: 1 result(s)
+[2/7] Metadata OK
+  Title: target/i386/tcg: fix decoding of MOVBE and CRC32 in 16-bit mode
+  Author: Paolo Bonzini, Version: v1, Subsystem: target/i386/tcg
+[2.5/7] Fetching version history and mailing list context...
+  v1 patch, no prior versions
+[3/7] Downloading patches with b4...
+Grabbing thread from lore.kernel.org/all/20260331065831.423094-1-pbonzini@redhat.com/t.mbox.gz
+Analyzing 2 messages in the thread
+Looking for additional code-review trailers on lore.kernel.org
+Checking attestation on all messages, may take a moment...
+---
+  [32m✓[0m [PATCH] target/i386/tcg: fix decoding of MOVBE and CRC32 in 16-bit mode
+    + Reviewed-by: Richard Henderson <richard.henderson@linaro.org> ([32m✓[0m DKIM/linaro.org)
+  ---
+  [32m✓[0m Signed: DKIM/redhat.com
+---
+Total patches: 1
+---
+ Link: https://lore.kernel.org/r/20260331065831.423094-1-pbonzini@redhat.com
+ Base: not specified
+       git am ./20260331_pbonzini_target_i386_tcg_fix_decoding_of_movbe_and_crc32_in_16_bit_mode.mbx
+  b4: mbx=88 lines
+  Title (from mbox): [PATCH] target/i386/tcg: fix decoding of MOVBE and CRC32 in 16-bit
+[4/7] Applying patches in QEMU worktree...
+Preparing worktree (new branch 'review-20260331065831-423094-1-pbonzini-redhat-')
+HEAD is now at 7df28e4 Merge tag 'hppa-more-v11-fixes-pull-request' of https://github.com/hdeller/qemu-hppa into staging
+Applying: target/i386/tcg: fix decoding of MOVBE and CRC32 in 16-bit mode
+  git am: success
+  Running checkpatch...
+  checkpatch: issues
+  Quick build check...
+
+Found ninja-1.13.2 at /usr/local/bin/ninja
+Running postconf script '/home/runner/work/loupe-web/loupe-web/loupe-worktree-20260331065831-423094-1-pbonzini-redhat-/build/pyvenv/bin/python3 /home/runner/work/loupe-web/loupe-web/loupe-worktree-20260331065831-423094-1-pbonzini-redhat-/scripts/symlink-install-tree.py'
+  configure: success
+Deleted branch review-20260331065831-423094-1-pbonzini-redhat- (was dc4d4ea).
+  AM: success, Checkpatch: issues, Build: configure_ok
+[5/7] Running codex code review (Stage A-E protocol)...
+[6/7] Extracting review...
+  Verdict: ready_to_merge
+[7/7] Assembling JSON...
+Traceback (most recent call last):
+  File "<stdin>", line 8, in <module>
+  File "/usr/lib/python3.12/json/__init__.py", line 293, in load
+    return loads(fp.read(),
+           ^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/json/__init__.py", line 346, in loads
+    return _default_decoder.decode(s)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/json/decoder.py", line 337, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/json/decoder.py", line 353, in raw_decode
+    obj, end = self.scan_once(s, idx)
+               ^^^^^^^^^^^^^^^^^^^^^^
+json.decoder.JSONDecodeError: Expecting ',' delimiter: line 6 column 1 (char 111)
+ERROR: invalid JSON output

@@ -1,0 +1,82 @@
+=== Reviewing: 20260401010231.4166776-12-nathanc@nvidia.com ===
+[1/7] Querying Patchwork...
+  Patchwork: 1 result(s)
+[2/7] Metadata OK
+  Title: [00/11] hw/arm/smmuv3-accel: Resolve AUTO properties
+  Author: Nathan Chen, Version: v3, Subsystem: hw/arm/smmuv3-accel
+[2.5/7] Fetching version history and mailing list context...
+  Searching for prior versions of: hw/arm/smmuv3-accel: Resolve AUTO properties
+  Found 0 prior version(s)
+[3/7] Downloading patches with b4...
+Grabbing thread from lore.kernel.org/all/20260401010231.4166776-12-nathanc@nvidia.com/t.mbox.gz
+Analyzing 12 messages in the thread
+Looking for additional code-review trailers on lore.kernel.org
+Checking attestation on all messages, may take a moment...
+---
+  [32m✓[0m [PATCH 1/11] hw/arm/smmuv3-accel: Add helper for resolving auto parameters
+  [32m✓[0m [PATCH 2/11] hw/arm/smmuv3-accel: Implement "auto" value for "ats"
+  [32m✓[0m [PATCH 3/11] hw/arm/smmuv3: Change the default ats support to match the host
+  [32m✓[0m [PATCH 4/11] vfio/pci: Add ats property and mask ATS cap when not exposed
+  [32m✓[0m [PATCH 5/11] hw/arm/smmuv3-accel: Implement "auto" value for "ril"
+  [32m✓[0m [PATCH 6/11] hw/arm/smmuv3: Change the default ril support to match the host
+  [32m✓[0m [PATCH 7/11] hw/arm/smmuv3-accel: Implement "auto" value for "ssidsize"
+  [32m✓[0m [PATCH 8/11] hw/arm/smmuv3: Change the default ssidsize to match the host
+  [32m✓[0m [PATCH 9/11] hw/arm/smmuv3-accel: Implement "auto" value for "oas"
+  [32m✓[0m [PATCH 10/11] hw/arm/smmuv3: Change the default oas to match the host
+  [32m✓[0m [PATCH 11/11] qemu-options.hx: Support "auto" for accel SMMUv3 properties
+  ---
+  [32m✓[0m Signed: DKIM/nvidia.com
+---
+Total patches: 11
+---
+Cover: ./20260331_nathanc_hw_arm_smmuv3_accel_resolve_auto_properties.cover
+ Link: https://lore.kernel.org/r/20260401010231.4166776-1-nathanc@nvidia.com
+ Base: not specified
+       git am ./20260331_nathanc_hw_arm_smmuv3_accel_resolve_auto_properties.mbx
+  b4: mbx=922 lines
+scripts/review-patch.sh: line 273: echo: write error: Broken pipe
+  Title (from mbox): [PATCH 0/11] hw/arm/smmuv3-accel: Resolve AUTO properties
+[4/7] Applying patches in QEMU worktree...
+Preparing worktree (new branch 'review-20260401010231-4166776-12-nathanc-nvidia')
+HEAD is now at 7df28e4 Merge tag 'hppa-more-v11-fixes-pull-request' of https://github.com/hdeller/qemu-hppa into staging
+Applying: hw/arm/smmuv3-accel: Add helper for resolving auto parameters
+Applying: hw/arm/smmuv3-accel: Implement "auto" value for "ats"
+Applying: hw/arm/smmuv3: Change the default ats support to match the host
+Applying: vfio/pci: Add ats property and mask ATS cap when not exposed
+Applying: hw/arm/smmuv3-accel: Implement "auto" value for "ril"
+Applying: hw/arm/smmuv3: Change the default ril support to match the host
+Applying: hw/arm/smmuv3-accel: Implement "auto" value for "ssidsize"
+Applying: hw/arm/smmuv3: Change the default ssidsize to match the host
+Applying: hw/arm/smmuv3-accel: Implement "auto" value for "oas"
+Applying: hw/arm/smmuv3: Change the default oas to match the host
+Applying: qemu-options.hx: Support "auto" for accel SMMUv3 properties
+  git am: success
+  Running checkpatch...
+  checkpatch: clean
+  Quick build check...
+
+Found ninja-1.13.2 at /usr/local/bin/ninja
+Running postconf script '/home/runner/work/loupe-web/loupe-web/loupe-worktree-20260401010231-4166776-12-nathanc-nvidia/build/pyvenv/bin/python3 /home/runner/work/loupe-web/loupe-web/loupe-worktree-20260401010231-4166776-12-nathanc-nvidia/scripts/symlink-install-tree.py'
+  configure: success
+Deleted branch review-20260401010231-4166776-12-nathanc-nvidia (was c2ca4bb).
+  AM: success, Checkpatch: clean, Build: configure_ok
+[5/7] Running codex code review (Stage A-E protocol)...
+[6/7] Extracting review...
+  Verdict: needs_revision
+[7/7] Assembling JSON...
+Traceback (most recent call last):
+  File "<stdin>", line 8, in <module>
+  File "/usr/lib/python3.12/json/__init__.py", line 293, in load
+    return loads(fp.read(),
+           ^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/json/__init__.py", line 346, in loads
+    return _default_decoder.decode(s)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/json/decoder.py", line 337, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/json/decoder.py", line 353, in raw_decode
+    obj, end = self.scan_once(s, idx)
+               ^^^^^^^^^^^^^^^^^^^^^^
+json.decoder.JSONDecodeError: Expecting ',' delimiter: line 3 column 1 (char 24)
+ERROR: invalid JSON output

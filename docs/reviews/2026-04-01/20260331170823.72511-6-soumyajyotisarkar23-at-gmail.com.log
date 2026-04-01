@@ -1,0 +1,68 @@
+=== Reviewing: 20260331170823.72511-6-soumyajyotisarkar23@gmail.com ===
+[1/7] Querying Patchwork...
+  Patchwork: 1 result(s)
+[2/7] Metadata OK
+  Title: [RFC,0/5] Add high-resolution 2D mouse wheel support to USB HID
+  Author: Soumyajyotii Ssarkar, Version: v1, Subsystem: riscv
+[2.5/7] Fetching version history and mailing list context...
+  v1 patch, no prior versions
+[3/7] Downloading patches with b4...
+Grabbing thread from lore.kernel.org/all/20260331170823.72511-6-soumyajyotisarkar23@gmail.com/t.mbox.gz
+Analyzing 6 messages in the thread
+Looking for additional code-review trailers on lore.kernel.org
+Checking attestation on all messages, may take a moment...
+---
+  [32m✓[0m [PATCH RFC 1/5] input/hid: add horizontal pan to pointer event path
+  [32m✓[0m [PATCH RFC 2/5] usb/hid: add enhanced wheel mouse report descriptor and packet size
+  [32m✓[0m [PATCH RFC 3/5] input/hid: emit protocol aware mouse reports with pan support
+  [32m✓[0m [PATCH RFC 4/5] usb/hid: handle mouse feature report for wheel/pan multipliers
+  [32m✓[0m [PATCH RFC 5/5] input/hid: apply multiplier scaling with residual accumulation
+  ---
+  [32m✓[0m Signed: DKIM/gmail.com
+---
+Total patches: 5
+---
+Cover: ./20260331_soumyajyotisarkar23_add_high_resolution_2d_mouse_wheel_support_to_usb_hid.cover
+ Link: https://lore.kernel.org/r/20260331170823.72511-1-soumyajyotisarkar23@gmail.com
+ Base: not specified
+       git am ./20260331_soumyajyotisarkar23_add_high_resolution_2d_mouse_wheel_support_to_usb_hid.mbx
+  b4: mbx=658 lines
+  Title (from mbox): [PATCH RFC 0/5] Add high-resolution 2D mouse wheel support to USB
+[4/7] Applying patches in QEMU worktree...
+Preparing worktree (new branch 'review-20260331170823-72511-6-soumyajyotisarkar')
+HEAD is now at 7df28e4 Merge tag 'hppa-more-v11-fixes-pull-request' of https://github.com/hdeller/qemu-hppa into staging
+Applying: input/hid: add horizontal pan to pointer event path
+Applying: usb/hid: add enhanced wheel mouse report descriptor and packet size
+Applying: input/hid: emit protocol aware mouse reports with pan support
+Applying: usb/hid: handle mouse feature report for wheel/pan multipliers
+Applying: input/hid: apply multiplier scaling with residual accumulation
+  git am: success
+  Running checkpatch...
+  checkpatch: clean
+  Quick build check...
+
+Found ninja-1.13.2 at /usr/local/bin/ninja
+Running postconf script '/home/runner/work/loupe-web/loupe-web/loupe-worktree-20260331170823-72511-6-soumyajyotisarkar/build/pyvenv/bin/python3 /home/runner/work/loupe-web/loupe-web/loupe-worktree-20260331170823-72511-6-soumyajyotisarkar/scripts/symlink-install-tree.py'
+  configure: success
+Deleted branch review-20260331170823-72511-6-soumyajyotisarkar (was c114a30).
+  AM: success, Checkpatch: clean, Build: configure_ok
+[5/7] Running codex code review (Stage A-E protocol)...
+[6/7] Extracting review...
+  Verdict: blocked
+[7/7] Assembling JSON...
+Traceback (most recent call last):
+  File "<stdin>", line 8, in <module>
+  File "/usr/lib/python3.12/json/__init__.py", line 293, in load
+    return loads(fp.read(),
+           ^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/json/__init__.py", line 346, in loads
+    return _default_decoder.decode(s)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/json/decoder.py", line 337, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/json/decoder.py", line 353, in raw_decode
+    obj, end = self.scan_once(s, idx)
+               ^^^^^^^^^^^^^^^^^^^^^^
+json.decoder.JSONDecodeError: Expecting ',' delimiter: line 3 column 1 (char 24)
+ERROR: invalid JSON output

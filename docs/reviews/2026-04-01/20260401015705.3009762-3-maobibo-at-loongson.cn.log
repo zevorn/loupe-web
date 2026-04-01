@@ -1,0 +1,62 @@
+=== Reviewing: 20260401015705.3009762-3-maobibo@loongson.cn ===
+[1/7] Querying Patchwork...
+  Patchwork: 1 result(s)
+[2/7] Metadata OK
+  Title: [v3,0/2] hw/loongarch/virt: Add versioned machine type support
+  Author: Bibo Mao, Version: v3, Subsystem: hw/loongarch/virt
+[2.5/7] Fetching version history and mailing list context...
+  Searching for prior versions of: hw/loongarch/virt: Add versioned machine type support
+  Found 0 prior version(s)
+[3/7] Downloading patches with b4...
+Grabbing thread from lore.kernel.org/all/20260401015705.3009762-3-maobibo@loongson.cn/t.mbox.gz
+Analyzing 3 messages in the thread
+Looking for additional code-review trailers on lore.kernel.org
+Checking attestation on all messages, may take a moment...
+---
+  [PATCH v3 1/2] hw/loongarch/virt: Define virt machine type with type_init()
+  [PATCH v3 2/2] hw/loongarch/virt: Define versioned virt machine
+---
+Total patches: 2
+---
+Cover: ./v3_20260401_maobibo_hw_loongarch_virt_add_versioned_machine_type_support.cover
+ Link: https://lore.kernel.org/r/20260401015705.3009762-1-maobibo@loongson.cn
+ Base: base-commit 559919ce54927d59b215a4665eda7ab6118a48aa not known, ignoring
+ Base: not specified
+       git am ./v3_20260401_maobibo_hw_loongarch_virt_add_versioned_machine_type_support.mbx
+  b4: mbx=133 lines
+  Title (from mbox): [PATCH v3 0/2] hw/loongarch/virt: Add versioned machine type
+[4/7] Applying patches in QEMU worktree...
+Preparing worktree (new branch 'review-20260401015705-3009762-3-maobibo-loongso')
+HEAD is now at 7df28e4 Merge tag 'hppa-more-v11-fixes-pull-request' of https://github.com/hdeller/qemu-hppa into staging
+Applying: hw/loongarch/virt: Define virt machine type with type_init()
+Applying: hw/loongarch/virt: Define versioned virt machine
+  git am: success
+  Running checkpatch...
+  checkpatch: issues
+  Quick build check...
+
+Found ninja-1.13.2 at /usr/local/bin/ninja
+Running postconf script '/home/runner/work/loupe-web/loupe-web/loupe-worktree-20260401015705-3009762-3-maobibo-loongso/build/pyvenv/bin/python3 /home/runner/work/loupe-web/loupe-web/loupe-worktree-20260401015705-3009762-3-maobibo-loongso/scripts/symlink-install-tree.py'
+  configure: success
+Deleted branch review-20260401015705-3009762-3-maobibo-loongso (was 85a7e29).
+  AM: success, Checkpatch: issues, Build: configure_ok
+[5/7] Running codex code review (Stage A-E protocol)...
+[6/7] Extracting review...
+  Verdict: needs_revision
+[7/7] Assembling JSON...
+Traceback (most recent call last):
+  File "<stdin>", line 8, in <module>
+  File "/usr/lib/python3.12/json/__init__.py", line 293, in load
+    return loads(fp.read(),
+           ^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/json/__init__.py", line 346, in loads
+    return _default_decoder.decode(s)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/json/decoder.py", line 337, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/json/decoder.py", line 353, in raw_decode
+    obj, end = self.scan_once(s, idx)
+               ^^^^^^^^^^^^^^^^^^^^^^
+json.decoder.JSONDecodeError: Expecting ',' delimiter: line 3 column 1 (char 24)
+ERROR: invalid JSON output
