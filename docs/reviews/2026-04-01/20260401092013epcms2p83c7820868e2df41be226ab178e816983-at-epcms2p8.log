@@ -1,69 +1,79 @@
-=== Reviewing: 20260331131514.21152-12-philmd@linaro.org ===
+=== Reviewing: 20260401092013epcms2p83c7820868e2df41be226ab178e816983@epcms2p8 ===
 [1/7] Querying Patchwork...
   Patchwork: 1 result(s)
 [2/7] Metadata OK
-  Title: [PULL,11/11] MAINTAINERS: fix OSUOSL typo
-  Author: Philippe Mathieu-Daudé, Version: v1, Subsystem: MAINTAINERS
+  Title: [RESEND,0/5] hw/ufs: Add Write Booster Support on UFS
+  Author: Jaemyung Lee, Version: v1, Subsystem: hw/ufs
 [2.5/7] Fetching version history and mailing list context...
   v1 patch, no prior versions
 [3/7] Downloading patches with b4...
-Grabbing thread from lore.kernel.org/all/20260331131514.21152-12-philmd@linaro.org/t.mbox.gz
-Analyzing 13 messages in the thread
+Grabbing thread from lore.kernel.org/all/20260401092013epcms2p83c7820868e2df41be226ab178e816983@epcms2p8/t.mbox.gz
+Analyzing 8 messages in the thread
+WARNING: duplicate messages found at index 4
+   Subject 1: hw/ufs: Add UFS Write Booster Support
+   Subject 2: hw/ufs: Add UFS Write Booster Support
+  2 is not a reply... assume additional patch
+WARNING: duplicate messages found at index 5
+   Subject 1: tests/qtest: Add UFS Write Booster QTest
+   Subject 2: hw/ufs: Add UFS Write Booster Support
+  2 is not a reply... assume additional patch
 Looking for additional code-review trailers on lore.kernel.org
 Checking attestation on all messages, may take a moment...
 ---
-  [32m✓[0m [PATCH 1/11] ppc/pnv: generate dtb after machine initialization is complete
-  [32m✓[0m [PATCH 2/11] MAINTAINERS: Separate QDev section from QOM one
-  [32m✓[0m [PATCH 3/11] target/mips: save CP0 timer in vmstate
-  [32m✓[0m [PATCH 4/11] backends/igvm: switch to PRIx64
-  [32m✓[0m [PATCH 5/11] target/i386/cpu.c: Correct minor grammar error in warning
-  [32m✓[0m [PATCH 6/11] target/i386: Treat qtest like TCG for supported-features
-  [32m✓[0m [PATCH 7/11] ati-vga: Silence warning about operator precedence
-  [32m✓[0m [PATCH 8/11] ati-vga: Add upper limit to x-linear-aper-size property
-  [32m✓[0m [PATCH 9/11] hw/pci-host/astro: Update copyright and documentation link
-  [32m✓[0m [PATCH 10/11] hw/hppa: Disable Artist graphics card on 64-bit machines
-  [32m✓[0m [PATCH 11/11] MAINTAINERS: fix OSUOSL typo
-  ---
-  [32m✓[0m Signed: DKIM/linaro.org
+  [32m✓[0m [PATCH 1/5] hw/ufs: Apply UFS 4.1 Specification
+    [32m✓[0m Signed: DKIM/samsung.com
+  [32m✓[0m [PATCH 2/5] hw/ufs: Modify flag handling operation
+    [32m✓[0m Signed: DKIM/samsung.com
+  [32m✓[0m [PATCH 3/5] hw/ufs: Add IDLE operation
+    [32m✓[0m Signed: DKIM/samsung.com
+  [32m✓[0m [PATCH 4/5] hw/ufs: Add UFS Write Booster Support
+    [32m✓[0m Signed: DKIM/samsung.com
+  [32m✓[0m [PATCH 5/5] tests/qtest: Add UFS Write Booster QTest
+    [32m✓[0m Signed: DKIM/samsung.com
+  [32m✓[0m [PATCH 4/5] hw/ufs: Add UFS Write Booster Support
+    [32m✓[0m Signed: DKIM/samsung.com
+  ERROR: missing [7/5]!
 ---
-Total patches: 11
+Total patches: 6
 ---
-Cover: ./20260331_philmd_misc_hw_patches_for_2026_03_31.cover
- Link: https://lore.kernel.org/r/20260331131514.21152-1-philmd@linaro.org
+WARNING: Thread incomplete!
+Cover: ./20260401_jaemyung_lee_hw_ufs_add_write_booster_support_on_ufs.cover
+ Link: https://lore.kernel.org/r/20260401090457epcms2p2368a82c8b794d8591aa62a421db9e8f7@epcms2p2
  Base: not specified
-       git am ./20260331_philmd_misc_hw_patches_for_2026_03_31.mbx
-  b4: mbx=633 lines
+       git am ./20260401_jaemyung_lee_hw_ufs_add_write_booster_support_on_ufs.mbx
+  b4: mbx=2305 lines
 scripts/review-patch.sh: line 273: echo: write error: Broken pipe
-  Title (from mbox): [PATCH 0/11] Misc HW patches for 2026-03-31
+  Title (from mbox): [PATCH 0/5] hw/ufs: Add Write Booster Support on UFS
 [4/7] Applying patches in QEMU worktree...
-Preparing worktree (new branch 'review-20260331131514-21152-12-philmd-linaro-or')
+Preparing worktree (new branch 'review-20260401092013epcms2p83c7820868e2df41be2')
 HEAD is now at 7df28e4 Merge tag 'hppa-more-v11-fixes-pull-request' of https://github.com/hdeller/qemu-hppa into staging
-error: patch failed: include/hw/ppc/pnv.h:111
-error: include/hw/ppc/pnv.h: patch does not apply
-error: patch failed: hw/ppc/pnv.c:748
-error: hw/ppc/pnv.c: patch does not apply
+error: corrupt patch at line 59
 hint: Use 'git am --show-current-patch=diff' to see the failed patch
 hint: When you have resolved this problem, run "git am --continue".
 hint: If you prefer to skip this patch, run "git am --skip" instead.
 hint: To restore the original branch and stop patching, run "git am --abort".
 hint: Disable this message with "git config set advice.mergeConflict false"
-Applying: ppc/pnv: generate dtb after machine initialization is complete
-Patch failed at 0001 ppc/pnv: generate dtb after machine initialization is complete
+Applying: hw/ufs: Apply UFS 4.1 Specification
+Applying: hw/ufs: Modify flag handling operation
+Applying: hw/ufs: Add IDLE operation
+Patch failed at 0003 hw/ufs: Add IDLE operation
   git am failed, retrying with --3way...
-Applying: ppc/pnv: generate dtb after machine initialization is complete
-error: sha1 information is lacking or useless (include/hw/ppc/pnv.h).
+Applying: hw/ufs: Apply UFS 4.1 Specification
+Applying: hw/ufs: Modify flag handling operation
+Applying: hw/ufs: Add IDLE operation
+error: corrupt patch at line 59
 error: could not build fake ancestor
 hint: Use 'git am --show-current-patch=diff' to see the failed patch
 hint: When you have resolved this problem, run "git am --continue".
 hint: If you prefer to skip this patch, run "git am --skip" instead.
 hint: To restore the original branch and stop patching, run "git am --abort".
 hint: Disable this message with "git config set advice.mergeConflict false"
-Patch failed at 0001 ppc/pnv: generate dtb after machine initialization is complete
+Patch failed at 0003 hw/ufs: Add IDLE operation
   git am --3way: FAILED
   Running checkpatch...
   checkpatch: issues
   Skipping build (am failed)
-Deleted branch review-20260331131514-21152-12-philmd-linaro-or (was 7df28e4).
+Deleted branch review-20260401092013epcms2p83c7820868e2df41be2 (was 7df28e4).
   AM: failed, Checkpatch: issues, Build: not_run
 [5/7] Running codex code review (Stage A-E protocol)...
 [6/7] Extracting review...

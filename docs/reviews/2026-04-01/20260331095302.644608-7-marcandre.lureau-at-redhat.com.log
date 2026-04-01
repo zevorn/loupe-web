@@ -31,7 +31,6 @@ Cover: ./20260331_marcandre_lureau_for_11_0_rc_patches.cover
   Title (from mbox): [PATCH 0/6] For 11.0 rc patches
 [4/7] Applying patches in QEMU worktree...
 Preparing worktree (new branch 'review-20260331095302-644608-7-marcandre-lureau')
-Updating files:  98% (10856/11023)Updating files:  99% (10913/11023)Updating files: 100% (11023/11023)Updating files: 100% (11023/11023), done.
 HEAD is now at 7df28e4 Merge tag 'hppa-more-v11-fixes-pull-request' of https://github.com/hdeller/qemu-hppa into staging
 error: patch failed: audio/audio_template.h:172
 error: audio/audio_template.h: patch does not apply
@@ -60,7 +59,7 @@ Deleted branch review-20260331095302-644608-7-marcandre-lureau (was 7df28e4).
   AM: failed, Checkpatch: issues, Build: not_run
 [5/7] Running codex code review (Stage A-E protocol)...
 [6/7] Extracting review...
-  Verdict: ready_to_merge
+  Verdict: needs_revision
 [7/7] Assembling JSON...
 Traceback (most recent call last):
   File "<stdin>", line 8, in <module>

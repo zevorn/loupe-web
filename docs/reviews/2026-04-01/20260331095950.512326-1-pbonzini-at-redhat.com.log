@@ -35,7 +35,7 @@ Applying: tests: add test for json-streamer.c error recovery
 Found ninja-1.13.2 at /usr/local/bin/ninja
 Running postconf script '/home/runner/work/loupe-web/loupe-web/loupe-worktree-20260331095950-512326-1-pbonzini-redhat-/build/pyvenv/bin/python3 /home/runner/work/loupe-web/loupe-web/loupe-worktree-20260331095950-512326-1-pbonzini-redhat-/scripts/symlink-install-tree.py'
   configure: success
-Deleted branch review-20260331095950-512326-1-pbonzini-redhat- (was 6345bd5).
+Deleted branch review-20260331095950-512326-1-pbonzini-redhat- (was b3e16ff).
   AM: success, Checkpatch: issues, Build: configure_ok
 [5/7] Running codex code review (Stage A-E protocol)...
 [6/7] Extracting review...
